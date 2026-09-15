@@ -677,9 +677,10 @@ const SEED={
 
 /* ---------- State ---------- */
 let DB=null;
-const APP_BUILD='UIFIT-2026.09.14g';
+const APP_BUILD='FLOWTRK-2026.09.15a';
 /* บันทึกการแก้ไขล่าสุด (แสดงเมื่อเอาเมาส์ชี้ที่ build — ไม่เอาไปต่อท้าย APP_BUILD เพราะทำให้แถบบนล้นจอ) */
 const APP_NOTE=[
+ 'FLOWTRK-2026.09.15a · บัญชีคุม : เพิ่มแถบ "ติดตามงานแต่ละกระบวนการ" ใต้ SUBTOTAL — แสดงสูตร ขั้นก่อน − ขั้นถัดไป = ยอดค้าง และเทียบกับสินค้าคงคลัง',
  'UIFIT-2026.09.14g · แก้หน้าจอล้น/บังเนื้อหา : แสดงเฉพาะรหัส build สั้น ๆ (รายละเอียดอยู่ใน tooltip) + กันข้อความยาวดันแถบบนและแถบเมนู',
  'RWBILL-2026.09.14f · รับชิ้นงาน : เพิ่มช่อง "จำนวน/บิล" ตามบิลผู้ผลิต ผูกไปวางบิลอัตโนมัติ',
  'RMBAR-2026.09.14e · สินค้าคงคลัง/วัตถุดิบ : ช่อง WIP ค้างผลิต-ค้างรับ แปลง กก. → "เส้น" อัตโนมัติ',
@@ -5683,7 +5684,98 @@ function ibMatTable(p,rows){
        return cell; }).join('')
    +'<td class="num" style="padding:6px 7px;border-top:2px solid var(--line);border-left:2px solid var(--line);background:#dff3e6;font-size:13.5px;color:'+(fin<0?'var(--red)':'#116b3a')+'">'+fmt(fin)+'</td>'
    +'<td style="border-top:2px solid var(--line)"></td></tr>'
-   +'</tbody></table></div>';
+   +'</tbody></table></div>'
+   /* ★ แถบกระบวนการ : คิดจากรายการทั้งหมด (ไม่ขึ้นกับตัวกรอง) เพื่อให้เทียบกับสินค้าคงคลังได้ตรง */
+   + ibFlowStrip(p,(function(){ var t={}; rows.forEach(function(r){ var c=r.cells||{};
+       for(var k in c){ var v=Number(c[k])||0; if(v)t[k]=(t[k]||0)+v; } }); return t; })());
+}
+/* ============================================================
+   🔄 แถบติดตามงานแต่ละกระบวนการ (ใต้ SUBTOTAL)
+   แสดงที่มาของยอดค้างแต่ละขั้น : ขั้นก่อน − ขั้นถัดไป = ยอดค้าง
+   พร้อมเทียบกับตัวเลขที่แสดงในหน้า "สินค้าคงคลัง" ถ้าไม่ตรงจะไฮไลต์ให้เห็น
+   ขั้นตอนปรับตามเงื่อนไขการไหลของรายการนั้น :
+     ชุบ-QC          : เบิกวัตถุดิบ → รับชิ้นงาน → ส่งชุบ → รับชุบ → คัดแยก → รับเข้าสต๊อค
+     ไม่ชุบ-QC       : เบิกวัตถุดิบ → รับชิ้นงาน → คัดแยก → รับเข้าสต๊อค (ไม่มีขั้นชุบ)
+     ไม่ชุบ (ทันที)  : เบิกวัตถุดิบ → รับชิ้นงาน → เข้าคงเหลือทันที
+   ============================================================ */
+function ibFlowSteps(p,sum){
+  sum=sum||{};
+  var N=function(k){ return Math.round((Number(sum[k])||0)*1000)/1000; };
+  var fl=''; try{ fl=prodFlow(p)||''; }catch(e){}
+  var dir=false; try{ dir=isDirectFlow(fl); }catch(e){}
+  var plate=/^ชุบ/.test(fl)&&!dir;                    /* การไหลนี้ต้องผ่านการชุบ */
+  var wd=N('wd'), rw=N('rw'), ps=N('ps'), pr=N('pr'), ok=N('ok'), ng=N('ng'), si=N('si');
+  var sorted=ok+ng;
+  var st=[];
+  /* WIP : เทียบกับคอลัมน์ "ค้างผลิต/ค้างรับ" ไม่ได้ เพราะคอลัมน์นั้นคิดจากใบสั่งผลิตที่ยังรับไม่ครบ (คนละฐาน)
+     จึงแสดงยอดของคอลัมน์นั้นกำกับไว้เฉย ๆ ไม่ตัดสินว่าตรง/ไม่ตรง */
+  st.push({k:'wip',lbl:'WIP',sub:'เบิกไปผลิตแล้วยังรับไม่ครบ',aL:'เบิกวัตถุดิบ',a:wd,bL:'รับชิ้นงาน',b:rw,noCmp:true,cmpLbl:'ค้างผลิตตาม PO'});
+  if(dir)return {dir:true,plate:false,flow:fl,steps:st};
+  if(plate){
+    st.push({k:'recv',lbl:'Q-TIME',sub:'รับชิ้นงานแล้วยังไม่ส่งชุบ',aL:'รับชิ้นงาน',a:rw,bL:'ส่งชุบ',b:ps});
+    st.push({k:'plate',lbl:'รอชุบ',sub:'ส่งชุบแล้วยังไม่รับกลับ',aL:'ส่งชุบ',a:ps,bL:'รับชุบ',b:pr});
+    st.push({k:'sort',lbl:'รอคัด',sub:'รับชุบแล้วยังคัดไม่เสร็จ',aL:'รับชุบ',a:pr,bL:'คัดแยก OK+NG',b:sorted});
+  }else{
+    /* ไม่ผ่านการชุบ : ของที่รับชิ้นงานเข้ามาคือของที่รอคัด — Q-TIME กับ รอคัด เป็นตัวเดียวกัน */
+    st.push({k:'sort',lbl:'Q-TIME / รอคัด',sub:'รับชิ้นงานแล้วยังคัดไม่เสร็จ',aL:'รับชิ้นงาน',a:rw,bL:'คัดแยก OK+NG',b:sorted});
+  }
+  st.push({k:'stk',lbl:'รอชั่ง',sub:'คัดผ่านแล้วยังไม่รับเข้าสต๊อค',aL:'คัดแยก OK',a:ok,bL:'รับเข้าสต๊อค',b:si});
+  return {dir:false,plate:plate,flow:fl,steps:st};
+}
+/* ยอดที่หน้า "สินค้าคงคลัง" แสดงอยู่จริง — ใช้เทียบให้ตรงกัน */
+function ibFlowInvOf(p,k){
+  try{
+    if(!p)return null;
+    var dir=false; try{ dir=isDirectFlow(prodFlow(p)); }catch(e){}
+    if(k==='wip'){ return wipBacklog(p,wipAgeMap()); }
+    if(k==='recv'){ var v=qtimePendOf(p,wipPendMap(),platePendMap()); return (v==null)?null:v; }
+    if(dir)return 0;
+    if(k==='plate'){ var pm=platePendMap(); return (Number(p.atPlating)||0)+(Number(pm[p.id])||0); }
+    if(k==='sort')  return Number(p.wip)||0;
+    if(k==='stk')   return Number(p.passedQC)||0;
+  }catch(e){}
+  return null;
+}
+function ibFlowStrip(p,sum){
+  try{
+    if(!p)return '';
+    if(isMatProd(p))return '';                        /* รับแมทลูกค้า ใช้กติกาของตัวเอง */
+    var F=ibFlowSteps(p,sum);
+    var nDiff=0;
+    var cells=F.steps.map(function(s){
+      var v=Math.round((s.a-s.b)*1000)/1000;
+      var inv=ibFlowInvOf(p,s.k);
+      var cmp=(inv!=null)&&!s.noCmp;
+      var same=!cmp||(Math.abs(inv-v)<0.001);
+      if(cmp&&!same)nDiff++;
+      var col=(v<0)?'var(--red)':(v>0?'#b45309':'#116b3a');
+      return '<div style="flex:1 1 172px;min-width:154px;border:1px solid '+(same?'var(--line)':'#f0b429')+';border-radius:9px;padding:7px 9px;background:'+(same?'#fff':'#fffaf0')+'">'
+        +'<div style="font-size:10.5px;color:var(--ink3);line-height:1.35">'+esc(s.aL)+' <b style="color:var(--ink2)">'+fmt(s.a)+'</b><br>− '+esc(s.bL)+' <b style="color:var(--ink2)">'+fmt(s.b)+'</b></div>'
+        +'<div style="border-top:1px dashed var(--line);margin:4px 0 3px"></div>'
+        +'<div style="display:flex;align-items:baseline;gap:6px"><span style="font-size:11.5px;font-weight:700;color:var(--ink2)">'+esc(s.lbl)+'</span>'
+          +'<b style="margin-left:auto;font-size:15px;color:'+col+'">'+fmt(v)+'</b></div>'
+        +'<div style="font-size:9.5px;color:var(--ink3);line-height:1.3">'+esc(s.sub)+'</div>'
+        +(inv==null?''
+          :(s.noCmp
+            ? '<div style="font-size:9.5px;margin-top:2px;color:var(--ink3)" title="คอลัมน์นี้ในสินค้าคงคลังคิดจากใบสั่งผลิตที่ยังรับไม่ครบ — คนละฐานกับสูตรด้านบน จึงไม่นำมาตัดสินว่าตรงหรือไม่ตรง">'+esc(s.cmpLbl||'สินค้าคงคลัง')+': <b>'+fmt(inv)+'</b></div>'
+            : '<div style="font-size:9.5px;margin-top:2px;color:'+(same?'var(--ink3)':'#b45309')+'" title="ยอดที่แสดงอยู่ในหน้าสินค้าคงคลัง">'+(same?'✓ ':'⚠️ ')+'สินค้าคงคลัง: <b>'+fmt(inv)+'</b>'+(same?'':' (ต่าง '+fmt(Math.round((v-inv)*1000)/1000)+')')+'</div>'))
+        +'</div>';
+    }).join('');
+    return '<div style="margin-top:10px;border:1.5px solid var(--line);border-radius:11px;padding:9px 11px;background:var(--panel2)">'
+      +'<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:7px">'
+      +'<b style="font-size:12.5px">🔄 ติดตามงานแต่ละกระบวนการ</b>'
+      +'<span class="tag gray" style="font-size:10px">'+esc(F.flow||'-')+'</span>'
+      +(F.dir?'<span class="tag green" style="font-size:10px">เข้าคงเหลือทันที — ไม่มีขั้นชุบ/คัดแยก/ชั่ง</span>'
+             :(F.plate?'':'<span class="tag cyan" style="font-size:10px">ไม่ผ่านการชุบ — ตัดขั้นส่งชุบ/รับชุบออก</span>'))
+      +(nDiff?'<span class="tag amber" style="font-size:10px;margin-left:auto">⚠️ ต่างจากสินค้าคงคลัง '+nDiff+' ช่อง</span>'
+             :'<span class="tag green" style="font-size:10px;margin-left:auto">✓ ตรงกับสินค้าคงคลัง</span>')
+      +'</div>'
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap">'+cells+'</div>'
+      +'<div class="muted" style="font-size:10.5px;margin-top:6px;line-height:1.55">'
+      +'ตัวเลขบน = ผลรวมคอลัมน์ในตารางนี้ · ตัวเลขใหญ่ = ยอดค้างตามสูตร · บรรทัดล่าง = ยอดที่หน้าสินค้าคงคลังแสดงอยู่<br>'
+      +'<b style="color:var(--red)">ติดลบ = ขั้นถัดไปทำเกินขั้นก่อนหน้า</b> ให้ตรวจเอกสารของขั้นนั้น · ถ้าต่างจากสินค้าคงคลัง สาเหตุที่พบบ่อยคือเอกสารเก่าถูกเก็บเข้าคลังไปแล้ว (ผลรวมในตารางจึงไม่ครบ) หรือหน้าสินค้าคงคลังตัดค่าติดลบเป็น 0'
+      +'</div></div>';
+  }catch(e){ return ''; }
 }
 function ibMatDraw(rebuildBar){
   var S=window.__ibMat; if(!S)return;
