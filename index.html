@@ -133,6 +133,16 @@ input::placeholder{color:#aab6cf}
 .tbl-wrap thead th{top:0;z-index:5}
 html{scrollbar-gutter:stable}
 .tbl-wrap thead th{position:sticky;top:0;z-index:3;background:#eef2f7;box-shadow:inset 0 -1px 0 #cbd5e1}.tbl-topscroll{overflow-x:scroll;overflow-y:hidden;height:13px;margin-bottom:2px}.tbl-topscroll::-webkit-scrollbar{height:11px}.tbl-topscroll::-webkit-scrollbar-thumb{background:#aeb6c6;border-radius:6px}.tbl-topscroll::-webkit-scrollbar-track{background:#eef0f5;border-radius:6px}.tbl-topscroll-inner{height:1px}
+/* ★ แถบเลื่อนแนวนอนของฟอร์ม (Invoice · รับชิ้นงาน · รับวัตถุดิบ · วางบิล ฯลฯ)
+   บางเครื่องตั้งค่าให้ "ซ่อนแถบเลื่อน" (overlay scrollbar) พนักงานจึงไม่รู้ว่าตารางเลื่อนซ้าย-ขวาได้
+   → บังคับให้เป็นแถบเลื่อนแบบเห็นชัดทุกเครื่อง */
+.xscroll{scrollbar-width:auto;scrollbar-color:#7f93b8 var(--panel2)}
+.xscroll::-webkit-scrollbar{height:13px;width:13px;-webkit-appearance:none}
+.xscroll::-webkit-scrollbar-track{background:#eef2f7;border-radius:8px}
+.xscroll::-webkit-scrollbar-thumb{background:#7f93b8;border-radius:8px;border:3px solid #eef2f7}
+.xscroll::-webkit-scrollbar-thumb:hover{background:#5d7096}
+.xscroll-on{overflow-x:scroll!important;padding-bottom:1px}
+.xscroll-hint{font-size:10.5px;color:#5d7096;background:#eef2f7;border:1px solid var(--line);border-radius:7px;padding:2px 8px;margin:0 0 4px;display:inline-flex;align-items:center;gap:5px;font-weight:600;user-select:none}
 table{width:100%;border-collapse:collapse;font-size:13px}
 th{text-align:left;padding:10px 12px;background:var(--panel2);color:var(--ink2);font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:.3px;border-bottom:1px solid var(--line);position:sticky;top:0;white-space:nowrap}
 td{padding:10px 12px;border-bottom:1px solid var(--line2);vertical-align:middle}
@@ -167,6 +177,26 @@ td.num,th.num{text-align:right;font-family:'Inter',sans-serif;font-variant-numer
 .modal.full{max-width:100vw;width:100vw;border-radius:0;min-height:100vh;height:100vh;display:flex;flex-direction:column;animation:none}
 .modal.full .modal-b{flex:1;max-height:none;overflow:auto}
 .modal.full .tbl-wrap{max-height:calc(100vh - 250px)!important;width:100%}
+/* ★ หน้าต่าง "รายการดำเนินการ" : ให้ตารางยืดเต็มความสูงที่เหลือพอดีจอ
+   เดิมล็อกความสูงตารางไว้ตายตัว (100vh − 250px) พอมีแถบสรุปกระบวนการ/คำอธิบายเพิ่มเข้ามา
+   ความสูงรวมเลยเกินจอ ต้องเลื่อนทั้งหน้าต่าง หัวตารางและปุ่มด้านล่างจึงหลุดหาย */
+.modal-b.ib-fitbody{display:flex;flex-direction:column;min-height:0;overflow:hidden;gap:0}
+.modal-b.ib-fitbody>*{flex:0 0 auto}
+.modal-b.ib-fitbody>.ib-head{max-height:24vh;overflow:auto}
+.modal-b.ib-fitbody>#ibMatBox{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+.modal-b.ib-fitbody>#ibMatBox>.tbl-wrap{flex:1 1 auto;min-height:110px;max-height:none!important}
+.modal-b.ib-fitbody>#ibMatBox>.ib-flowstrip{flex:0 0 auto;max-height:34vh;overflow:auto}
+.ib-flowstrip>summary::-webkit-details-marker{display:none}
+.ib-flowstrip>summary::before{content:'▾ ';color:var(--ink3);font-size:11px}
+.ib-flowstrip:not([open])>summary{margin-bottom:0!important}
+.ib-flowstrip:not([open])>summary::before{content:'▸ '}
+/* คำอธิบายท้ายตาราง : พับเก็บได้ คืนพื้นที่ให้ตาราง */
+.ib-note{border:1px solid var(--line);border-radius:9px;background:var(--panel2);margin-top:8px}
+.ib-note>summary{cursor:pointer;font-weight:600;font-size:12px;color:var(--ink2);padding:7px 11px;list-style:none;user-select:none}
+.ib-note>summary::-webkit-details-marker{display:none}
+.ib-note>summary::before{content:'▸ ';color:var(--ink3)}
+.ib-note[open]>summary::before{content:'▾ '}
+.ib-note>div{padding:0 11px 10px;font-size:11.5px;line-height:1.75;color:var(--ink2);max-height:34vh;overflow:auto}
 .modal.full .tbl-wrap table{width:100%;min-width:100%}
 .overlay:has(.modal.full){padding:0}
 /* ★ ฟอร์มบันทึกแบบฝังในหน้า (รับวัตถุดิบ/รับชิ้นงาน/ชุบ/คัดแยก/Invoice ฯลฯ) → เต็มหน้าจอ */
@@ -319,6 +349,7 @@ body.form-full-open{overflow:hidden}
         <a class="btn sm" href="RTK-TQM.html" style="background:#1B3A5C;color:#fff;text-decoration:none" title="เปิดระบบ RTK-TQM (QCDMS) — คุณภาพ/ข้อร้องเรียน">📊 RTK-TQM</a>
         <button class="btn sm ghost" onclick="mkPanel()" title="ส่งงานให้ผู้ผลิตภายนอก / รับผลงานกลับ (ช่องทางคลาวด์เล็ก)">🏭 ผู้ผลิตภายนอก</button><button class="btn sm ghost" onclick="stgDoctor()" title="ตรวจ/ลดขนาดข้อมูล กันพื้นที่เต็ม">🧰 ลดขนาดข้อมูล</button><button class="btn sm ghost" onclick="exportData()">⬇ สำรองข้อมูล</button>
         <button class="btn sm ghost" onclick="document.getElementById('importFile').click()">⬆ นำเข้า</button>
+        <button class="btn sm" style="background:#eff6ff;color:#1d4ed8" onclick="bkOpen()" title="สำรองข้อมูลอัตโนมัติ — ดูชุดสำรองย้อนหลัง / กู้คืน / ดาวน์โหลดเป็นไฟล์">💾 สำรองอัตโนมัติ</button>
         <button class="btn sm" style="background:#ecfdf5;color:#065f46" onclick="openRestoreMenu()" title="กู้คืนจากสำเนาสำรองอัตโนมัติในเครื่อง">🛟 กู้คืน</button>
         <button id="recoverBtn" class="btn sm" style="background:#fef3c7;color:#92400e;display:none" onclick="recoverFromBackup()" title="กู้รายการสินค้า+ยอดสต๊อก จากไฟล์สำรองใน GitHub">🔧 กู้คืนข้อมูล</button>
         <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(this)">
@@ -543,6 +574,14 @@ function mergeDB(base, mine, srv){
         if(Array.isArray(out.docs))out.docs=out.docs.filter(function(d){ return !(d&&T[d.id]); });
         if(Array.isArray(out.products))out.products=out.products.filter(function(p){ return !(p&&T[p.id]); });
       }
+      /* ★ ประวัติความเคลื่อนไหวที่ตั้งใจลบ (ล้างประวัติซ้ำ / เก็บเข้าคลัง) ต้องไม่ฟื้นกลับมา
+         เพราะจำนวนมักเกินเพดานกันข้อมูลหายของ mergeById ทำให้ถูกดึงกลับทุกรอบซิงก์ */
+      var MV={};
+      [base,mine,srv].forEach(function(o){ var t=o&&o.settings&&o.settings.__mvdel; if(t)Object.keys(t).forEach(function(k){ MV[k]=Math.max(MV[k]||0,Number(t[k])||0); }); });
+      if(Object.keys(MV).length){
+        out.settings=out.settings||{}; out.settings.__mvdel=MV;
+        if(Array.isArray(out.movements))out.movements=out.movements.filter(function(m){ return !(m&&MV[m.id]); });
+      }
       /* ★ เอกสาร/สินค้าที่เพิ่งกู้คืน (ภายใน 7 วัน) ต้องไม่หายจากการรวมข้อมูล
          เว้นแต่ผู้ใช้สั่งลบ "หลังจาก" กู้ (เวลาลบใหม่กว่าเวลากู้) */
       try{
@@ -677,9 +716,27 @@ const SEED={
 
 /* ---------- State ---------- */
 let DB=null;
-const APP_BUILD='FLOWTRK-2026.09.15a';
+const APP_BUILD='SRVBAK-2026.09.16e';
 /* บันทึกการแก้ไขล่าสุด (แสดงเมื่อเอาเมาส์ชี้ที่ build — ไม่เอาไปต่อท้าย APP_BUILD เพราะทำให้แถบบนล้นจอ) */
 const APP_NOTE=[
+ 'SRVBAK-2026.09.16e · สำรองบนเครื่องแม่ข่าย : เพิ่มไฟล์รายชั่วโมง (เดิมมีแค่รายวันและเขียนทับ) + ดู/กู้คืน/ดาวน์โหลดจากหน้า 💾 สำรองอัตโนมัติ ได้เลย (ต้องอัป server.js ด้วย)',
+ 'AUTOBAK-2026.09.16d · สำรองข้อมูลอัตโนมัติ 8 ชุดย้อนหลังใน IndexedDB (ทุก 4 ชม. · เปิด/ปิดโปรแกรม · ก่อนเก็บเข้าคลัง/ล้างประวัติซ้ำ/นำเข้า) + ปุ่ม 💾 สำรองอัตโนมัติ สำหรับดู/กู้/ดาวน์โหลด',
+ 'BFPOS-2026.09.16c · ตัดแถว "ยอดยกมา" ที่ติดลบออก (ยอดยกมาติดลบไม่ได้ = เป็นส่วนต่างที่ต้องตรวจ) · แถวที่เหลือมีที่มาอธิบายไว้ในทูลทิป',
+ 'NONEG-2026.09.16b · หน้าสินค้าคงคลัง : ยอดค้างที่ติดลบแสดงเป็น 0 (Q-TIME · รอชุบ · รอคัด · รอชั่ง) ค่าจริงยังดูได้ในแถบติดตามกระบวนการของบัญชีคุม',
+ 'SHARESTK-2026.09.16a · รายการที่ใช้สต๊อคร่วม : บัญชีคุมเทียบยอดกับสต๊อคหลัก ไม่ขึ้น "ต่างจากสต๊อก" ผิด ๆ และปุ่มอัปเดตยอดเขียนลงสต๊อคหลัก กันนับสต๊อกซ้ำ',
+ 'BUYFLOW-2026.09.15n · ของที่ซื้อมา-ขายไป (วัตถุดิบ/วัสดุสิ้นเปลือง) แถบกระบวนการใช้หัวข้อ สั่งซื้อวัตถุดิบ → รับวัตถุดิบ → คัดแยก → รับเข้าสต๊อค แทนขั้นตอนผลิต',
+ 'IPLINK-2026.09.15m · ใบสั่งซื้อต่างประเทศ (IP) เก็บรหัสสินค้าไว้ที่ช่อง code ระบบเดิมหาไม่เจอ จึงไม่ขึ้นในบัญชีคุมและยอดค้างรับ — แก้ให้จับคู่ทุกฟิลด์ที่เก็บรหัสได้',
+ 'FLTSTRIP-2026.09.15l · แถบติดตามงานแต่ละกระบวนการ อัปเดตตามตัวกรอง (เลขที่ใบสั่งซื้อ/ผลิต · ประเภท · ผู้ผลิต · ผู้ทำรายการ) ดูยอดค้างราย PO ได้',
+ 'PENDSYNC-2026.09.15k · Q-TIME · รอชุบ · รอคัด · รอชั่ง ในสินค้าคงคลัง คิดจากเอกสารชุดเดียวกับบัญชีคุม ตัวเลขสองหน้าตรงกันเสมอ (เดิมอ่านจากถังสต๊อกที่เพี้ยนไปตามกาลเวลา)',
+ 'WAITWGH-2026.09.15j · ช่อง "รอชั่ง" ในสินค้าคงคลัง คิดจากเอกสาร (คัดแยก OK − รับเข้าสต๊อค) ให้ตรงกับบัญชีคุม — เดิมอ่านจากถัง passedQC ซึ่งใบคัดแยกแบบหลายบรรทัดไม่ลงยอด จึงขึ้น 0 ตลอด',
+ 'PLPLAN-2026.09.15i · แยก "แผนจัดส่ง" ออกจาก "ใบส่งชุบ" — แผนจัดส่ง 388 ใบไม่โผล่ในบัญชีคุมและไม่บวกเข้ายอดรอชุบอีก',
+ 'IBFIT-2026.09.15h · หน้าต่างรายการดำเนินการ : ตารางยืดเต็มความสูงจอพอดี เลื่อนในตารางอย่างเดียว หัวตาราง/SUBTOTAL/แถบกระบวนการ/ปุ่มล่างไม่หลุดจอ · คำอธิบายท้ายตารางพับเก็บได้',
+ 'WDPCS-2026.09.15g · บัญชีคุมงานสำเร็จรูป : ช่อง "เบิกวัตถุดิบ" แปลงจากน้ำหนัก/เส้น เป็นจำนวนชิ้นงาน เทียบกับรับชิ้นงานได้ตรงหน่วย (บัญชีคุมของวัตถุดิบเองยังเป็นหน่วยเดิม)',
+ 'QTYINT-2026.09.15f · จำนวนชิ้นแสดงเป็นจำนวนเต็ม ไม่มีเศษทศนิยม (FG คงเหลือ · WIP · Q-TIME · รอชุบ · รอคัด · รอชั่ง · บัญชีคุม) — วัตถุดิบหน่วย กก. ยังแสดงทศนิยมตามเดิม',
+ 'MVTOMB-2026.09.15e · แก้ "ล้างประวัติซ้ำ" แล้วจำนวนเดิมกลับมาอีกทุกครั้ง — จดรหัสที่ลบไว้ในตั้งค่า (ซิงก์ทุกเครื่อง) กันระบบซิงก์ดึงกลับ',
+ 'RCLABEL-2026.09.15d · หน้ากู้เอกสารที่หาย : แก้ชื่อ PL จาก "แผนจัดส่ง" เป็น "ส่งชุบ / รับชุบ" + ใส่ชื่อไทยให้ TAX/TAXO/WHT/RMC/QSE/SSE ที่เดิมขึ้นเป็นรหัสเปล่า',
+ 'DISPDOC-2026.09.15c · คลิกที่รหัส build → ตรวจการแสดงผลของเครื่องนี้ (แถบเลื่อนแบบลอย/ตรึง · ซูม · จอสัมผัส) ใช้ไล่หาเครื่องที่มองไม่เห็นแถบเลื่อน',
+ 'XSCROLL-2026.09.15b · แถบเลื่อนแนวนอนของทุกฟอร์ม (Invoice · รับชิ้นงาน · รับวัตถุดิบ · วางบิล ฯลฯ) แสดงชัดทุกเครื่อง + แถบเลื่อนด้านบน + ป้ายบอกใบ้เมื่อมีคอลัมน์ล้น',
  'FLOWTRK-2026.09.15a · บัญชีคุม : เพิ่มแถบ "ติดตามงานแต่ละกระบวนการ" ใต้ SUBTOTAL — แสดงสูตร ขั้นก่อน − ขั้นถัดไป = ยอดค้าง และเทียบกับสินค้าคงคลัง',
  'UIFIT-2026.09.14g · แก้หน้าจอล้น/บังเนื้อหา : แสดงเฉพาะรหัส build สั้น ๆ (รายละเอียดอยู่ใน tooltip) + กันข้อความยาวดันแถบบนและแถบเมนู',
  'RWBILL-2026.09.14f · รับชิ้นงาน : เพิ่มช่อง "จำนวน/บิล" ตามบิลผู้ผลิต ผูกไปวางบิลอัตโนมัติ',
@@ -694,11 +751,64 @@ try{ setTimeout(function(){ try{ qrLibFetch(); }catch(e){} },4000); }catch(e){}
    (เดิมเอาคำอธิบายยาวมาแสดงตรง ๆ ทำให้แถบบนกว้างเกินจอและบังเนื้อหา) */
 function buildShort(){ try{ return String(APP_BUILD||'').split(/\s*[(·]/)[0].trim()||'-'; }catch(e){ return '-'; } }
 function buildFull(){ try{ return String(APP_BUILD||'')+(typeof APP_NOTE!=='undefined'&&APP_NOTE?('\n\n'+APP_NOTE):''); }catch(e){ return String(APP_BUILD||''); } }
+/* ============================================================
+   🖥️ ตรวจการแสดงผลของ "เครื่องนี้"
+   ใช้ไล่หาว่าทำไมบางเครื่องมองไม่เห็นแถบเลื่อนด้านข้าง
+   (คลิกที่รหัส build มุมขวาบน หรือที่ build ในเมนูซ้าย)
+   ============================================================ */
+function dispScrollW(){
+  try{
+    var d=document.createElement('div');
+    d.style.cssText='position:absolute;top:-9999px;left:-9999px;width:100px;height:100px;overflow:scroll';
+    document.body.appendChild(d);
+    var w=d.offsetWidth-d.clientWidth;
+    document.body.removeChild(d);
+    return w;
+  }catch(e){ return -1; }
+}
+function dispDoctor(){
+  var sw=dispScrollW();
+  var overlay=(sw===0);
+  var dpr=Math.round((window.devicePixelRatio||1)*100);
+  var touch=Number(navigator.maxTouchPoints||0);
+  var ua=String(navigator.userAgent||'');
+  var br=/Edg\//.test(ua)?'Microsoft Edge':(/Chrome\//.test(ua)?'Google Chrome':(/Firefox\//.test(ua)?'Firefox':'อื่น ๆ'));
+  var ver=(ua.match(/(?:Edg|Chrome|Firefox)\/([\d.]+)/)||[])[1]||'-';
+  var over=0; try{ document.querySelectorAll('.tbl-wrap,.xscroll,[style*="overflow-x:auto"]').forEach(function(el){ if((el.scrollWidth-el.clientWidth)>4)over++; }); }catch(e){}
+  var row=function(k,v,warn,tip){
+    return '<div class="kv"'+(tip?(' title="'+esc(tip)+'"'):'')+'><span class="k">'+esc(k)+'</span><b'+(warn?' style="color:#b45309"':'')+'>'+v+'</b></div>'; };
+  var body=''
+   +'<div class="hint" style="margin-bottom:10px"><span class="i">🖥️</span><div>ข้อมูลนี้เป็นของ <b>เครื่องที่กำลังเปิดอยู่</b> เท่านั้น · เปิดหน้านี้ที่เครื่องที่มีปัญหาแล้วอ่านบรรทัดแรกได้เลย</div></div>'
+   + row('แถบเลื่อนของเครื่องนี้',
+        overlay?'⚠️ แบบลอย / ซ่อนอัตโนมัติ (0 px)':('✅ แบบตรึงไว้ ('+sw+' px)'),
+        overlay,'0 px = Windows หรือ Chrome ตั้งให้ซ่อนแถบเลื่อน จะมองไม่เห็นว่าตารางเลื่อนได้')
+   + row('ความละเอียดจอ',(screen.width||0)+' × '+(screen.height||0))
+   + row('ขนาดหน้าต่างที่ใช้จริง',(window.innerWidth||0)+' × '+(window.innerHeight||0))
+   + row('Scale × ซูมเบราว์เซอร์',dpr+'%',(dpr!==100),'ถ้าไม่ใช่ 100% ให้กด Ctrl+0 รีเซ็ตซูม แล้วดูค่า Scale ใน Windows Settings → System → Display')
+   + row('อุปกรณ์สัมผัส',touch?('⚠️ ใช่ ('+touch+' จุด)'):'ไม่ใช่',!!touch,'จอสัมผัส/ทัชแพดแบบ Precision ทำให้ Chrome เปลี่ยนไปใช้แถบเลื่อนแบบลอยอัตโนมัติ')
+   + row('เบราว์เซอร์',esc(br)+' '+esc(ver))
+   + row('ตารางที่ล้นกรอบอยู่ตอนนี้',fmt(over)+' กล่อง')
+   + '<div style="margin-top:12px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel2)">'
+   + '<b style="font-size:12.5px">'+(overlay?'⚠️ เครื่องนี้ตั้งให้ซ่อนแถบเลื่อน':'✅ เครื่องนี้ตั้งค่าปกติ')+'</b>'
+   + '<div style="font-size:11.5px;line-height:1.75;margin-top:5px;color:var(--ink2)">'
+   + (overlay
+      ? 'โปรแกรมบังคับให้แถบเลื่อนแสดงอยู่แล้ว จึงยังใช้งานได้ตามปกติ · ถ้าอยากให้ทุกโปรแกรมในเครื่องเห็นแถบเลื่อนเหมือนกัน ให้แก้ที่<br>'
+        +'<b>1)</b> Windows Settings → Accessibility → Visual effects → เปิด <b>Always show scrollbars</b><br>'
+        +'<b>2)</b> Chrome พิมพ์ <b>chrome://flags/#overlay-scrollbars</b> → ตั้งเป็น <b>Disabled</b> → Relaunch'
+      : 'ถ้ายังมองไม่เห็นแถบเลื่อน ให้กด <b>Ctrl+0</b> รีเซ็ตซูม แล้วลองใหม่ · โปรแกรมมีแถบเลื่อนด้านบนและป้าย “⟷ เลื่อนซ้าย–ขวา” กำกับไว้ให้ด้วยแล้ว')
+   + '</div></div>';
+  modal({title:'🖥️ ตรวจการแสดงผลของเครื่องนี้',size:'',body:body,
+    footer:'<button class="btn" onclick="setupDualScroll();toast(\'ตรวจแถบเลื่อนใหม่แล้ว\',\'ok\')" title="สั่งให้ระบบตรวจและใส่แถบเลื่อนให้ทุกตารางอีกครั้ง">🔄 ตรวจแถบเลื่อนใหม่</button>'
+      +'<button class="btn pri" onclick="closeModal()">ปิด</button>'});
+}
 function setBuild(){
   var s=buildShort(), f=buildFull();
-  const a=document.getElementById('buildSidebar');if(a){a.textContent='· build '+s;a.title=f;}
-  const b=document.getElementById('buildTag');if(b){b.textContent='build '+s;b.title=f;}
-  const c=document.getElementById('buildSidebarM');if(c){c.textContent=s;c.title=f;}
+  var tip=f+'\n\n(คลิกเพื่อตรวจการแสดงผลของเครื่องนี้)';
+  var hook=function(e){ if(!e)return; e.title=tip; e.style.cursor='pointer';
+    if(!e.__dispHook){ e.__dispHook=1; e.addEventListener('click',function(){ try{ dispDoctor(); }catch(_e){} }); } };
+  const a=document.getElementById('buildSidebar');if(a){a.textContent='· build '+s;hook(a);}
+  const b=document.getElementById('buildTag');if(b){b.textContent='build '+s;hook(b);}
+  const c=document.getElementById('buildSidebarM');if(c){c.textContent=s;hook(c);}
   try{applyRecoverBtn();}catch(e){}
 }
 let _undoStack=[],_redoStack=[],_lastSnap=null,_histLock=false;
@@ -722,6 +832,190 @@ function idbGet(k){ return new Promise(function(res){
     var tx=db.transaction('kv','readonly'); var r=tx.objectStore('kv').get(k);
     r.onsuccess=function(){ res(r.result||null); }; r.onerror=function(){ res(null); };
   }catch(e){ res(null); } })(); }); }
+function idbDel(k){ return new Promise(function(res){
+  (async function(){ try{ var db=_idb||(_idb=await idbOpen()); if(!db)return res(false);
+    var tx=db.transaction('kv','readwrite'); tx.objectStore('kv').delete(k);
+    tx.oncomplete=function(){ res(true); }; tx.onerror=function(){ res(false); };
+  }catch(e){ res(false); } })(); }); }
+/* ============================================================
+   💾 สำรองข้อมูลอัตโนมัติ (หลายชุด · เก็บใน IndexedDB)
+   ของเดิมเก็บสำเนาเดียวใน localStorage ซึ่งมีโควตาแค่ ~5 MB
+   ข้อมูลจริง 4+ MB จึงเก็บไม่ลง และถูกล้างทิ้งทุกครั้งที่พื้นที่ตึง
+   ชุดนี้เก็บลง IndexedDB (โควตาใหญ่กว่ามาก) เก็บย้อนหลังหลายชุด และหมุนลบของเก่าเอง
+   ============================================================ */
+var BK_KEEP=8;                     /* เก็บกี่ชุด (ชุดละ ~4.5 MB → ~36 MB) */
+var BK_EVERY=4*3600*1000;          /* สำรองอัตโนมัติทุก ๆ กี่ชั่วโมง */
+function bkIdx(){ try{ return JSON.parse(localStorage.getItem('rtk_bkidx')||'[]')||[]; }catch(e){ return []; } }
+function bkIdxSet(a){ try{ localStorage.setItem('rtk_bkidx',JSON.stringify(a||[])); }catch(e){} }
+function bkOn(){ try{ return localStorage.getItem('rtk_bkoff')!=='1'; }catch(e){ return true; } }
+function bkToggle(){ try{ localStorage.setItem('rtk_bkoff',bkOn()?'1':'0'); }catch(e){}
+  toast(bkOn()?'เปิดสำรองอัตโนมัติแล้ว':'ปิดสำรองอัตโนมัติ (เครื่องนี้)','ok'); try{ bkOpen(); }catch(e){} }
+async function bkSave(reason,force){
+  try{
+    if(!force&&!bkOn())return null;
+    var n=_docCount(DB); if(n<=0)return null;                 /* ชุดว่าง ไม่สำรอง */
+    var idx=bkIdx(), last=idx.length?idx[idx.length-1]:null;
+    if(!force&&last&&(Date.now()-(last.t||0))<BK_EVERY)return null;
+    var js=JSON.stringify(DB);
+    var rec={id:'rtk_bk_'+Date.now(),t:Date.now(),n:n,reason:String(reason||'อัตโนมัติ'),
+      kb:Math.round(js.length/1024),p:((DB.products||[]).length),m:((DB.movements||[]).length)};
+    /* ชุดที่เล็กผิดปกติ = อาจเป็นข้อมูลที่ยังโหลดไม่ครบ → ติดธงไว้ ไม่ให้เผลอกู้ */
+    if(last&&last.n>100&&n<last.n*0.7)rec.suspect=1;
+    var ok=await idbSet(rec.id,js);
+    if(!ok){
+      /* พื้นที่ไม่พอ → ทิ้งชุดเก่าสุดแล้วลองใหม่ (สูงสุด 3 รอบ) กันสำรองล้มเหลวเงียบ ๆ */
+      for(var _i=0;_i<3&&!ok&&idx.length;_i++){
+        var _o=idx.shift(); try{ await idbDel(_o.id); }catch(e){}
+        bkIdxSet(idx);
+        ok=await idbSet(rec.id,js);
+      }
+      if(!ok){ try{ toast('⚠️ สำรองข้อมูลอัตโนมัติไม่สำเร็จ — พื้นที่ในเครื่องเต็ม กด 💾 สำรองอัตโนมัติ → ⬇ ไฟล์ เก็บไว้เอง','err'); }catch(e){} return null; }
+    }
+    idx.push(rec);
+    while(idx.length>BK_KEEP){ var old=idx.shift(); try{ await idbDel(old.id); }catch(e){} }
+    bkIdxSet(idx);
+    return rec;
+  }catch(e){ return null; }
+}
+/* เรียกตอนเปิดโปรแกรม + ตั้งเวลาไว้ */
+function bkBoot(){
+  try{
+    if(window.__bkBooted)return; window.__bkBooted=1;
+    setTimeout(function(){ bkSave('เปิดโปรแกรม'); },20000);          /* รอข้อมูลซิงก์เสร็จก่อน */
+    setInterval(function(){ bkSave('ตามเวลา'); },BK_EVERY);
+    window.addEventListener('beforeunload',function(){ try{ bkSave('ปิดโปรแกรม'); }catch(e){} });
+  }catch(e){}
+}
+function bkAgeTxt(t){
+  var s=Math.max(0,Math.floor((Date.now()-t)/1000));
+  if(s<60)return 'เมื่อสักครู่';
+  if(s<3600)return Math.floor(s/60)+' นาทีที่แล้ว';
+  if(s<86400)return Math.floor(s/3600)+' ชั่วโมงที่แล้ว';
+  return Math.floor(s/86400)+' วันที่แล้ว';
+}
+/* ---------- ชุดสำรองบน "เครื่องแม่ข่าย" (LAN) ---------- */
+async function bkSrvList(){
+  try{
+    if(!lanMode||!lanBase)return null;
+    var r=await fetchTO(lanBase+'/api/backups',{cache:'no-store'},8000);
+    if(r.status===404)return 'old';                       /* server.js ยังเป็นรุ่นเก่า */
+    if(!r.ok)return null;
+    var j=await r.json(); return (j&&j.files)||[];
+  }catch(e){ return null; }
+}
+async function bkSrvDownload(name){
+  try{
+    var r=await fetchTO(lanBase+'/api/backups?name='+encodeURIComponent(name),{cache:'no-store'},20000);
+    if(!r.ok){ toast('โหลดไฟล์สำรองจากเครื่องแม่ข่ายไม่ได้','err'); return; }
+    var txt=await r.text();
+    downloadFile(txt,'RTK_'+name,'application/json'); toast('ดาวน์โหลดจากเครื่องแม่ข่ายแล้ว','ok');
+  }catch(e){ toast('โหลดไม่สำเร็จ','err'); }
+}
+function bkSrvRestore(name){
+  confirmBox('กู้คืนจากไฟล์สำรองบนเครื่องแม่ข่าย?',
+    'ไฟล์ <b>'+esc(name)+'</b><br><br>ข้อมูลปัจจุบัน (<b>'+fmt(_docCount(DB))+'</b> เอกสาร) จะถูกแทนที่ทั้งชุด<br>ระบบจะสำรองชุดปัจจุบันไว้ให้ก่อนอัตโนมัติ',
+    function(){ (async function(){
+      try{
+        await bkSave('ก่อนกู้จากเครื่องแม่ข่าย',true);
+        var r=await fetchTO(lanBase+'/api/backups?name='+encodeURIComponent(name),{cache:'no-store'},30000);
+        if(!r.ok){ toast('โหลดไฟล์ไม่สำเร็จ','err'); return; }
+        var j=await r.json();
+        var d=(j&&j.data)?j.data:j;                        /* ไฟล์เก็บเป็น {data,updated_at} */
+        if(!d||!d.docs){ toast('ไฟล์สำรองไม่ถูกต้อง','err'); return; }
+        DB=d; window.__shrinkOK=1;
+        try{ tombRebase(); }catch(e){}
+        saveDB(); try{ render(); }catch(e){}
+        closeModal();
+        toast('↩ กู้คืนจากเครื่องแม่ข่ายแล้ว '+fmt(_docCount(DB))+' เอกสาร','ok');
+        try{ if(typeof lanPush==='function')lanPush(true); }catch(e){}
+      }catch(e){ toast('กู้คืนไม่สำเร็จ: '+(e&&e.message||e),'err'); }
+    })(); });
+}
+function bkOpen(){
+  var idx=bkIdx().slice().reverse();
+  var body=''
+   +'<div class="hint" style="margin-bottom:9px"><span class="i">💾</span><div>ระบบสำรองข้อมูลให้อัตโนมัติ <b>ทุก '+(BK_EVERY/3600000)+' ชั่วโมง</b> · ตอนเปิด/ปิดโปรแกรม · และก่อนทำรายการที่เสี่ยง (เก็บเอกสารเข้าคลัง · ล้างประวัติซ้ำ · นำเข้าไฟล์)<br>'
+     +'เก็บไว้ <b>'+BK_KEEP+' ชุดล่าสุด</b> ในเครื่องนี้ (IndexedDB) ชุดเก่าสุดจะถูกลบเองอัตโนมัติ</div></div>'
+   +'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:9px">'
+   +'<button class="btn sm pri" onclick="bkNow()">💾 สำรองเดี๋ยวนี้</button>'
+   +'<button class="btn sm'+(bkOn()?' ':'')+'" onclick="bkToggle()">'+(bkOn()?'🟢 สำรองอัตโนมัติ: เปิด':'⏸️ สำรองอัตโนมัติ: ปิด')+'</button>'
+   +'<span class="muted" style="font-size:11.5px;margin-left:auto">มี '+idx.length+' ชุด</span></div>'
+   +(idx.length?('<div class="tbl-wrap" style="max-height:52vh;overflow:auto"><table style="width:100%;border-collapse:collapse;font-size:12.5px">'
+     +'<thead><tr style="background:var(--panel2)"><th style="padding:6px 8px;text-align:left">เวลา</th><th style="padding:6px 8px;text-align:left">สาเหตุ</th>'
+     +'<th style="padding:6px 8px;text-align:right">เอกสาร</th><th style="padding:6px 8px;text-align:right">สินค้า</th>'
+     +'<th style="padding:6px 8px;text-align:right">ขนาด</th><th style="padding:6px 8px"></th></tr></thead><tbody>'
+     +idx.map(function(r){ return '<tr'+(r.suspect?' style="background:#fff7ed"':'')+'>'
+       +'<td style="padding:5px 8px;border-top:1px solid var(--line)"><b>'+esc(new Date(r.t).toLocaleString('th-TH'))+'</b><div class="muted" style="font-size:10.5px">'+esc(bkAgeTxt(r.t))+'</div></td>'
+       +'<td style="padding:5px 8px;border-top:1px solid var(--line)">'+esc(r.reason||'-')+(r.suspect?' <span class="tag amber" style="font-size:9px" title="ชุดนี้มีเอกสารน้อยกว่าชุดก่อนหน้ามาก อาจเป็นตอนข้อมูลยังโหลดไม่ครบ">⚠️ น้อยผิดปกติ</span>':'')+'</td>'
+       +'<td class="num" style="padding:5px 8px;border-top:1px solid var(--line)">'+fmt(r.n||0)+'</td>'
+       +'<td class="num" style="padding:5px 8px;border-top:1px solid var(--line)">'+fmt(r.p||0)+'</td>'
+       +'<td class="num muted" style="padding:5px 8px;border-top:1px solid var(--line)">'+fmt(r.kb||0)+' KB</td>'
+       +'<td style="padding:4px 8px;border-top:1px solid var(--line);text-align:right;white-space:nowrap">'
+         +'<button class="btn sm" onclick="bkDownload(\''+r.id+'\')" title="ดาวน์โหลดชุดนี้เป็นไฟล์เก็บไว้ที่อื่น">⬇ ไฟล์</button> '
+         +'<button class="btn sm danger" onclick="bkRestore(\''+r.id+'\')" title="นำชุดนี้กลับมาใช้แทนข้อมูลปัจจุบัน">↩ กู้คืน</button></td>'
+       +'</tr>'; }).join('')
+     +'</tbody></table></div>')
+     :'<div class="empty" style="padding:24px"><div class="big">💾</div><div class="t">ยังไม่มีชุดสำรอง</div><div>กด "💾 สำรองเดี๋ยวนี้" เพื่อสร้างชุดแรก</div></div>')
+   +'<div id="bkSrvBox" style="margin-top:12px"><div class="muted" style="font-size:12px">⏳ กำลังตรวจชุดสำรองบนเครื่องแม่ข่าย…</div></div>'
+   +'<div class="hint" style="margin-top:9px;border-color:#f59e0b"><span class="i">⚠️</span><div>ชุดในเครื่องนี้จะหายถ้าเครื่องเสียหรือล้างข้อมูลเบราว์เซอร์ · ชุดบนเครื่องแม่ข่ายปลอดภัยกว่า<br>ที่ปลอดภัยที่สุดคือกด <b>⬇ ไฟล์</b> เก็บลงไดรฟ์/USB อย่างน้อยสัปดาห์ละครั้ง</div></div>';
+  modal({title:'💾 สำรองข้อมูลอัตโนมัติ',size:'lg',body:body,footer:'<button class="btn pri" onclick="closeModal()">ปิด</button>'});
+  setTimeout(bkSrvDraw,30);
+}
+async function bkSrvDraw(){
+  var el=document.getElementById('bkSrvBox'); if(!el)return;
+  var ls=await bkSrvList();
+  if(ls==='old'){ el.innerHTML='<div class="hint" style="border-color:#f59e0b"><span class="i">🖥️</span><div><b>เครื่องแม่ข่ายสำรองข้อมูลให้อยู่แล้ว</b> (โฟลเดอร์ <b>backups\\</b> ของ RTK-stock) แต่ <b>server.js ยังเป็นรุ่นเก่า</b> จึงเรียกดูจากหน้านี้ไม่ได้<br>วางไฟล์ <b>server.js</b> ตัวใหม่ทับ แล้วปิด-เปิดหน้าต่างเซิร์ฟเวอร์ใหม่ จะเห็นรายการที่นี่</div></div>'; return; }
+  if(!ls){ el.innerHTML='<div class="hint"><span class="i">🖥️</span><div>ดูชุดสำรองบนเครื่องแม่ข่ายได้เฉพาะตอนเข้าผ่าน LAN (http://192.168.x.x:8080)</div></div>'; return; }
+  if(!ls.length){ el.innerHTML='<div class="hint"><span class="i">🖥️</span><div>ยังไม่มีไฟล์สำรองบนเครื่องแม่ข่าย</div></div>'; return; }
+  el.innerHTML='<div style="display:flex;gap:8px;align-items:center;margin-bottom:6px"><b style="font-size:12.5px">🖥️ ชุดสำรองบนเครื่องแม่ข่าย</b>'
+    +'<span class="tag green" style="font-size:10px">ปลอดภัยกว่า — อยู่คนละเครื่อง</span>'
+    +'<span class="muted" style="font-size:11.5px;margin-left:auto">'+ls.length+' ไฟล์</span></div>'
+    +'<div class="tbl-wrap" style="max-height:34vh;overflow:auto"><table style="width:100%;border-collapse:collapse;font-size:12.5px">'
+    +'<thead><tr style="background:var(--panel2)"><th style="padding:6px 8px;text-align:left">ไฟล์</th><th style="padding:6px 8px;text-align:left">เวลา</th><th style="padding:6px 8px;text-align:right">ขนาด</th><th></th></tr></thead><tbody>'
+    +ls.map(function(f){ return '<tr>'
+      +'<td style="padding:5px 8px;border-top:1px solid var(--line)">'+esc(f.name)+(f.hourly?' <span class="tag gray" style="font-size:9px">รายชั่วโมง</span>':' <span class="tag cyan" style="font-size:9px">รายวัน</span>')+'</td>'
+      +'<td class="muted" style="padding:5px 8px;border-top:1px solid var(--line)">'+esc(new Date(f.mtime).toLocaleString('th-TH'))+'</td>'
+      +'<td class="num muted" style="padding:5px 8px;border-top:1px solid var(--line)">'+fmt(Math.round((f.size||0)/1024))+' KB</td>'
+      +'<td style="padding:4px 8px;border-top:1px solid var(--line);text-align:right;white-space:nowrap">'
+        +'<button class="btn sm" onclick="bkSrvDownload(\''+esc(f.name)+'\')">⬇ ไฟล์</button> '
+        +'<button class="btn sm danger" onclick="bkSrvRestore(\''+esc(f.name)+'\')">↩ กู้คืน</button></td></tr>'; }).join('')
+    +'</tbody></table></div>';
+}
+async function bkNow(){ var r=await bkSave('กดเอง',true);
+  if(r)toast('สำรองแล้ว '+fmt(r.n)+' เอกสาร ('+fmt(r.kb)+' KB)','ok'); else toast('สำรองไม่สำเร็จ — พื้นที่ในเครื่องอาจเต็ม','err');
+  try{ bkOpen(); }catch(e){} }
+async function bkDownload(id){
+  try{ var js=await idbGet(id); if(!js){ toast('ไม่พบชุดสำรองนี้','err'); return; }
+    var r=bkIdx().find(function(x){return x.id===id;})||{};
+    var dt=new Date(r.t||Date.now()); var pad=function(v){return (v<10?'0':'')+v;};
+    downloadFile(js,'RTK_backup_'+dt.getFullYear()+pad(dt.getMonth()+1)+pad(dt.getDate())+'_'+pad(dt.getHours())+pad(dt.getMinutes())+'.json','application/json');
+    toast('ดาวน์โหลดชุดสำรองแล้ว','ok');
+  }catch(e){ toast('ดาวน์โหลดไม่สำเร็จ','err'); }
+}
+function bkRestore(id){
+  var r=bkIdx().find(function(x){return x.id===id;})||{};
+  confirmBox('กู้คืนข้อมูลจากชุดสำรองนี้?',
+    'เวลา <b>'+esc(new Date(r.t||0).toLocaleString('th-TH'))+'</b> · <b>'+fmt(r.n||0)+'</b> เอกสาร · <b>'+fmt(r.p||0)+'</b> สินค้า'
+    +'<br><br>ข้อมูลปัจจุบัน (<b>'+fmt(_docCount(DB))+'</b> เอกสาร) จะถูกแทนที่ทั้งชุด'
+    +'<br>ระบบจะสำรองชุดปัจจุบันไว้ให้ก่อนอัตโนมัติ'
+    +(r.suspect?'<br><br><b style="color:#b45309">⚠️ ชุดนี้มีเอกสารน้อยผิดปกติ</b> — ตรวจให้แน่ใจก่อนกู้':''),
+    function(){
+      (async function(){
+        try{
+          await bkSave('ก่อนกู้คืน',true);
+          var js=await idbGet(id); if(!js){ toast('ไม่พบชุดสำรองนี้','err'); return; }
+          var o=JSON.parse(js); if(!o||!o.docs){ toast('ชุดสำรองเสียหาย','err'); return; }
+          DB=o; window.__shrinkOK=1;
+          try{ tombRebase(); }catch(e){}
+          saveDB(); try{ render(); }catch(e){}
+          closeModal();
+          toast('↩ กู้คืนข้อมูลแล้ว '+fmt(_docCount(DB))+' เอกสาร · กำลังบันทึกขึ้นเครื่องแม่ข่าย…','ok');
+          try{ if(typeof lanPush==='function')lanPush(true); }catch(e){}
+          setTimeout(function(){ try{ window.__shrinkOK=1; if(typeof lanPush==='function')lanPush(true); }catch(e){} },1500);
+        }catch(e){ toast('กู้คืนไม่สำเร็จ: '+(e&&e.message||e),'err'); }
+      })();
+    });
+}
 /* ===== เครื่องมือลดขนาดข้อมูล (Storage Doctor) ===== */
 function stgSize(o){ try{ return JSON.stringify(o).length; }catch(e){ return 0; } }
 function stgScan(){
@@ -796,15 +1090,44 @@ function mvDupOpen(){
    +'<div class="kv"><span class="k">สินค้าที่เกี่ยวข้อง</span><b>'+fmt(r.prods)+' รายการ</b></div>'
    +'<div class="kv"><span class="k">ประหยัดพื้นที่</span><b>'+stgMB(r.bytes)+'</b></div>'
    +'<div class="hint" style="margin-top:10px;border-color:#2f9e44"><span class="i">✅</span><div>ผลที่ได้ : คอลัมน์ <b>รวมรับ · รวมจ่าย · ปรับยอด · NG</b> ในสินค้าคงคลังกลับมาตรงกับความเป็นจริง</div></div>'
-   +'<div class="hint" style="margin-top:8px;border-color:#f59e0b"><span class="i">⚠️</span><div>แนะนำกด <b>↓ สำรองข้อมูล</b> ก่อน</div></div>',
+   +'<div class="hint" style="margin-top:8px;border-color:#f59e0b"><span class="i">⚠️</span><div>แนะนำกด <b>↓ สำรองข้อมูล</b> ก่อน</div></div>'
+   +'<div class="hint" style="margin-top:8px"><span class="i">🪦</span><div>ระบบจะ<b>จดรหัสที่ลบไว้</b> แล้วส่งให้ทุกเครื่อง — รายการที่ล้างแล้วจะไม่ถูกดึงกลับมาอีกตอนซิงก์<br>'
+     +'<span class="muted" style="font-size:11px">(เดิมลบทีละมาก ๆ จะชนเพดานกันข้อมูลหายของระบบซิงก์ แล้วถูกดึงกลับทุกรอบ จึงขึ้นจำนวนเดิมซ้ำ ๆ)</span></div></div>',
    footer:'<button class="btn" onclick="closeModal()">ปิด</button>'
      +'<button class="btn" onclick="exportData()">↓ สำรองข้อมูล</button>'
      +'<button class="btn danger" onclick="mvDupRun()">♻️ ล้าง '+fmt(r.drop)+' รายการ</button>'});
 }
+/* ============================================================
+   🪦 ทะเบียน "ประวัติที่ลบแล้ว" (movements)
+   ปัญหาเดิม : ลบประวัติซ้ำทีละมาก ๆ แล้วมันกลับมาอีกทุกครั้ง
+   เพราะการรวมข้อมูล (mergeById) มีเพดานกันข้อมูลหายเป็นก้อน — ลบเกิน 3% ของทั้งหมดจะถูกปฏิเสธ
+   1,640 รายการ เกินเพดาน 175 → รอบซิงก์ถัดไปดึงกลับมาจากเครื่องแม่ข่ายทั้งหมด
+   แก้โดย : จดรหัสที่ตั้งใจลบไว้ในตั้งค่า (ซิงก์ไปทุกเครื่อง) แล้วกรองทิ้งตอนรวมข้อมูลเสมอ
+   ============================================================ */
+function mvTombMap(){ try{ DB.settings=DB.settings||{}; if(!DB.settings.__mvdel)DB.settings.__mvdel={}; return DB.settings.__mvdel; }catch(e){ return {}; } }
+function mvTombAdd(ids){
+  try{
+    var t=mvTombMap(), n=Date.now();
+    (ids||[]).forEach(function(id){ if(id)t[id]=n; });
+    var cut=n-180*86400000, ks=Object.keys(t);
+    ks.forEach(function(k){ if(!(t[k]>cut))delete t[k]; });
+    ks=Object.keys(t);
+    if(ks.length>12000){ ks.sort(function(a,b){return t[a]-t[b];}).slice(0,ks.length-10000).forEach(function(k){ delete t[k]; }); }
+  }catch(e){}
+}
+/* ปลดสถานะ "เคยลบ" — ใช้ตอนกู้ประวัติกลับจากไฟล์สำรอง ไม่งั้นจะถูกกรองทิ้งอีก */
+function mvTombForget(ids){ try{ var t=mvTombMap(); (ids||[]).forEach(function(id){ if(id)delete t[id]; }); }catch(e){} }
 function mvDupRun(){
   var r=mvDupScan();
   if(!r.drop){ closeModal(); toast('ไม่มีประวัติซ้ำ','ok'); return; }
   confirmBox('ล้างประวัติซ้ำ '+fmt(r.drop)+' รายการ?','ยอดคงเหลือและเอกสารไม่เปลี่ยน · ล้างเฉพาะประวัติความเคลื่อนไหวที่ซ้ำจากการคำนวณยอดใหม่',function(){
+    try{ safetySnapshot('ก่อนล้างประวัติซ้ำ'); }catch(e){}       /* ★ สำรองชุดเต็มไว้ก่อน */
+    /* ★ จดรหัสที่ลบไว้ก่อน ไม่งั้นรอบซิงก์ถัดไปจะดึงกลับมาทั้งหมด */
+    try{
+      var keepId={}; (r.keep||[]).forEach(function(m){ if(m&&m.id)keepId[m.id]=1; });
+      var gone=[]; (DB.movements||[]).forEach(function(m){ if(m&&m.id&&!keepId[m.id])gone.push(m.id); });
+      mvTombAdd(gone);
+    }catch(e){}
     DB.movements=r.keep;
     try{ memoBust(); }catch(e){}
     window.__shrinkOK=1;                 /* ★ ตั้งใจลดขนาด — ให้ดันชุดที่เล็กลงขึ้นเครื่องแม่ข่ายได้ */
@@ -957,6 +1280,7 @@ function arcRun(){
     +'<br>• <b>ยอดสต๊อกและรายการสินค้าไม่เปลี่ยน</b>'
     +(p.holdStk.length?('<br>• 🔒 คงไว้ '+fmt(p.holdStk.length)+' ใบ เพราะสินค้ายังมียอดค้าง (FG · WIP · Q-TIME · รอชุบ · รอคัด · รอชั่ง) — กันยอดเพี้ยน'):'')
     +'<br>• กู้กลับได้ด้วยปุ่ม "↩️ กู้จากไฟล์คลัง"',function(){
+    try{ safetySnapshot('ก่อนเก็บเอกสารเข้าคลัง '+cut); }catch(e){}   /* ★ สำรองชุดเต็มไว้ก่อนเสมอ */
     var pack={__rtk_archive:1,cut:cut,at:Date.now(),build:APP_BUILD,docs:p.move,movements:p.mv};
     var js=JSON.stringify(pack);
     var fn='RTK_archive_before_'+cut+'.json';
@@ -1292,6 +1616,12 @@ function ampasReplayAll(silent){
   return n;
 }
 function isDirectFlow(name){const f=(DB.settings.flows||[]).find(x=>x.name===name);return f?!!f.direct:(name==='ไม่ชุบ');}
+/* ★ ชนิดเอกสาร "PL" ถูกใช้ 2 แบบ ต้องแยกให้ออก :
+     1) ใบส่งชุบ / รับชุบ  — บรรทัดมี sentQty · recvQty · recvDate  (สถานะ approved · กระทบยอดรอชุบ)
+     2) แผนจัดส่งลูกค้า      — มี dplan / cpoId / shipDate / custPo (สถานะ active · เป็นแผน ไม่ใช่การเคลื่อนไหวของสต๊อก)
+   เดิมระบบนับแบบที่ 2 เป็น "ส่งชุบ" ด้วย ทำให้บัญชีคุมมีแถวที่ไม่มีการดำเนินการจริงโผล่ขึ้นมา
+   และยอด "รอชุบ" ถูกบวกเกิน — ต้องกันไม่ให้แผนจัดส่งเข้ามาปนในสายสต๊อก */
+function plIsPlan(d){ return !!(d&&d.type==='PL'&&(d.dplan||d.cpoId||d.shipDate||d.custPo)); }
 /* ★ วัตถุดิบ / วัสดุสิ้นเปลือง ที่ตั้งเงื่อนไขการไหลเป็น "เข้าคงเหลือทันที"
    ขั้นตอนที่ใช้จริงของวัตถุดิบมีเท่านี้ :
      ปรับยอด · CPO · สั่งซื้อวัตถุดิบ · รับวัตถุดิบ (เข้าสต๊อค +) · เบิกวัตถุดิบ/เบิกจ่าย/ขาย (ออกจากสต๊อค −)
@@ -1449,7 +1779,9 @@ async function forceCloudSync(){
 /* ===== ระบบกันข้อมูลหาย (auto safety backup + drop guard) ===== */
 function _docCount(x){try{return (x&&x.docs&&x.docs.length)||0;}catch(e){return 0;}}
 var __lastGoodDB=null;
-function safetySnapshot(reason){ try{ var n=_docCount(DB); if(n<=0)return; var snap={t:Date.now(),reason:reason||'',n:n,json:JSON.stringify(DB)}; __lastGoodDB=snap; try{lsSet('rtk_autobak',JSON.stringify(snap));}catch(e){} }catch(e){} }
+function safetySnapshot(reason){ try{ var n=_docCount(DB); if(n<=0)return; var snap={t:Date.now(),reason:reason||'',n:n,json:JSON.stringify(DB)}; __lastGoodDB=snap; try{lsSet('rtk_autobak',JSON.stringify(snap));}catch(e){}
+  try{ bkSave(reason||'ก่อนทำรายการสำคัญ',true); }catch(e){}    /* ★ เก็บลงชุดสำรองถาวรด้วย (IndexedDB) */
+}catch(e){} }
 function getAutoBak(){ if(__lastGoodDB)return __lastGoodDB; try{var s=localStorage.getItem('rtk_autobak');if(s)return JSON.parse(s);}catch(e){} return null; }
 function remoteReplaceSafe(remote){ var cur=_docCount(DB), nw=_docCount(remote); if(cur>=100 && nw < cur-100 && nw < cur*0.85) return false; return true; }
 /* ในเครื่องมีการแก้ไขที่ยังไม่ถูกดันขึ้นคลาวด์หรือไม่ (กันดึงคลาวด์มาทับข้อมูลที่เพิ่งบันทึก) */
@@ -1462,9 +1794,18 @@ function warnDrop(cur,nw){ try{ toast('⚠️ คลาวด์มีข้อ�
    ============================================================ */
 var RC_LABEL={PO:'สั่งซื้อวัตถุดิบ',SUP:'วัสดุสิ้นเปลือง',IP:'สั่งซื้อต่างประเทศ',SP:'สั่งซื้อพิเศษ',
   GR:'รับวัตถุดิบ',GI:'รับเข้าต่างประเทศ',GS:'รับเข้าพิเศษ',WD:'เบิกวัตถุดิบ',PRD:'ใบสั่งผลิต',
-  RW:'รับชิ้นงาน',DP:'ผลิตประจำวัน',PL:'แผนจัดส่ง',PS:'ส่งชุบ',PR:'รับคืนชุบ',
-  QC:'คัดแยก OK/NG',QI:'คัดแยกต่างประเทศ',QS:'คัดแยกพิเศษ',SI:'รับเข้าสต๊อค',SII:'รับเข้าสต๊อคต่างประเทศ',
-  SIS:'รับเข้าสต๊อคพิเศษ',INV:'Invoice',IV2:'ส่งพิเศษ',FGI:'ใบเบิกจ่ายสำเร็จรูป',ADJ:'ปรับยอด',
+  RW:'รับชิ้นงาน',DP:'ผลิตประจำวัน',
+  /* ★ PL คือใบ "ส่งชุบ / รับชุบ" (บรรทัดเก็บ sentQty · recvQty · recvDate)
+     เดิมหน้านี้เขียนว่า "แผนจัดส่ง" ทำให้เข้าใจผิดว่าเป็นคนละเรื่องกับงานชุบ
+     ส่วน PS / PR เป็นชนิดเก่าที่เลิกใช้แล้ว (ปัจจุบันรวมอยู่ในใบ PL ใบเดียว) */
+  /* PL ใช้ 2 แบบ : ใบส่งชุบ/รับชุบ (มี sentQty·recvQty) และ แผนจัดส่งลูกค้า (มี dplan·cpoId·shipDate) */
+  PL:'ส่งชุบ/รับชุบ + แผนจัดส่ง',PS:'ส่งชุบ (แบบเก่า)',PR:'รับคืนชุบ (แบบเก่า)',
+  QC:'คัดแยก OK/NG',QI:'คัดแยกต่างประเทศ',QS:'คัดแยกพิเศษ',QSE:'คัดแยก SE-MI',
+  SI:'รับเข้าสต๊อค',SII:'รับเข้าสต๊อคต่างประเทศ',
+  SIS:'รับเข้าสต๊อคพิเศษ',SSE:'รับเข้าสต๊อค SE-MI',
+  INV:'Invoice',IV2:'ขายพิเศษ',FGI:'ใบเบิกจ่ายสำเร็จรูป',ADJ:'ปรับยอด',
+  RMC:'รับแมทลูกค้า',WS:'เบิกวัสดุสิ้นเปลือง',
+  TAX:'ใบกำกับภาษีซื้อ',TAXO:'ใบกำกับภาษีขาย',WHT:'หัก ณ ที่จ่าย',
   CRX:'ใบแลกเปลี่ยนกับลูกค้า',CPO:'Customer PO',FC:'Forecast',BILL:'วางบิลผู้ผลิต',BLC:'วางบิลลูกค้า',NC:'งานไม่ตรงข้อกำหนด'};
 function rcLabel(t){ return RC_LABEL[t]||t; }
 
@@ -1763,6 +2104,7 @@ function rcRestore(){
         var _mc=JSON.parse(JSON.stringify(m)); if(!_mc.id)_mc.id='mv'+_now+'_'+mv; _mc._rcAt=_now;
         DB.movements.push(_mc); _mvIds.push(_mc.id); haveMv[k]=1; mv++;
       });
+      try{ mvTombForget(_mvIds); }catch(e){}   /* ★ กู้กลับมาแล้ว ต้องไม่ถูกกรองทิ้งตอนซิงก์ */
     }catch(e){}
     /* สินค้าที่ใบเหล่านั้นอ้างถึงแต่หายไปด้วย → เติมกลับ */
     var pAdd=0;
@@ -3393,10 +3735,26 @@ function render(){
   setupDualScroll();setTimeout(setupDualScroll,40);
   try{ setTimeout(actorFillBlanks,30); }catch(e){}
   try{ setTimeout(function(){ uiScrollRestore(); uiLockBadge(); },0); }catch(e){}
+  try{ bkBoot(); }catch(e){}                 /* ★ เริ่มสำรองข้อมูลอัตโนมัติ */
+}
+/* ★ ตีตรากล่องที่เลื่อนแนวนอนได้ (ฟอร์มต่าง ๆ เขียน overflow-x:auto ไว้ในบรรทัด ไม่มีคลาส)
+   เพื่อให้ได้แถบเลื่อนแบบเห็นชัด + แถบเลื่อนด้านบน เหมือนตารางหลัก */
+function xsMark(){
+  try{
+    document.querySelectorAll('[style*="overflow-x:auto"],[style*="overflow-x: auto"],[style*="overflow:auto"],[style*="overflow: auto"]')
+      .forEach(function(el){ if(!el.classList.contains('tbl-wrap'))el.classList.add('xscroll'); });
+    document.querySelectorAll('.xscroll,.tbl-wrap').forEach(function(el){
+      el.classList.toggle('xscroll-on',(el.scrollWidth-el.clientWidth)>4);
+    });
+  }catch(e){}
 }
 function setupDualScroll(){
-  if(!window.__dualScrollInit){window.__dualScrollInit=1;window.addEventListener('resize',function(){setupDualScroll();});var _ct=document.getElementById('content');if(_ct&&window.MutationObserver){var _to;new MutationObserver(function(){clearTimeout(_to);_to=setTimeout(function(){window.__dsLock||setupDualScroll();},60);}).observe(_ct,{childList:true,subtree:true});}}
-  document.querySelectorAll('.tbl-wrap').forEach(function(w){
+  if(!window.__dualScrollInit){window.__dualScrollInit=1;window.addEventListener('resize',function(){setupDualScroll();});var _ct=document.getElementById('content');if(_ct&&window.MutationObserver){var _to;new MutationObserver(function(){clearTimeout(_to);_to=setTimeout(function(){window.__dsLock||setupDualScroll();},60);}).observe(_ct,{childList:true,subtree:true});}
+    /* กล่องในหน้าต่างซ้อน (modal) ก็ต้องได้แถบเลื่อนเหมือนกัน */
+    if(window.MutationObserver){var _t2;new MutationObserver(function(){clearTimeout(_t2);_t2=setTimeout(function(){window.__dsLock||setupDualScroll();},90);}).observe(document.body,{childList:true});}
+  }
+  xsMark();
+  document.querySelectorAll('.tbl-wrap,.xscroll').forEach(function(w){
     var tbl=w.querySelector('table');if(!tbl)return;
     var top=w.previousElementSibling;
     if(!top||!top.classList||!top.classList.contains('tbl-topscroll')){
@@ -3407,13 +3765,45 @@ function setupDualScroll(){
       top.addEventListener('scroll',function(){if(lock)return;lock=true;w.scrollLeft=top.scrollLeft;lock=false;});
       w.addEventListener('scroll',function(){if(lock)return;lock=true;top.scrollLeft=w.scrollLeft;lock=false;});
     }
+    var over=(tbl.scrollWidth-w.clientWidth)>4;              /* มีคอลัมน์ล้นออกนอกกรอบจริงหรือไม่ */
     top.firstChild.style.width=Math.max(tbl.scrollWidth,w.clientWidth+1)+'px';
-    top.style.display='block';
+    top.style.display=over?'block':'none';
+    /* ป้ายบอกใบ้ — ขึ้นเฉพาะตอนที่เลื่อนได้จริง กันพนักงานมองข้ามคอลัมน์ที่ซ่อนอยู่ */
+    try{
+      var hint=top.previousElementSibling;
+      var isHint=!!(hint&&hint.classList&&hint.classList.contains('xscroll-hint'));
+      if(over&&!isHint){
+        window.__dsLock=1;
+        var h=document.createElement('div'); h.className='xscroll-hint';
+        h.textContent='⟷ เลื่อนซ้าย–ขวา เพื่อดูคอลัมน์ที่เหลือ';
+        top.parentNode.insertBefore(h,top);
+        window.__dsLock=0;
+      }else if(isHint){ hint.style.display=over?'':'none'; }
+    }catch(e){ window.__dsLock=0; }
   });
 }
 
 /* ---------- Helpers for rendering ---------- */
 function fmt(n){if(n===null||n===undefined||n==='')return '0';return Number(n).toLocaleString('en-US')}
+/* ★ จำนวน "ชิ้น" ไม่มีเศษทศนิยม — ปัดเป็นจำนวนเต็มตอนแสดงผล
+   เศษ .643 เกิดจากการแปลงน้ำหนัก → จำนวนชิ้น ตอนรับชิ้นงาน/รับเข้าสต๊อค
+   (ปัดเฉพาะ "การแสดงผล" ยอดจริงในระบบไม่ถูกแก้ · เอาเมาส์ชี้จะเห็นค่าเต็ม)
+   ของที่นับเป็นน้ำหนัก เช่น วัตถุดิบหน่วย กก. ยังแสดงทศนิยมตามเดิม */
+function qtyIsWeight(p){
+  try{ if(!p||(p.type!=='RM'&&p.type!=='SUP'))return false;
+       return (typeof rmUnitIsKg==='function')?rmUnitIsKg(p):true; }catch(e){ return false; }
+}
+function fmtQ(n,p){
+  var v=Number(n)||0;
+  if(qtyIsWeight(p))return fmt(Math.round(v*1000)/1000);
+  return fmt(Math.round(v));
+}
+/* ข้อความกำกับเมื่อค่าจริงมีเศษ — ใช้ใส่ใน title ให้ตรวจสอบย้อนได้ */
+function qTip(n,p){
+  var v=Number(n)||0;
+  if(qtyIsWeight(p)||Math.abs(v-Math.round(v))<0.0005)return '';
+  return 'ยอดจริง '+fmt(Math.round(v*1000)/1000)+' (ปัดแสดงเป็นจำนวนเต็ม)';
+}
 function statusTag(s){return s==='approved'?'<span class="tag green">✓ อนุมัติแล้ว</span>':s==='cancelled'?'<span class="tag gray">ยกเลิก</span>':s==='statonly'?'<span class="tag" style="background:#8b5cf6;color:#fff">📊 สรุปเท่านั้น</span>':'<span class="tag amber">⏳ รออนุมัติ</span>'}
 function typeTag(t){return t==='FG'?'<span class="tag fg">สำเร็จรูป</span>':t==='SUP'?'<span class="tag amber">วัสดุสิ้นเปลือง</span>':t==='ASM'?'<span class="tag cyan">ชุดประกอบ</span>':t==='RMC'?'<span class="tag violet">แมทลูกค้า</span>':'<span class="tag rm">วัตถุดิบ</span>'}
 function prodOptions(filterType){
@@ -4048,10 +4438,11 @@ function invPrintCalc(){
   var F={
     onHand:function(p){ return dirOf(p)?((p.onHand||0)+(p.wip||0)+(p.atPlating||0)+(p.passedQC||0)):(p.onHand||0); },
     wip:function(p){ return wipBacklog(p,wam); },
-    qt:function(p){ if(qtimeSkip(p))return 0; return prMap[p.id]||0; },
-    plate:function(p){ return dirOf(p)?0:platOf(p); },
-    sort:function(p){ return dirOf(p)?0:(p.wip||0); },
-    stk:function(p){ return dirOf(p)?0:(p.passedQC||0); }
+    /* ★ ใช้แหล่งเดียวกับหน้าสินค้าคงคลัง/บัญชีคุม เพื่อให้รายงานที่พิมพ์ตรงกับหน้าจอ */
+    qt:function(p){ var R=procPend(p); if(!R.na)return R.qt; if(qtimeSkip(p))return 0; return prMap[p.id]||0; },
+    plate:function(p){ var R=procPend(p); if(!R.na)return R.plate; return dirOf(p)?0:platOf(p); },
+    sort:function(p){ var R=procPend(p); if(!R.na)return R.sort; return dirOf(p)?0:(p.wip||0); },
+    stk:function(p){ var R=procPend(p); if(!R.na)return R.stk; return dirOf(p)?0:(Number(p.passedQC)||0); }
   };
   return {get:function(key,p){ var q=invRoot(p); return roll(F[key],q); }};
 }
@@ -4271,7 +4662,8 @@ function wipAgeMap(){ var m={}; var ens=function(id){return m[id]||(m[id]={ord:0
   (DB.docs||[]).forEach(function(d){
     if(!d||['PO','IP','SP'].indexOf(d.type)<0)return;
     if(d.status==='cancelled'||d.statOnly||d.backlogClosed)return;
-    var byPid={}; (d.lines||[]).forEach(function(l){ var pid=l.productId||l.fgId; if(!pid)return; byPid[pid]=(byPid[pid]||0)+(Number(l.qty)||0); });
+    /* ★ ใบสั่งซื้อต่างประเทศเก็บรหัสไว้ที่ l.code — ต้องหาให้เจอ ไม่งั้นยอดค้างรับไม่ขึ้น */
+    var byPid={}; (d.lines||[]).forEach(function(l){ var pid=lineProdId(l); if(!pid)return; byPid[pid]=(byPid[pid]||0)+(Number(l.qty)||0); });
     var totOrd=0; Object.keys(byPid).forEach(function(k){ totOrd+=byPid[k]; });
     if(totOrd<=0)return;
     var recv=0; try{ recv=orderRecvQty(d.type,d.no)||0; }catch(e){}
@@ -4283,6 +4675,78 @@ function wipAgeMap(){ var m={}; var ens=function(id){return m[id]||(m[id]={ord:0
   });
   return m; }
 function wipBacklog(p,wam){ var e=(wam||{})[p.id]||{bk:0,last:''}; return Math.max(0,Math.round(e.bk||0)); } /* ยอดค้างคงอยู่จนกดปิดยอดค้างเอง (ไม่ตัดอัตโนมัติตามอายุ) */
+/* ============================================================
+   🔄 ยอดค้างแต่ละกระบวนการ — แหล่งเดียวกับ "แถบติดตามงานแต่ละกระบวนการ" ในบัญชีคุม
+   เดิมหน้าสินค้าคงคลังอ่านจาก "ถังสต๊อก" (p.wip · p.atPlating · p.passedQC)
+   ซึ่งเพี้ยนไปตามกาลเวลา (เช่น 40051545A ถังคัดแยก 1,121,000 ทั้งที่เอกสารบอกว่าเกือบหมดแล้ว)
+   จึงเปลี่ยนมาคิดจากเอกสารจริงทั้งคู่ ตัวเลขสองหน้าจะตรงกันเสมอ
+   ★ ติดลบ = ขั้นถัดไปทำเกินขั้นก่อนหน้า เป็นสัญญาณให้ไปตรวจเอกสาร ไม่ใช่ความผิดพลาดของการแสดงผล
+   ============================================================ */
+var _ptCache=null,_ptKey='';
+function procTotMap(){
+  var key=((DB.docs||[]).length)+'/'+((DB.products||[]).length);
+  if(_ptCache&&_ptKey===key)return _ptCache;
+  var M={}, ens=function(id){ return M[id]||(M[id]={wd:0,rw:0,ps:0,pr:0,ok:0,ng:0,si:0,po:0,gr:0}); };
+  (DB.docs||[]).forEach(function(d){
+    if(!d||d.status!=='approved'||d.statOnly)return;
+    if(plIsPlan(d))return;                       /* แผนจัดส่ง ไม่ใช่ใบส่งชุบ */
+    var t=d.type;
+    (d.lines||[]).forEach(function(l){
+      var id=lineProdId(l); if(!id)return;
+      var e=ens(id);
+      if(t==='PO'||t==='IP'||t==='SP')e.po+=Number(l.qty)||0;              /* สั่งซื้อ (ในประเทศ/ต่างประเทศ/พิเศษ) */
+      else if(t==='GR'||t==='GI'||t==='GS'||t==='SUP')e.gr+=Number(l.qty)||0;  /* รับวัตถุดิบเข้าคลัง */
+      else if(t==='WD')e.wd+=Number(l.qty)||0;
+      else if(t==='RW')e.rw+=Number(l.receivedQty!=null?l.receivedQty:l.qty)||0;
+      else if(t==='PL'||t==='PS'||t==='PR'){
+        var sv=Number(l.sentQty)||0, rv=Number(l.recvQty)||0;
+        if(!sv&&!rv){ if(t==='PR')rv=Number(l.qty)||0; else sv=Number(l.qty)||0; }
+        e.ps+=sv; e.pr+=rv;
+      }
+      else if(t==='QC'||t==='QI'||t==='QS'||t==='QSE'){ e.ok+=Number(l.ok)||0; e.ng+=Number(l.ng)||0; }
+      else if(t==='SI'||t==='SII'||t==='SIS'||t==='SSE')e.si+=Number(l.weighed!=null?l.weighed:l.qty)||0;
+    });
+  });
+  _ptCache=M; _ptKey=key; return M;
+}
+/* ยอดค้าง 4 ช่องของสินค้า 1 รายการ (รวมรหัสซ้ำในกลุ่มเดียวกันแล้ว) */
+var _ppRes={},_ppResKey='';
+function procPend(p){
+  var z={qt:0,plate:0,sort:0,stk:0,na:true};
+  try{
+    if(!p||p.stockOf)return z;
+    /* แคชผลต่อการวาดหนึ่งรอบ — กันช้าเวลาตารางมีหลายร้อยแถว */
+    var ck=((DB.docs||[]).length)+'/'+((DB.products||[]).length);
+    if(_ppResKey!==ck){ _ppRes={}; _ppResKey=ck; }
+    if(_ppRes[p.id])return _ppRes[p.id];
+    if(isMatProd(p))return z;
+    if(isDirectFlow(prodFlow(p)))return z;       /* เข้าคงเหลือทันที — ไม่มีขั้นค้าง */
+    var M=procTotMap(), G=ibIdGroup(p.id), t={wd:0,rw:0,ps:0,pr:0,ok:0,ng:0,si:0,po:0,gr:0};
+    Object.keys(G).forEach(function(id){ var e=M[id]; if(!e)return; for(var k in t)t[k]+=(e[k]||0); });
+    /* ★ ซื้อมา–ขายไป (วัตถุดิบ/วัสดุสิ้นเปลือง) : ขั้นแรกคือ "รับวัตถุดิบ" ไม่ใช่ "รับชิ้นงาน" */
+    var buy=(p.type==='RM'||p.type==='SUP');
+    var plate=/^ชุบ/.test(prodFlow(p)||''), sorted=t.ok+t.ng;
+    var R=buy?{qt:t.gr-sorted, plate:0, sort:t.gr-sorted, stk:t.ok-t.si}
+        :plate?{qt:t.rw-t.ps, plate:t.ps-t.pr, sort:t.pr-sorted, stk:t.ok-t.si}
+               :{qt:t.rw-sorted, plate:0, sort:t.rw-sorted, stk:t.ok-t.si};
+    /* ★ หน้าสินค้าคงคลังแสดงยอดค้างติดลบไม่ได้ (พนักงานสับสน) → ปัดเป็น 0
+       ค่าจริงเก็บไว้ใน R.raw ให้แถบติดตามกระบวนการในบัญชีคุมใช้ไล่ตรวจส่วนต่างต่อ */
+    R.raw={};
+    ['qt','plate','sort','stk'].forEach(function(k){
+      var v=Math.round((R[k]||0)*1000)/1000;
+      try{ v=pendAdjRaw(p,({qt:'recv',plate:'plate',sort:'sort',stk:'stk'})[k],v); }catch(e){}
+      R.raw[k]=v;
+      R[k]=(v<0)?0:v;
+    });
+    R.na=false; R.tot=t; _ppRes[p.id]=R; return R;
+  }catch(e){ return z; }
+}
+/* ปรับยอดเองที่ผู้ใช้ตั้งไว้ — ใช้ได้กับค่าติดลบด้วย (pendAdjApply เดิมบังคับไม่ให้ต่ำกว่า 0) */
+function pendAdjRaw(p,k,computed){
+  try{ var a=pendAdjGet(p,k); if(!a)return computed;
+       return Math.round(((Number(computed)||0)-(Number(a.base)||0)+(Number(a.val)||0))*1000)/1000;
+  }catch(e){ return computed; }
+}
 /* ============================================================
    🔩 วัตถุดิบเหล็กเส้น : แปลงยอด "กก." → "เส้น" อัตโนมัติ
    ใบสั่งซื้อวัตถุดิบบันทึกเป็นกิโลกรัม แต่หน้างานนับเป็น "เส้น"
@@ -4343,24 +4807,22 @@ function renderInvTable(){
   const wam=wipAgeMap();const wipOf=p=>wipBacklog(p,wam);
   const plMap=platePendMap();const wpMap=wipPendMap();
   /* ⏳ ชุบค้าง = ส่งชุบแล้วยังไม่รับกลับ · คัดแยกค้าง = ของพร้อมคัดที่ยังคัดไม่เสร็จ */
-  const platOf=p=>{
-    var real=(p.atPlating==null)?null:((Number(p.atPlating)||0)+(Number(plMap[p.id])||0));
-    var v=(real!=null)?real:(((wpMap[p.id]||{}).plate)||0);
-    return pendAdjApply(p,'plate',v);
-  };
+  /* ★ ยอดค้างทุกช่อง ใช้แหล่งเดียวกับบัญชีคุม (procPend) — ตัวเลขสองหน้าจึงตรงกันเสมอ */
+  /* ★ ยอดค้างในหน้านี้ไม่แสดงค่าติดลบ — ติดลบให้เป็น 0 (ค่าจริงดูได้ในบัญชีคุม) */
+  const _p0=v=>{ v=Number(v)||0; return v<0?0:v; };
+  const platOf=p=>{ var R=procPend(p); return R.na?_p0(pendAdjApply(p,'plate',((Number(p.atPlating)||0)+(Number(plMap[p.id])||0)))):R.plate; };
   const dirOf=p=>isDirectFlow(prodFlow(p));const onHandDispOf=p=>dirOf(p)?((p.onHand||0)+(p.wip||0)+(p.atPlating||0)+(p.passedQC||0)):(p.onHand||0);const platDispOf=p=>dirOf(p)?0:platOf(p);
   /* ★ คัดแยกค้าง = ยอดจริงในระบบ (ช่องเดียวกับ "คัดแยก (รอคัด OK/NG)" ในใบปรับยอด)
      ถ้ายังไม่เคยลงยอดในระบบเลย (undefined) จึงค่อยใช้ค่าที่คำนวณจากเอกสาร */
-  const sortOf=p=>{
-    if(dirOf(p))return 0;
-    var real=(p.wip==null)?null:(Number(p.wip)||0);
-    var v=(real!=null)?real:(((wpMap[p.id]||{}).sort)||0);
-    return pendAdjApply(p,'sort',v);
-  };
-  const stkOf=p=>dirOf(p)?0:(p.passedQC||0);const tMoq=sum(p=>p.moq||p.reorder||0),tPrice=sum(p=>p.salePrice||0),tOn=sum(onHandDispOf),tWip=list.reduce((s,p)=>s+wipOf(p),0),tPl=sum(platDispOf),tSort=sum(sortOf),tStk=sum(stkOf);
+  const sortOf=p=>{ if(dirOf(p))return 0; var R=procPend(p); return R.na?_p0(pendAdjApply(p,'sort',Number(p.wip)||0)):R.sort; };
+  /* ★ รอชั่ง = คัดแยกผ่าน OK แล้ว ยังไม่ได้ทำใบรับเข้าสต๊อค
+     ใบคัดแยกแบบหลายบรรทัด (ที่ใช้อยู่ตอนนี้) จะไม่ลงยอดในถัง passedQC เลย เพื่อกันนับซ้ำกับใบรับเข้าสต๊อค
+     ถังจึงเป็น 0 ตลอด — ช่องนี้เคยแสดง 0 ทั้งที่เอกสารบอกว่ายังค้างอยู่
+     จึงเปลี่ยนมาคิดจากเอกสาร (คัดแยก OK − รับเข้าสต๊อค) ให้ตรงกับบัญชีคุม */
+  const stkOf=p=>{ if(dirOf(p))return 0; var R=procPend(p); return R.na?_p0(pendAdjApply(p,'stk',Number(p.passedQC)||0)):R.stk; };const tMoq=sum(p=>p.moq||p.reorder||0),tPrice=sum(p=>p.salePrice||0),tOn=sum(onHandDispOf),tWip=list.reduce((s,p)=>s+wipOf(p),0),tPl=sum(platDispOf),tSort=sum(sortOf),tStk=sum(stkOf);
   const prMap=pendRecvMap();
   /* ⏳ Q-TIME ค้าง = รับชิ้นงานแล้ว แต่ยังไม่ไหลไปขั้นถัดไป (ตามเงื่อนไขการไหล) */
-  const qtOf=p=>qtimePendOf(p,wpMap,plMap);
+  const qtOf=p=>{ var R=procPend(p); if(!R.na)return R.qt; var v=qtimePendOf(p,wpMap,plMap); return (v==null)?null:_p0(v); };
   const firstMove={};(DB.movements||[]).forEach(m=>{if(!m.productId)return;const dt=m.date||'';if(dt&&(!firstMove[m.productId]||dt<firstMove[m.productId]))firstMove[m.productId]=dt;});
   const pDate=p=>p.date||firstMove[p.id]||'';
   const ma=invMoveAgg();const mgBase=p=>ma[p.id]||{adj:0,tin:0,tout:0,ng:0};
@@ -4429,7 +4891,7 @@ function renderInvTable(){
           ? ('รับแมทลูกค้า '+fmt(_i.rmc)+' − รับเข้าชิ้นงาน '+fmt(_i.rw)+' = '+fmt(_i.raw)+'\nใบรับแมทลูกค้ายังบันทึกไม่ครบ ขาดอยู่ '+fmt(_i.miss)+' — ระบบตั้งยอดให้เป็น 0')
           : ('รับแมทลูกค้า '+fmt(_i.rmc)+' − รับเข้าชิ้นงาน '+fmt(_i.rw));
         return `<td class="num ${v?'':'muted'}" title="${tip}">${v?('<b style="color:#0f766e">'+fmt(v)+'</b>'):'0'}${_i.miss?(' <span title="'+tip+'" style="color:#b45309;font-size:10px">⚠</span>'):''}</td>`;})():''}
-      <td class="num">${p.stockOf?`<b style="color:var(--ink2);opacity:.85" title="ยอดเดียวกับรายการหลัก ${esc(invRoot(p).pn)} (ใช้สต๊อกร่วม)">${fmt(roll(onHandDispOf,invRoot(p)))}</b>${invShareTag(p)}`:`<b style="color:${low?'var(--red)':'var(--ink)'}">${fmt(roll(onHandDispOf,p))}</b>${_kids(p).length?' <span class="tag teal" style="font-size:8px" title="รวมยอดจากรายการย่อย: '+esc(_kids(p).map(k=>k.pn).join(', '))+'">รวมย่อย</span>':''}`}</td>
+      <td class="num">${p.stockOf?`<b style="color:var(--ink2);opacity:.85" title="ยอดเดียวกับรายการหลัก ${esc(invRoot(p).pn)} (ใช้สต๊อกร่วม)">${fmtQ(roll(onHandDispOf,invRoot(p)),invRoot(p))}</b>${invShareTag(p)}`:(()=>{const _v=roll(onHandDispOf,p);const _t=qTip(_v,p);return `<b style="color:${low?'var(--red)':'var(--ink)'}"${_t?` title="${esc(_t)}"`:''}>${fmtQ(_v,p)}</b>${_kids(p).length?' <span class="tag teal" style="font-size:8px" title="รวมยอดจากรายการย่อย: '+esc(_kids(p).map(k=>k.pn).join(', '))+'">รวมย่อย</span>':''}`;})()}</td>
       ${invCols.bar3!==false?(()=>{const _pp=invRoot(p);const b3=bars3mOf(_pp);const tm=(Array.isArray(_pp.barLots)&&_pp.barLots.length)?barLotsTotalM(_pp):0;
         const _cut=(p.type==='RM'||p.type==='SUP');            /* ★ คลิกที่ช่องนี้ = เปิดหน้าตัดแบ่งเส้น/บัญชีเส้น */
         const _at=_cut?(' style="cursor:pointer" onclick="splitBarsDialog(\''+_pp.id+'\')"'):'';
@@ -4441,11 +4903,11 @@ function renderInvTable(){
         let _bw=0,_bar=null; try{ _bar=rmBarsFromKg(_pp,w); if(_bar!=null)_bw=rmKgPerBar(_pp); }catch(e){}
         const _tt='WIP = สั่งผลิต/สั่งซื้อ − รับเข้าแล้ว (ยังส่งไม่ครบ)'+(_kids(p).length?' · รวมรายการย่อย':'')
           +(_bar!=null?(' · ค้างรับ '+fmt(w)+' กก. ÷ '+fmt2(_bw)+' กก./เส้น = '+fmt2(_bar)+' เส้น'):'');
-        const _in=(_bar!=null)?(fmt2(_bar)+' <span style="font-size:9px;color:#64748b">เส้น</span>'):(w?fmt(w):'-');
-        return '<td class="num '+(w?'':'muted')+'" title="'+_tt+'">'+_in+'</td>';})()}
+        const _in=(_bar!=null)?(fmt2(_bar)+' <span style="font-size:9px;color:#64748b">เส้น</span>'):(w?fmtQ(w,_pp):'-');
+        return '<td class="num '+(w?'':'muted')+'" title="'+_tt+(qTip(w,_pp)?(' · '+qTip(w,_pp)):'')+'">'+_in+'</td>';})()}
       ${invCols.qtime!==false?(()=>{const _pp=invRoot(p);const v=_kids(_pp).length?roll(qtOf,_pp):qtOf(_pp);return `<td class="num ${v?'':'muted'}">${(v==null)?'<span class="muted" title="การไหลนี้ของเข้าช่องอื่นทันที จึงไม่มียอด Q-TIME ค้าง">—</span>':(v?('<b style="color:var(--amber,#b45309)">'+pendCell(_pp.id,'recv',v,'Q-TIME ค้าง = รับชิ้นงานแล้ว ยังไม่ไหลไปขั้นถัดไป')+'</b>'):'0')}</td>`;})():''}
-      ${invCols.atp!==false?(()=>{const _pp=invRoot(p);const v=roll(platDispOf,_pp);return `<td class="num ${v?'':'muted'}">${dirOf(_pp)?fmt(v):pendCell(_pp.id,'plate',v,'ชุบค้าง = ส่งชุบแล้วยังไม่รับกลับ')}</td>`;})():''}
-      ${invCols.rcv!==false?(()=>{const _pp=invRoot(p);const v=roll(sortOf,_pp);return `<td class="num ${v?'':'muted'}">${pendCell(_pp.id,'sort',v,'คัดแยกค้าง = ของพร้อมคัด แต่ยังคัดไม่เสร็จ')}</td>`;})():''}${invCols.stk!==false?(()=>{const _pp=invRoot(p);const v=roll(stkOf,_pp);return `<td class="num ${v?'':'muted'}" title="รอเข้าสต๊อคค้าง = คัดผ่าน OK แล้ว ยังไม่ทำใบรับเข้าสต๊อค${_kids(p).length?' · รวมรายการย่อย':''}">${fmt(v)}</td>`;})():''}
+      ${invCols.atp!==false?(()=>{const _pp=invRoot(p);const v=roll(platDispOf,_pp);return `<td class="num ${v?'':'muted'}">${dirOf(_pp)?fmtQ(v,_pp):pendCell(_pp.id,'plate',v,'ชุบค้าง = ส่งชุบแล้วยังไม่รับกลับ')}</td>`;})():''}
+      ${invCols.rcv!==false?(()=>{const _pp=invRoot(p);const v=roll(sortOf,_pp);return `<td class="num ${v?'':'muted'}">${pendCell(_pp.id,'sort',v,'คัดแยกค้าง = ของพร้อมคัด แต่ยังคัดไม่เสร็จ')}</td>`;})():''}${invCols.stk!==false?(()=>{const _pp=invRoot(p);const v=roll(stkOf,_pp);return `<td class="num ${v?'':'muted'}">${dirOf(_pp)?fmtQ(v,_pp):pendCell(_pp.id,'stk',v,'รอชั่ง = คัดแยกผ่าน OK แล้ว ยังไม่ทำใบรับเข้าสต๊อค'+(_kids(p).length?' · รวมรายการย่อย':''))}</td>`;})():''}
       <td style="text-align:right;white-space:nowrap"><button class="btn sm" onclick="openItemLedger('${p.id}')" title="รายการดำเนินการในชื่อนี้ (เต็มหน้าจอ)">ดู</button> ${(p.type==='RM'||p.type==='SUP')?`<button class="btn sm" onclick="splitBarsDialog('${p.id}')" title="ตัดแบ่งเส้น (เช่น 6ม.→3ม.) · ดูบัญชีเส้นแยกตามความยาว และประวัติการตัด">✂️</button> `:''}<button class="btn sm" onclick="printProductCard('${p.id}')" title="พิมพ์บัตรสินค้า">🖨️</button> <button class="btn sm" onclick="openProductForm('${p.id}')">✏️ แก้ไข</button> <button class="btn sm danger" onclick="delProduct('${p.id}')">🗑️ ลบ</button></td>
     </tr>`}).join('')}
   </tbody>${platePlantDatalist()}<tfoot><tr style="font-weight:700;background:var(--panel2);border-top:2px solid var(--line)">
@@ -4746,6 +5208,33 @@ function ibGroupKeys(id){
 /* ★ เทียบรหัสสินค้าแบบ "ตรงตัว" — ตัดเฉพาะช่องว่างหัวท้าย ไม่ตัดขีด/จุด/ทับ
    เพราะ R680701- , R680701. , R680701 เป็นคนละสินค้า (คนละผู้ผลิต) ต้องแยกข้อมูลกันเด็ดขาด */
 function pnExact(v){ return String(v==null?'':v).trim().toUpperCase().replace(/\s+/g,' '); }
+/* ★ เอกสารแต่ละชนิดเก็บ "รหัสสินค้า" ไว้คนละฟิลด์ เมื่อบรรทัดยังไม่ผูก productId :
+     ใบสั่งซื้อต่างประเทศ (IP) → l.code   ("name" เป็นคำบรรยาย ไม่ใช่รหัส)
+     ใบเบิกวัตถุดิบ (WD)        → l.fgPn
+     ชนิดอื่น                    → l.name
+   เดิมระบบดูแค่ name/fgPn/partNo ใบสั่งซื้อต่างประเทศจึงไม่ขึ้นในบัญชีคุมและยอดค้างรับ */
+var IB_PN_FIELDS=['code','pn','fgPn','partNo','name'];
+function lineKeys(l){
+  var out=[]; if(!l)return out;
+  IB_PN_FIELDS.forEach(function(f){ var v=String(l[f]==null?'':l[f]).trim(); if(v)out.push(v); });
+  if(l.code&&l.name)out.push(String(l.code).trim()+' '+String(l.name).trim());
+  return out;
+}
+var _pnIdx=null,_pnIdxN=-1;
+function prodIdByPn(v){
+  try{
+    var n=(DB.products||[]).length;
+    if(!_pnIdx||_pnIdxN!==n){ _pnIdx={}; (DB.products||[]).forEach(function(p){ if(p&&p.pn){ var k=pnExact(p.pn); if(!_pnIdx[k])_pnIdx[k]=p.id; } }); _pnIdxN=n; }
+    return _pnIdx[pnExact(v)]||'';
+  }catch(e){ return ''; }
+}
+/* รหัสสินค้าของบรรทัดเอกสาร (ผูกไว้แล้วใช้เลย · ไม่ผูกก็หาจากรหัสในฟิลด์อื่น) */
+function lineProdId(l){
+  var id=l&&(l.productId||l.fgId); if(id)return id;
+  var c=lineKeys(l);
+  for(var i=0;i<c.length;i++){ var pid=prodIdByPn(c[i]); if(pid)return pid; }
+  return '';
+}
 function ibIdGroup(id){
   var out={}; out[id]=1;
   try{
@@ -4785,16 +5274,20 @@ function ibLedger(id){
   }
   (DB.docs||[]).forEach(function(d){
     if(!d||d.status==='cancelled')return;
+    if(plIsPlan(d))return;                                 /* ★ แผนจัดส่ง ไม่ใช่การเคลื่อนไหวของสต๊อก */
     if(_rmd&&RMD_SKIP[d.type])return;                      /* ★ ไม่ใช่ขั้นตอนของวัตถุดิบ */
     var q=0,hit=false,line=null;
     if(d.productId&&G[d.productId]){ hit=true; q=Number(d.qty)||0; }
     (d.lines||[]).forEach(function(l){
       var _lid=l.productId||l.fgId;
       var _ok=(_lid&&G[_lid]);
-      if(!_ok&&!_lid){                                   /* ★ เอกสารเก่าที่ยังไม่ผูกรหัส → จับคู่ด้วยชื่อ/รหัส */
-        var _nm=String(l.name||l.fgPn||l.partNo||'').trim();
-        if(_nm){ var _k=_KK(_nm), _k1=_KK(_nm.split(' ')[0]);
-          if(GK[_k]||GK[_k1])_ok=true; }
+      if(!_ok&&!_lid){                                   /* ★ เอกสารที่ยังไม่ผูกรหัส → จับคู่จากทุกฟิลด์ที่อาจเก็บรหัสไว้ */
+        var _cs=lineKeys(l);
+        for(var _ci=0;_ci<_cs.length&&!_ok;_ci++){
+          var _nm=_cs[_ci]; if(!_nm)continue;
+          var _k=_KK(_nm), _k1=_KK(String(_nm).split(' ')[0]);
+          if(GK[_k]||GK[_k1])_ok=true;
+        }
       }
       if(!_ok)return; hit=true; if(!line)line=l;
       var _q=(l.weighed!=null)?l.weighed:(l.qty!=null?l.qty:(l.receivedQty!=null?l.receivedQty:(l.recvQty!=null?l.recvQty:(l.sentQty!=null?l.sentQty:(l.ok!=null?((Number(l.ok)||0)+(Number(l.ng)||0)):(l.bars||0))))));
@@ -5196,6 +5689,25 @@ var IB_MAT_COLS=ibMatCols(null);
 function ibIsMat(p){ if(!p)return false;
   if(p.type==='RMC'||p.type==='FG'||p.type==='ASM'||p.type==='RM'||p.type==='SUP')return true;
   try{ return prodFlow(p)==='รับแมทลูกค้า'; }catch(e){ return false; } }
+/* ★ จำนวน "ชิ้นงาน" ที่เบิกได้จากใบเบิกวัตถุดิบใบนี้ (เฉพาะบรรทัดที่เป็นของสินค้าที่กำลังดูอยู่)
+   คืน null = แปลงไม่ได้ / เป็นบัญชีคุมของวัตถุดิบเอง → ให้ใช้ยอดเดิม */
+function ibWdPcs(d){
+  try{
+    var C=window.__ibWdCtx; if(!C||!C.isFG)return null;
+    var K=pnExact, tot=0, hit=false;
+    (d.lines||[]).forEach(function(l){
+      var id=l&&(l.productId||l.fgId), ok=!!(id&&C.G[id]);
+      if(!ok&&!id){
+        var nm=String((l&&(l.name||l.fgPn||l.partNo))||'').trim();
+        if(nm){ var k=K(nm), k1=K(nm.split(' ')[0]); if(C.GK[k]||C.GK[k1])ok=true; }
+      }
+      if(!ok)return;
+      var q=0; try{ q=wdPcsOf(l)||0; }catch(e){}
+      if(q>0){ tot+=q; hit=true; }
+    });
+    return hit?tot:null;
+  }catch(e){ return null; }
+}
 /* จัดค่าลงคอลัมน์ตามชนิดเอกสาร */
 function ibMatCell(r,d,l){
   var o={};
@@ -5207,7 +5719,11 @@ function ibMatCell(r,d,l){
     case 'WS': o.wd=r.qty; break;
     case 'RMC': o.rmc=r.qty; break;
     case 'PRD': o.prd=r.qty; break;
-    case 'WD':  o.wd=r.qty;  break;
+    /* ★ บัญชีคุมของ "งานสำเร็จรูป" : ใบเบิกวัตถุดิบบันทึกเป็นน้ำหนัก (กก.) / จำนวนเส้น ของเหล็ก
+       ถ้าเอามาแสดงตรง ๆ จะเทียบกับ "รับชิ้นงาน" (ชิ้น) ไม่ได้ — ยอดค้าง WIP จะเพี้ยน
+       จึงแปลงเป็น "จำนวนชิ้นงานที่เบิกได้" = จำนวนเส้น × ชิ้นต่อเส้น
+       ส่วนบัญชีคุมของตัววัตถุดิบเอง ยังแสดงยอดเบิกจริงตามหน่วยเดิม */
+    case 'WD': { var _wp=ibWdPcs(d); o.wd=(_wp==null)?r.qty:_wp; if(_wp!=null)r.wdRaw=r.qty; break; }
     case 'DP':  o.png=r.ng; break;                            /* ★ ผลิต NG จากใบผลิตประจำวัน */
     case 'QC': case 'QI': case 'QS': case 'QSE': o.ok=r.ok; o.ng=r.ng; break;
     case 'RW':  o.rw=r.qty; o.pok=r.qty; break;               /* ★ ผลิต OK = จำนวนที่รับชิ้นงาน */
@@ -5471,6 +5987,11 @@ function ibMatBalPass(out){
 function ibMatRows(id){
   var L=ibLedger(id); var out=[]; var pr=P(id); var R=ibRule(pr); var _G=ibIdGroup(id);
   IB_MAT_COLS=ibMatCols(pr);                                  /* ★ ชุดคอลัมน์ตามประเภทสินค้า */
+  /* ★ บริบทสำหรับแปลง "เบิกวัตถุดิบ" เป็นจำนวนชิ้นงาน — คิดครั้งเดียวต่อการเปิดหนึ่งครั้ง */
+  try{
+    var _isFG=!!pr&&pr.type!=='RM'&&pr.type!=='SUP';
+    window.__ibWdCtx=_isFG?{isFG:true,G:_G,GK:ibGroupKeys(id)}:{isFG:false};
+  }catch(e){ window.__ibWdCtx={isFG:false}; }
   L.rows.forEach(function(r){
     var d=(DB.docs||[]).find(function(x){return x.id===r.id;})||{};
     var ok=0,ng=0;
@@ -5525,8 +6046,13 @@ function ibMatRows(id){
           _sum+=(Number(out[_i].eff)||0);
         }
         var _bf=Math.round(((Number(_root.onHand)||0)-_sum)*1000)/1000;
-        if(Math.abs(_bf)>0.001){
+        /* ★ "ยอดยกมา" ต้องเป็นบวกเท่านั้น — ของที่ยกมาจากอดีตจะติดลบไม่ได้
+           ถ้าคำนวณได้ติดลบ แปลว่าเอกสารที่มีอยู่รายงานเกินยอดจริง = ส่วนต่างที่ต้องไปตรวจ
+           ไม่ใช่ยอดยกมา จึงไม่ตั้งแถวนี้ให้ (หัวตารางจะขึ้น "ต่างจากสต๊อก" + ปุ่ม 🔍 ตรวจส่วนต่าง แทน) */
+        if(_bf>0.001){
           out.splice(_at,0,{id:'',type:'BF',label:'ยอดยกมา',bf:true,auto:true,
+            bfTip:'ที่มา : ยอดคงเหลือจริง '+fmt(Number(_root.onHand)||0)+' − ผลรวมเอกสารที่ยังอยู่ในตาราง '+fmt(Math.round(_sum*1000)/1000)+' = '+fmt(_bf)
+                 +'  (เอกสารเก่าถูกเก็บเข้าคลังไปแล้ว ตารางจึงเริ่มกลางทาง)',
             no:'— ยกมาจากเอกสารที่เก็บเข้าคลังแล้ว —',date:String((out[_at]||out[out.length-1]||{}).date||''),ts:-1,
             posted:true,status:'approved',qty:_bf,eff:_bf,setTo:null,
             cells:{bf:_bf},actor:'',vendor:'',order:'',ext:''});
@@ -5645,17 +6171,23 @@ function ibMatTable(p,rows){
   var _mbFin=0; try{ var _lastV=vis.length?vis[vis.length-1]:null; _mbFin=_lastV?(Number(_lastV.matBal)||0):0; }catch(e){}
   var inp=function(docId,f,v,ph){ return '<input value="'+esc(v||'')+'" placeholder="'+ph+'" onchange="ibEditSet(\''+docId+'\',\''+f+'\',this.value)" style="width:100%;min-width:88px;padding:3px 6px;font-size:12.5px;border:1px solid transparent;background:transparent;border-radius:5px" onfocus="this.style.border=\'1px solid var(--line)\';this.style.background=\'#fff\'" onblur="this.style.border=\'1px solid transparent\';this.style.background=\'transparent\'">'; };
   var th=function(t,num){ return '<th style="padding:6px 7px;border-bottom:'+bd+';text-align:'+(num?'right':'left')+';white-space:nowrap">'+esc(t)+'</th>'; };
-  return (_hid||_all?('<div style="display:flex;gap:8px;align-items:center;margin-bottom:5px;font-size:11.5px" class="muted">'+(_hid?('🔎 ซ่อนคอลัมน์ที่ไม่มียอด '+_hid+' คอลัมน์ เพื่อให้พอดีหน้าจอ'):'แสดงทุกคอลัมน์อยู่')+'<button class="btn sm ghost" style="padding:2px 8px" onclick="ibColAllToggle()">'+(_all?'🔎 ซ่อนคอลัมน์ว่าง':'👁️ แสดงทุกคอลัมน์')+'</button></div>'):'')+'<div class="tbl-wrap" style="max-height:calc(100vh - 330px);overflow:auto"><table style="width:100%;table-layout:auto;border-collapse:collapse;font-size:12.5px;white-space:nowrap">'
+  return (_hid||_all?('<div style="display:flex;gap:8px;align-items:center;margin-bottom:5px;font-size:11.5px" class="muted">'+(_hid?('🔎 ซ่อนคอลัมน์ที่ไม่มียอด '+_hid+' คอลัมน์ เพื่อให้พอดีหน้าจอ'):'แสดงทุกคอลัมน์อยู่')+'<button class="btn sm ghost" style="padding:2px 8px" onclick="ibColAllToggle()">'+(_all?'🔎 ซ่อนคอลัมน์ว่าง':'👁️ แสดงทุกคอลัมน์')+'</button></div>'):'')+'<div class="tbl-wrap" style="overflow:auto"><table style="width:100%;table-layout:auto;border-collapse:collapse;font-size:12.5px;white-space:nowrap">'
    +'<thead><tr style="background:var(--panel2)">'
    + th('ประเภท')+th('ผู้ดำเนินการ')+th('ผู้ผลิต/ผู้ขาย')+th('เลขที่ใบสั่งซื้อ/ผลิต')+th('วันที่')+th('เวลา')+th('เลขที่')
-   + IB_USE_COLS.map(function(c){ return th(c[1],1)+((_mbShow&&c[0]===_mbAfter)?('<th style="padding:6px 7px;border-bottom:'+bd+';text-align:right;white-space:nowrap;background:#fff7e6;border-left:2px solid var(--line)" title="แมทเหลือ = รับแมทลูกค้า − เบิกวัตถุดิบ (ยอดสะสม)">แมทเหลือ</th>'):''); }).join('')
+   + IB_USE_COLS.map(function(c){
+       /* ★ งานสำเร็จรูป : ช่องเบิกวัตถุดิบแสดงเป็น "จำนวนชิ้นงาน" ไม่ใช่น้ำหนักเหล็ก */
+       var _wdPc=(c[0]==='wd')&&!!(window.__ibWdCtx&&window.__ibWdCtx.isFG);
+       var _h=_wdPc
+         ? ('<th style="padding:6px 7px;border-bottom:'+bd+';text-align:right;white-space:nowrap" title="แปลงจากน้ำหนัก/จำนวนเส้นที่เบิก เป็นจำนวนชิ้นงานที่ผลิตได้ (เส้น × ชิ้นต่อเส้น) เพื่อเทียบกับรับชิ้นงานได้">'+esc(c[1])+'<div style="font-weight:400;font-size:9px;opacity:.75">ชิ้นงาน</div></th>')
+         : th(c[1],1);
+       return _h+((_mbShow&&c[0]===_mbAfter)?('<th style="padding:6px 7px;border-bottom:'+bd+';text-align:right;white-space:nowrap;background:#fff7e6;border-left:2px solid var(--line)" title="แมทเหลือ = รับแมทลูกค้า − เบิกวัตถุดิบ (ยอดสะสม)">แมทเหลือ</th>'):''); }).join('')
    + '<th style="padding:6px 7px;border-bottom:'+bd+';text-align:right;white-space:nowrap;background:#eef6ff;border-left:2px solid var(--line)">คงเหลือ</th>'
    + '<th style="padding:6px;border-bottom:'+bd+';width:70px"></th></tr></thead><tbody>'
    +(vis.length?vis.map(function(r){
       var auto=!!r.auto, _bfr=!!r.bf;
       return '<tr'+(_bfr?' style="background:#fff7e6"':(auto?' style="background:#f2fbf5"':''))+'>'
        +'<td style="padding:5px 7px;border-bottom:'+bd+'"><span class="tag '+(_bfr?'amber':(auto?'green':'gray'))+'"'
-         +(_bfr?' title="ยอดยกมาจากเอกสารที่ถูกเก็บเข้าคลัง (ลดขนาดข้อมูล) — ไม่ใช่เอกสารจริง มีไว้ให้ยอดสะสมตรงกับยอดคงเหลือ"':'')+'>'+esc(r.label)+'</span>'
+         +(_bfr?(' title="'+esc(r.bfTip||'ยอดยกมาจากเอกสารที่ถูกเก็บเข้าคลัง (ลดขนาดข้อมูล) — ไม่ใช่เอกสารจริง มีไว้ให้ยอดสะสมตรงกับยอดคงเหลือ')+'"'):'')+'>'+esc(r.label)+'</span>'
          +(r.status==='pending'?' <span class="tag amber" style="font-size:9px" title="ยังไม่อนุมัติ — ยังไม่กระทบยอดคงเหลือ">รออนุมัติ · ยังไม่ตัดยอด</span>':'')
          +(r.status==='statonly'?' <span class="tag gray" style="font-size:9px" title="บันทึกเพื่อดูสถิติ ไม่กระทบยอด">สรุปเท่านั้น</span>':'')
          +(r.moved?' <span class="tag cyan" style="font-size:9px" title="ดึงขึ้นมารับเข้าก่อน เพื่อไม่ให้ยอดติดลบ">⇡ จัดลำดับ</span>':'')+'</td>'
@@ -5668,26 +6200,33 @@ function ibMatTable(p,rows){
              :'<td class="pn linkish" style="padding:5px 7px;border-bottom:'+bd+'" onclick="closeModal();viewDoc(\''+r.id+'\')">'+esc(r.no)
                +(r.ext?'<div class="muted" style="font-size:10.5px;font-weight:400" title="เลขที่เอกสารภายนอก / PO ลูกค้า">🔖 '+esc(r.ext)+'</div>':'')+'</td>')
        + IB_USE_COLS.map(function(c){ var v=r.cells[c[0]];
-           var cell='<td class="num" style="padding:5px 7px;border-bottom:'+bd+'">'+((v===undefined||v===null||v==='')?'':'<b>'+fmt(v)+'</b>')+'</td>';
+           var _tt=(v!==undefined&&v!==null&&v!=='')?qTip(v,p):'';
+           if(c[0]==='wd'&&r.wdRaw!=null)_tt='เบิกวัตถุดิบจริง '+fmt(Math.round(r.wdRaw*1000)/1000)+' (น้ำหนัก/เส้น) → คิดเป็นงาน '+fmt(Math.round(v))+' ชิ้น'+(_tt?(' · '+_tt):'');
+           var cell='<td class="num" style="padding:5px 7px;border-bottom:'+bd+'"'+(_tt?(' title="'+esc(_tt)+'"'):'')+'>'+((v===undefined||v===null||v==='')?'':'<b>'+fmtQ(v,p)+'</b>')+'</td>';
            if(_mbShow&&c[0]===_mbAfter){ var mb=Number(r.matBal)||0;
              cell+='<td class="num" style="padding:5px 7px;border-bottom:'+bd+';background:#fffbf2;border-left:2px solid var(--line);font-weight:800;color:'+(mb<0?'var(--red)':'#b45309')+'" title="แมทเหลือสะสม (รับแมทลูกค้า − เบิกวัตถุดิบ)">'+fmt(mb)+'</td>'; }
            return cell; }).join('')
-       +'<td class="num" style="padding:5px 7px;border-bottom:'+bd+';background:#f5faff;border-left:2px solid var(--line);font-weight:800;color:'+((r.bal||0)<0?'var(--red)':'var(--ink)')+'">'+fmt(r.bal||0)+'</td>'
+       +'<td class="num" style="padding:5px 7px;border-bottom:'+bd+';background:#f5faff;border-left:2px solid var(--line);font-weight:800;color:'+((r.bal||0)<0?'var(--red)':'var(--ink)')+'"'+(qTip(r.bal||0,p)?(' title="'+esc(qTip(r.bal||0,p))+'"'):'')+'>'+fmtQ(r.bal||0,p)+'</td>'
        +'<td style="padding:4px 6px;border-bottom:'+bd+';text-align:right">'+(auto?'':ibActBtn(r,p.id))+'</td>'
        +'</tr>';
      }).join('')
     :'<tr><td colspan="'+(9+IB_USE_COLS.length+(_mbShow?1:0))+'" class="muted" style="padding:20px;text-align:center">ไม่มีรายการตามตัวกรอง</td></tr>')
    +'<tr style="font-weight:800;background:#fff7a8">'
    +'<td colspan="7" style="padding:6px 8px;text-align:right;border-top:2px solid var(--line)">SUBTOTAL</td>'
-   + IB_USE_COLS.map(function(c){ var cell='<td class="num" style="padding:6px 7px;border-top:2px solid var(--line)">'+(sum[c[0]]?fmt(sum[c[0]]):'')+'</td>';
-       if(_mbShow&&c[0]===_mbAfter)cell+='<td class="num" style="padding:6px 7px;border-top:2px solid var(--line);border-left:2px solid var(--line);background:#fff2d6;font-size:13.5px;color:'+(_mbFin<0?'var(--red)':'#b45309')+'">'+fmt(_mbFin)+'</td>';
+   + IB_USE_COLS.map(function(c){ var cell='<td class="num" style="padding:6px 7px;border-top:2px solid var(--line)">'+(sum[c[0]]?fmtQ(sum[c[0]],p):'')+'</td>';
+       if(_mbShow&&c[0]===_mbAfter)cell+='<td class="num" style="padding:6px 7px;border-top:2px solid var(--line);border-left:2px solid var(--line);background:#fff2d6;font-size:13.5px;color:'+(_mbFin<0?'var(--red)':'#b45309')+'">'+fmtQ(_mbFin,p)+'</td>';
        return cell; }).join('')
-   +'<td class="num" style="padding:6px 7px;border-top:2px solid var(--line);border-left:2px solid var(--line);background:#dff3e6;font-size:13.5px;color:'+(fin<0?'var(--red)':'#116b3a')+'">'+fmt(fin)+'</td>'
+   +'<td class="num" style="padding:6px 7px;border-top:2px solid var(--line);border-left:2px solid var(--line);background:#dff3e6;font-size:13.5px;color:'+(fin<0?'var(--red)':'#116b3a')+'"'+(qTip(fin,p)?(' title="'+esc(qTip(fin,p))+'"'):'')+'>'+fmtQ(fin,p)+'</td>'
    +'<td style="border-top:2px solid var(--line)"></td></tr>'
    +'</tbody></table></div>'
-   /* ★ แถบกระบวนการ : คิดจากรายการทั้งหมด (ไม่ขึ้นกับตัวกรอง) เพื่อให้เทียบกับสินค้าคงคลังได้ตรง */
-   + ibFlowStrip(p,(function(){ var t={}; rows.forEach(function(r){ var c=r.cells||{};
-       for(var k in c){ var v=Number(c[k])||0; if(v)t[k]=(t[k]||0)+v; } }); return t; })());
+   /* ★ แถบกระบวนการ : คิดตามรายการที่แสดงอยู่จริง — เลือกตัวกรอง (เช่น เลขที่ใบสั่งซื้อ/ผลิต) แล้วตัวเลขอัปเดตตาม
+      ถ้าไม่ได้กรอง = ทั้งหมด → เทียบกับสินค้าคงคลังได้ · ถ้ากรองอยู่ = เฉพาะชุดที่เลือก จึงไม่นำไปเทียบ */
+   + (function(){ var t={}; vis.forEach(function(r){
+       if(!r||!r.posted)return;                       /* ★ นับเฉพาะใบที่อนุมัติแล้ว ให้ตรงกับหน้าสินค้าคงคลัง */
+       var c=r.cells||{};
+       for(var k in c){ var v=Number(c[k])||0; if(v)t[k]=(t[k]||0)+v; } });
+       var F=ibMatF(), on=!!(F.type||F.actor||F.vendor||F.order);
+       return ibFlowStrip(p,t,on?{n:vis.length,all:rows.length,F:F}:null); })();
 }
 /* ============================================================
    🔄 แถบติดตามงานแต่ละกระบวนการ (ใต้ SUBTOTAL)
@@ -5705,8 +6244,18 @@ function ibFlowSteps(p,sum){
   var dir=false; try{ dir=isDirectFlow(fl); }catch(e){}
   var plate=/^ชุบ/.test(fl)&&!dir;                    /* การไหลนี้ต้องผ่านการชุบ */
   var wd=N('wd'), rw=N('rw'), ps=N('ps'), pr=N('pr'), ok=N('ok'), ng=N('ng'), si=N('si');
+  var po=N('po'), gr=N('gr');
   var sorted=ok+ng;
   var st=[];
+  /* ★ วัตถุดิบ/วัสดุสิ้นเปลือง แบบ "ซื้อมา → ตรวจ → ขายไป" (ไม่ชุบ-QC · ผ่านขั้นตอนก่อน)
+     ของพวกนี้ไม่ได้ผลิตเอง จึงไม่มี "เบิกวัตถุดิบ → รับชิ้นงาน"
+     ขั้นตอนจริงคือ สั่งซื้อวัตถุดิบ → รับวัตถุดิบ → คัดแยก → รับเข้าสต๊อค */
+  if(!dir&&(p&&(p.type==='RM'||p.type==='SUP'))){
+    st.push({k:'wip',lbl:'WIP',sub:'สั่งซื้อแล้วผู้ขายยังส่งไม่ครบ',aL:'สั่งซื้อวัตถุดิบ',a:po,bL:'รับวัตถุดิบ',b:gr,noCmp:true,cmpLbl:'ค้างรับตาม PO'});
+    st.push({k:'sort',lbl:'Q-TIME / รอคัด',sub:'รับวัตถุดิบแล้วยังคัดไม่เสร็จ',aL:'รับวัตถุดิบ',a:gr,bL:'คัดแยก OK+NG',b:sorted});
+    st.push({k:'stk',lbl:'รอชั่ง',sub:'คัดผ่านแล้วยังไม่รับเข้าสต๊อค',aL:'คัดแยก OK',a:ok,bL:'รับเข้าสต๊อค',b:si});
+    return {dir:false,plate:false,buy:true,flow:fl,steps:st};
+  }
   /* WIP : เทียบกับคอลัมน์ "ค้างผลิต/ค้างรับ" ไม่ได้ เพราะคอลัมน์นั้นคิดจากใบสั่งผลิตที่ยังรับไม่ครบ (คนละฐาน)
      จึงแสดงยอดของคอลัมน์นั้นกำกับไว้เฉย ๆ ไม่ตัดสินว่าตรง/ไม่ตรง */
   st.push({k:'wip',lbl:'WIP',sub:'เบิกไปผลิตแล้วยังรับไม่ครบ',aL:'เบิกวัตถุดิบ',a:wd,bL:'รับชิ้นงาน',b:rw,noCmp:true,cmpLbl:'ค้างผลิตตาม PO'});
@@ -5726,17 +6275,20 @@ function ibFlowSteps(p,sum){
 function ibFlowInvOf(p,k){
   try{
     if(!p)return null;
+    try{ var _r=stockSrc(p); if(_r&&_r.id!==p.id)p=_r; }catch(e){}   /* ★ ใช้สต๊อคร่วม → เทียบกับตัวหลัก */
     var dir=false; try{ dir=isDirectFlow(prodFlow(p)); }catch(e){}
-    if(k==='wip'){ return wipBacklog(p,wipAgeMap()); }
-    if(k==='recv'){ var v=qtimePendOf(p,wipPendMap(),platePendMap()); return (v==null)?null:v; }
+    if(k==='wip')return wipBacklog(p,wipAgeMap());   /* คนละฐาน (ค้างตามใบสั่งผลิต) ไม่นำมาตัดสิน */
     if(dir)return 0;
-    if(k==='plate'){ var pm=platePendMap(); return (Number(p.atPlating)||0)+(Number(pm[p.id])||0); }
-    if(k==='sort')  return Number(p.wip)||0;
-    if(k==='stk')   return Number(p.passedQC)||0;
+    var R=procPend(p);                               /* ★ แหล่งเดียวกับหน้าสินค้าคงคลัง */
+    if(R.na)return null;
+    if(k==='recv') return R.qt;
+    if(k==='plate')return R.plate;
+    if(k==='sort') return R.sort;
+    if(k==='stk')  return R.stk;
   }catch(e){}
   return null;
 }
-function ibFlowStrip(p,sum){
+function ibFlowStrip(p,sum,flt){
   try{
     if(!p)return '';
     if(isMatProd(p))return '';                        /* รับแมทลูกค้า ใช้กติกาของตัวเอง */
@@ -5744,36 +6296,49 @@ function ibFlowStrip(p,sum){
     var nDiff=0;
     var cells=F.steps.map(function(s){
       var v=Math.round((s.a-s.b)*1000)/1000;
-      var inv=ibFlowInvOf(p,s.k);
+      var inv=flt?null:ibFlowInvOf(p,s.k);            /* กรองอยู่ = เป็นชุดย่อย ไม่นำไปเทียบกับยอดรวมทั้งรายการ */
       var cmp=(inv!=null)&&!s.noCmp;
-      var same=!cmp||(Math.abs(inv-v)<0.001);
+      /* ★ ค่าติดลบ : หน้าสินค้าคงคลังปัดเป็น 0 ตามที่ตกลงไว้ — ไม่ถือว่า "ไม่ตรงกัน" */
+      var clamped=cmp&&(v<0)&&(Math.abs(inv)<0.001);
+      var same=!cmp||clamped||(Math.abs(inv-v)<0.001);
       if(cmp&&!same)nDiff++;
       var col=(v<0)?'var(--red)':(v>0?'#b45309':'#116b3a');
       return '<div style="flex:1 1 172px;min-width:154px;border:1px solid '+(same?'var(--line)':'#f0b429')+';border-radius:9px;padding:7px 9px;background:'+(same?'#fff':'#fffaf0')+'">'
-        +'<div style="font-size:10.5px;color:var(--ink3);line-height:1.35">'+esc(s.aL)+' <b style="color:var(--ink2)">'+fmt(s.a)+'</b><br>− '+esc(s.bL)+' <b style="color:var(--ink2)">'+fmt(s.b)+'</b></div>'
+        +'<div style="font-size:10.5px;color:var(--ink3);line-height:1.35">'+esc(s.aL)+' <b style="color:var(--ink2)">'+fmtQ(s.a,p)+'</b><br>− '+esc(s.bL)+' <b style="color:var(--ink2)">'+fmtQ(s.b,p)+'</b></div>'
         +'<div style="border-top:1px dashed var(--line);margin:4px 0 3px"></div>'
         +'<div style="display:flex;align-items:baseline;gap:6px"><span style="font-size:11.5px;font-weight:700;color:var(--ink2)">'+esc(s.lbl)+'</span>'
-          +'<b style="margin-left:auto;font-size:15px;color:'+col+'">'+fmt(v)+'</b></div>'
+          +'<b style="margin-left:auto;font-size:15px;color:'+col+'"'+(qTip(v,p)?(' title="'+esc(qTip(v,p))+'"'):'')+'>'+fmtQ(v,p)+'</b></div>'
         +'<div style="font-size:9.5px;color:var(--ink3);line-height:1.3">'+esc(s.sub)+'</div>'
         +(inv==null?''
           :(s.noCmp
-            ? '<div style="font-size:9.5px;margin-top:2px;color:var(--ink3)" title="คอลัมน์นี้ในสินค้าคงคลังคิดจากใบสั่งผลิตที่ยังรับไม่ครบ — คนละฐานกับสูตรด้านบน จึงไม่นำมาตัดสินว่าตรงหรือไม่ตรง">'+esc(s.cmpLbl||'สินค้าคงคลัง')+': <b>'+fmt(inv)+'</b></div>'
-            : '<div style="font-size:9.5px;margin-top:2px;color:'+(same?'var(--ink3)':'#b45309')+'" title="ยอดที่แสดงอยู่ในหน้าสินค้าคงคลัง">'+(same?'✓ ':'⚠️ ')+'สินค้าคงคลัง: <b>'+fmt(inv)+'</b>'+(same?'':' (ต่าง '+fmt(Math.round((v-inv)*1000)/1000)+')')+'</div>'))
+            ? '<div style="font-size:9.5px;margin-top:2px;color:var(--ink3)" title="คอลัมน์นี้ในสินค้าคงคลังคิดจากใบสั่งผลิตที่ยังรับไม่ครบ — คนละฐานกับสูตรด้านบน จึงไม่นำมาตัดสินว่าตรงหรือไม่ตรง">'+esc(s.cmpLbl||'สินค้าคงคลัง')+': <b>'+fmtQ(inv,p)+'</b></div>'
+            : (clamped
+               ? '<div style="font-size:9.5px;margin-top:2px;color:var(--ink3)" title="ค่าติดลบ หน้าสินค้าคงคลังแสดงเป็น 0 เพื่อไม่ให้สับสน — ตัวเลขจริงคือค่าด้านบน">✓ สินค้าคงคลัง: <b>0</b> <span style="color:#b45309">(ติดลบ ปัดเป็น 0)</span></div>'
+               : '<div style="font-size:9.5px;margin-top:2px;color:'+(same?'var(--ink3)':'#b45309')+'" title="ยอดที่แสดงอยู่ในหน้าสินค้าคงคลัง">'+(same?'✓ ':'⚠️ ')+'สินค้าคงคลัง: <b>'+fmtQ(inv,p)+'</b>'+(same?'':' (ต่าง '+fmtQ(v-inv,p)+')')+'</div>')))
         +'</div>';
     }).join('');
-    return '<div style="margin-top:10px;border:1.5px solid var(--line);border-radius:11px;padding:9px 11px;background:var(--panel2)">'
-      +'<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:7px">'
+    var _op=true; try{ _op=(localStorage.getItem('rtk_ibstrip')!=='0'); }catch(e){}
+    return '<details class="ib-flowstrip"'+(_op?' open':'')+' ontoggle="try{localStorage.setItem(\'rtk_ibstrip\',this.open?\'1\':\'0\')}catch(e){}" style="margin-top:10px;border:1.5px solid var(--line);border-radius:11px;padding:9px 11px;background:var(--panel2)">'
+      +'<summary style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:7px;cursor:pointer;list-style:none">'
       +'<b style="font-size:12.5px">🔄 ติดตามงานแต่ละกระบวนการ</b>'
       +'<span class="tag gray" style="font-size:10px">'+esc(F.flow||'-')+'</span>'
       +(F.dir?'<span class="tag green" style="font-size:10px">เข้าคงเหลือทันที — ไม่มีขั้นชุบ/คัดแยก/ชั่ง</span>'
-             :(F.plate?'':'<span class="tag cyan" style="font-size:10px">ไม่ผ่านการชุบ — ตัดขั้นส่งชุบ/รับชุบออก</span>'))
-      +(nDiff?'<span class="tag amber" style="font-size:10px;margin-left:auto">⚠️ ต่างจากสินค้าคงคลัง '+nDiff+' ช่อง</span>'
-             :'<span class="tag green" style="font-size:10px;margin-left:auto">✓ ตรงกับสินค้าคงคลัง</span>')
-      +'</div>'
+         :(F.buy?'<span class="tag amber" style="font-size:10px" title="ของที่ซื้อมาขายไป ไม่ได้ผลิตเอง — ขั้นตอนเริ่มที่สั่งซื้อ/รับวัตถุดิบ">🛒 ซื้อมา–ขายไป : สั่งซื้อ → รับวัตถุดิบ → คัดแยก → รับเข้าสต๊อค</span>'
+             :(F.plate?'':'<span class="tag cyan" style="font-size:10px">ไม่ผ่านการชุบ — ตัดขั้นส่งชุบ/รับชุบออก</span>')))
+      +(flt?('<span class="tag" style="font-size:10px;background:#e0f2fe;color:#075985;border:1px solid #7dd3fc" title="กำลังกรองอยู่ — ตัวเลขด้านล่างคิดเฉพาะรายการที่แสดง ไม่ใช่ยอดรวมทั้งรายการ">🔎 เฉพาะที่กรอง '
+          +[flt.F.order?('เลขที่ '+esc(flt.F.order)):'',flt.F.type?('ประเภท '+esc(flt.F.type)):'',flt.F.vendor?('ผู้ผลิต '+esc(flt.F.vendor)):'',flt.F.actor?('ผู้ทำ '+esc(flt.F.actor)):''].filter(Boolean).join(' · ')
+          +' ('+fmt(flt.n)+'/'+fmt(flt.all)+' รายการ)</span>'
+          +'<button class="btn sm" style="font-size:10px;padding:2px 8px" onclick="ibMatClearF()" title="ล้างตัวกรอง กลับไปดูยอดรวมทั้งรายการ">✖ ล้างตัวกรอง</button>')
+          :'')
+      +(flt?'<span class="tag gray" style="font-size:10px;margin-left:auto">ยอดเฉพาะชุดที่เลือก</span>'
+        :(nDiff?'<span class="tag amber" style="font-size:10px;margin-left:auto">⚠️ ต่างจากสินค้าคงคลัง '+nDiff+' ช่อง</span>'
+             :'<span class="tag green" style="font-size:10px;margin-left:auto">✓ ตรงกับสินค้าคงคลัง</span>'))
+      +'</summary>'
       +'<div style="display:flex;gap:8px;flex-wrap:wrap">'+cells+'</div>'
       +'<div class="muted" style="font-size:10.5px;margin-top:6px;line-height:1.55">'
-      +'ตัวเลขบน = ผลรวมคอลัมน์ในตารางนี้ · ตัวเลขใหญ่ = ยอดค้างตามสูตร · บรรทัดล่าง = ยอดที่หน้าสินค้าคงคลังแสดงอยู่<br>'
-      +'<b style="color:var(--red)">ติดลบ = ขั้นถัดไปทำเกินขั้นก่อนหน้า</b> ให้ตรวจเอกสารของขั้นนั้น · ถ้าต่างจากสินค้าคงคลัง สาเหตุที่พบบ่อยคือเอกสารเก่าถูกเก็บเข้าคลังไปแล้ว (ผลรวมในตารางจึงไม่ครบ) หรือหน้าสินค้าคงคลังตัดค่าติดลบเป็น 0'
+      +(flt?'<b style="color:#075985">กำลังกรองอยู่</b> — ตัวเลขทั้งแถบคิดเฉพาะ '+fmt(flt.n)+' รายการที่แสดง (ใช้ดูยอดค้างราย PO ได้) · กดล้างตัวกรองเพื่อกลับไปดูยอดรวมทั้งรายการ<br>'
+           :'ตัวเลขบน = ผลรวมคอลัมน์ในตารางนี้ · ตัวเลขใหญ่ = ยอดค้างตามสูตร · บรรทัดล่าง = ยอดที่หน้าสินค้าคงคลังแสดงอยู่<br>')
+      +'<b style="color:var(--red)">ติดลบ = ขั้นถัดไปทำเกินขั้นก่อนหน้า</b> ให้ตรวจเอกสารของขั้นนั้น'+(flt?'':' · ถ้าต่างจากสินค้าคงคลัง สาเหตุที่พบบ่อยคือเอกสารเก่าถูกเก็บเข้าคลังไปแล้ว (ผลรวมในตารางจึงไม่ครบ)')
       +'</div></div>';
   }catch(e){ return ''; }
 }
@@ -5792,12 +6357,17 @@ function openItemLedgerMat(id){
   window.__ibEdit={}; window.__ibMatF={type:'',actor:'',vendor:'',order:''};
   var R=ibMatRows(id), rows=R.rows;
   window.__ibMat={p:p,rows:rows};
-  var fin=R.final, cur=Number(p.onHand)||0, diff=fin-cur;
+  /* ★ รายการที่ "ใช้สต๊อคร่วม" กับตัวหลัก : ยอดคงเหลือเก็บไว้ที่ตัวหลักตัวเดียว
+     ต้องเทียบกับยอดของตัวหลัก ไม่ใช่ของตัวเอง (ซึ่งเป็น 0 เสมอ)
+     ไม่งั้นจะขึ้นว่า "ต่างจากสต๊อก" ตลอด และถ้ากดอัปเดตยอดจะกลายเป็นนับสต๊อกซ้ำสองรอบ */
+  var _rootP=p; try{ _rootP=stockSrc(p)||p; }catch(e){}
+  var _shared=(_rootP.id!==p.id), _kidsP=[]; try{ _kidsP=p.stockOf?[]:stockKids(p.id); }catch(e){}
+  var fin=R.final, cur=Number(_rootP.onHand)||0, diff=fin-cur;
   var nAuto=rows.filter(function(r){return r.auto&&!r.matAuto&&!r.bf;}).length, nMov=rows.filter(function(r){return r.moved;}).length;
   var nBF=rows.filter(function(r){return r.bf;}).length;
   var nMatAuto=rows.filter(function(r){return r.matAuto;}).length, nMatAdj=rows.filter(function(r){return r.matAdj;}).length;
   var body=''
-   +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center">'
+   +'<div class="ib-head" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center">'
    +  (isMatProd(p)?'<span class="tag violet">🧲 รับแมทลูกค้า</span>'
         :(p.type==='RM'?((isImpFlow(p)?'<span class="tag cyan">🌐 นำเข้า : รับเข้า (+) · เบิก/เบิกจ่าย (−)</span>':'')+'<span class="tag rm">🔩 วัตถุดิบ</span>')
         :(p.type==='SUP'?'<span class="tag amber">🧰 วัสดุสิ้นเปลือง</span>'
@@ -5807,8 +6377,11 @@ function openItemLedgerMat(id){
    +  '<span class="tag gray">ลูกค้า: '+esc(p.customer||'-')+'</span>'
    +  '<span class="tag gray">ชื่อ: '+esc(p.name||'-')+'</span>'
    +  ibFlowPick(p)
-   +  '<span class="tag teal">คงเหลือปัจจุบัน '+fmt(p.onHand||0)+'</span>'
-   +  '<span class="tag '+(diff?'red':'green')+'">ยอดสะสมท้ายตาราง '+fmt(fin)+(diff?(' · ต่างจากสต๊อก '+fmt(diff)):' · ตรงกัน ✓')+'</span>'
+   +  (_shared?('<span class="tag" style="background:#eef2ff;color:#3730a3;border:1px solid #c7d2fe" title="รายการนี้ไม่มียอดสต๊อกของตัวเอง — ใช้ยอดร่วมกับสต๊อคหลัก ตัวเลขทั้งหน้านี้จึงเป็นของสต๊อคหลัก">⇄ ใช้สต๊อคร่วมกับ <b>'+esc(_rootP.pn)+'</b> (สต๊อคหลัก)</span>'
+        +'<button class="btn sm" onclick="closeModal();openItemLedger(\''+_rootP.id+'\')" title="เปิดรายการดำเนินการของสต๊อคหลัก">↩ ไปที่สต๊อคหลัก</button>'):'')
+   +  ((!_shared&&_kidsP.length)?('<span class="tag" style="background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0" title="รายการเหล่านี้ใช้ยอดสต๊อกร่วมกับตัวนี้ เอกสารของทุกตัวจึงรวมอยู่ในตารางนี้">🔗 สต๊อคหลัก — ใช้ร่วมกับ '+esc(_kidsP.map(function(k){return k.pn;}).join(', '))+'</span>'):'')
+   +  '<span class="tag teal"'+(qTip(cur,p)?(' title="'+esc(qTip(cur,p))+'"'):'')+'>คงเหลือปัจจุบัน '+fmtQ(cur,p)+(_shared?' <span style="font-weight:400;opacity:.8">(ของสต๊อคหลัก)</span>':'')+'</span>'
+   +  '<span class="tag '+(diff?'red':'green')+'">ยอดสะสมท้ายตาราง '+fmtQ(fin,p)+(diff?(' · ต่างจากสต๊อก '+fmtQ(diff,p)):' · ตรงกัน ✓')+'</span>'
    +  (diff?'<button class="btn sm" onclick="ibMatSync(\''+p.id+'\')" title="ตั้งยอดคงเหลือในสต๊อกให้เท่ากับยอดสะสมท้ายตาราง">🔄 อัปเดตยอดให้ตรง</button>':'')
    +  (diff?'<button class="btn sm" style="background:#0e7490;color:#fff;font-weight:700" onclick="ibDiffOpen(\''+p.id+'\')" title="ดูว่าเอกสารใบไหนทำให้ยอดไม่ตรง">🔍 ตรวจส่วนต่าง</button>':'')
    +  '<button class="btn sm" onclick="stkSyncAllOpen()" title="อัปเดตยอดคงเหลือ/คัดแยก/ชุบ/รอเข้าสต๊อค ให้ตรงกับเอกสารทั้งระบบ">🔄 อัปเดตยอดทั้งระบบ</button>'
@@ -5828,12 +6401,12 @@ function openItemLedgerMat(id){
    +'</div>'
    +'<div id="ibMatBar"></div>'
    +'<div id="ibMatBox"></div>'
-   +'<div class="hint" style="margin-top:8px"><span class="i">💡</span><div>ช่อง <b>แมทเหลือ</b> = ยอดสะสม <b>รับแมทลูกค้า</b> (+) − <b>เบิกวัตถุดิบ</b> (−) ใช้คุมว่าแมทที่ลูกค้าส่งมาถูกเบิกไปผลิตแล้วเท่าไหร่ เหลือเท่าไหร่ · ถ้าจะติดลบ ระบบ<b>เติมแถวรับแมทลูกค้าอัตโนมัติ</b>ให้พอจ่าย เพื่อให้<b>เบิกวัตถุดิบได้เสมอ</b> (ควรคีย์ใบรับแมทจริงเพิ่ม) · ช่องนี้<b>นับทุกใบรวมที่ยังรออนุมัติ</b> ต่างจากช่องคงเหลือ · ช่อง <b>เวลา</b> ใช้แยกลำดับเกิดก่อน–หลังในวันเดียวกัน · แก้ยอดเองได้ที่ปุ่ม <b>⚖️ ปรับยอดแมท</b><br>ช่อง <b>คงเหลือ</b> = ยอดสะสมทีละรายการ : '+(isAmpasRMC(p)?('<b>รับชิ้นงาน</b> (+) − <b>'+(isCnnRMC(p)?'เบิกจ่าย':'ส่งลูกค้า')+'</b> (−) และ <b>ปรับยอด</b> · ใบ <b>รับแมทลูกค้า</b> เป็นวัตถุดิบของลูกค้า ไม่นับเข้าคงเหลือ'):(isMatProd(p)?'<b>รับแมทลูกค้า</b> (+) − <b>ส่งลูกค้า</b> (−) และ <b>ปรับยอด</b>'
+   +'<details class="ib-note"><summary>💡 คำอธิบายการอ่านตาราง (กดเพื่อดู)</summary><div>ช่อง <b>แมทเหลือ</b> = ยอดสะสม <b>รับแมทลูกค้า</b> (+) − <b>เบิกวัตถุดิบ</b> (−) ใช้คุมว่าแมทที่ลูกค้าส่งมาถูกเบิกไปผลิตแล้วเท่าไหร่ เหลือเท่าไหร่ · ถ้าจะติดลบ ระบบ<b>เติมแถวรับแมทลูกค้าอัตโนมัติ</b>ให้พอจ่าย เพื่อให้<b>เบิกวัตถุดิบได้เสมอ</b> (ควรคีย์ใบรับแมทจริงเพิ่ม) · ช่องนี้<b>นับทุกใบรวมที่ยังรออนุมัติ</b> ต่างจากช่องคงเหลือ · ช่อง <b>เวลา</b> ใช้แยกลำดับเกิดก่อน–หลังในวันเดียวกัน · แก้ยอดเองได้ที่ปุ่ม <b>⚖️ ปรับยอดแมท</b><br>ช่อง <b>คงเหลือ</b> = ยอดสะสมทีละรายการ : '+(isAmpasRMC(p)?('<b>รับชิ้นงาน</b> (+) − <b>'+(isCnnRMC(p)?'เบิกจ่าย':'ส่งลูกค้า')+'</b> (−) และ <b>ปรับยอด</b> · ใบ <b>รับแมทลูกค้า</b> เป็นวัตถุดิบของลูกค้า ไม่นับเข้าคงเหลือ'):(isMatProd(p)?'<b>รับแมทลูกค้า</b> (+) − <b>ส่งลูกค้า</b> (−) และ <b>ปรับยอด</b>'
        :((p.type==='RM'||p.type==='SUP')
          ?(isImpFlow(p)
            ?'<b>รับวัตถุดิบ / รับเข้าต่างประเทศ</b> (+) − <b>เบิกวัตถุดิบ / เบิกจ่าย</b> (−) และ <b>ปรับยอด</b> · สั่งซื้อ/คัดแยก/รับเข้าสต๊อค เป็นขั้นตอนติดตาม ไม่บวกยอดซ้ำ'
            :'<b>รับวัตถุดิบ / รับเข้าสต๊อค</b> (+) − <b>เบิกวัตถุดิบ / เบิกจ่าย / ส่งลูกค้า</b> (−) และ <b>ปรับยอด</b> · สั่งซื้อ/คัดแยก เป็นขั้นตอนติดตาม ไม่กระทบยอดคงเหลือ')
-         :'<b>รับเข้าสต๊อค</b> (+) − <b>เบิกจ่าย</b> (−) และ <b>ปรับยอด</b> · ส่งชุบ/รับชุบ/คัดแยก/รับชิ้นงาน เป็นขั้นตอนระหว่างผลิต ไม่กระทบยอดคงเหลือ')))+'<br>เอกสารที่<b>ยังไม่อนุมัติ</b> หรือ <b>สรุปเท่านั้น</b> จะแสดงจำนวนไว้ แต่<b>ไม่นับเข้ายอดคงเหลือ</b> (ตรงกับสต๊อกจริง)<br>ระบบ<b>รับเข้าก่อนแล้วจึงจ่ายออกทีละรายการ</b> ยอดคงเหลือจึงไม่ติดลบ · <span class="tag cyan" style="font-size:9px">⇡ จัดลำดับ</span> = ดึงใบรับชิ้นงานขึ้นมาก่อน · <span class="tag green" style="font-size:9px">เติมอัตโนมัติ</span> = ยังไม่มีใบรับชิ้นงานรองรับ (ควรออกใบรับชิ้นงานจริงเพิ่ม)</div></div>';
+         :'<b>รับเข้าสต๊อค</b> (+) − <b>เบิกจ่าย</b> (−) และ <b>ปรับยอด</b> · ส่งชุบ/รับชุบ/คัดแยก/รับชิ้นงาน เป็นขั้นตอนระหว่างผลิต ไม่กระทบยอดคงเหลือ')))+'<br>เอกสารที่<b>ยังไม่อนุมัติ</b> หรือ <b>สรุปเท่านั้น</b> จะแสดงจำนวนไว้ แต่<b>ไม่นับเข้ายอดคงเหลือ</b> (ตรงกับสต๊อกจริง)<br>ระบบ<b>รับเข้าก่อนแล้วจึงจ่ายออกทีละรายการ</b> ยอดคงเหลือจึงไม่ติดลบ · <span class="tag cyan" style="font-size:9px">⇡ จัดลำดับ</span> = ดึงใบรับชิ้นงานขึ้นมาก่อน · <span class="tag green" style="font-size:9px">เติมอัตโนมัติ</span> = ยังไม่มีใบรับชิ้นงานรองรับ (ควรออกใบรับชิ้นงานจริงเพิ่ม)</div></details>';
   modal({title:'📋 รายการดำเนินการในชื่อ '+esc(p.pn)+' <span class="muted" style="font-size:13px;font-weight:400">'+rows.length+' รายการ</span>',size:'full',body:body,
     footer:'<button class="btn danger" onclick="rcNew(\''+p.id+'\')" title="พบของเสีย → กักสต๊อกคงเหลือทั้งหมดแล้วตรวจซ้ำ 100% (FM-QC-16)">🔁 ตรวจซ้ำ 100%</button>'
       +'<button class="btn" onclick="crxOpen(\''+p.id+'\')" title="ลูกค้าพบงานเสีย — นำของดีไปเปลี่ยน">🔁 แลกเปลี่ยนกับลูกค้า</button>'
@@ -5843,6 +6416,8 @@ function openItemLedgerMat(id){
       +'<button class="btn" id="ibSaveBtn" onclick="ibEditSave()">💾 บันทึก</button>'
       +'<button class="btn" onclick="ibPrintMat(\''+p.id+'\')">🖨️ พิมพ์</button>'
       +'<button class="btn pri" onclick="ibEditSave();closeModal()">ปิด</button>'});
+  /* ★ ให้ตารางยืดเต็มความสูงที่เหลือ — ไม่ต้องเลื่อนทั้งหน้าต่าง หัว/ท้ายไม่หลุดจอ */
+  try{ var _mb=document.querySelector('.modal.full .modal-b'); if(_mb)_mb.classList.add('ib-fitbody'); }catch(e){}
   /* ค่าตั้งต้น : เปิดมาเห็นรายการล่าสุด + SUBTOTAL ทันที */
   try{ setTimeout(function(){ ibMatDraw(true); },30); }catch(e){}
 }
@@ -5931,14 +6506,19 @@ function stkAutoToggle(){
 }
 function stkAutoBtn(){ return '<button class="btn sm'+(stkAutoOn()?' pri':'')+'" onclick="stkAutoToggle()" title="อัปเดตยอดคงเหลือให้ตรงกับยอดสะสมท้ายตารางอัตโนมัติเมื่อเปิดดู">'+(stkAutoOn()?'🔄 อัปเดตอัตโนมัติ: เปิด':'⏸️ อัปเดตอัตโนมัติ: ปิด')+'</button>'; }
 /* ปรับยอดของสินค้า 1 ตัวให้ตรงทั้งคงเหลือและบัคเก็ตอื่น — คืนจำนวนช่องที่แก้ */
-function stkSyncOne(id,silent){
+function stkSyncOne(id,silent,auto){
   var p=P(id); if(!p)return 0;
   var root=p; try{ if(typeof stockSrc==='function')root=stockSrc(p)||p; }catch(e){}
   var n=0, msg=[];
   /* 1) คงเหลือ = ยอดสะสมท้ายตาราง */
   try{
     var R=ibMatRows(id), fin=Number(R.final)||0, cur=Number(root.onHand)||0;
-    if(Math.abs(fin-cur)>0.001){ root.onHand=fin; n++; msg.push('คงเหลือ '+fmt(cur)+' → '+fmt(fin)); }
+    /* ★ เส้นทาง "อัปเดตอัตโนมัติ" : ห้ามแก้ยอดสต๊อกเมื่อส่วนต่างยังอธิบายไม่ได้
+       (ไม่มีแถว "ยอดยกมา" รองรับ = เอกสารรายงานไม่ตรงกับยอดจริง ต้องให้คนตรวจก่อน)
+       ถ้าจะแก้จริงให้กดปุ่ม "🔄 อัปเดตยอดให้ตรง" เอง */
+    var _hasBF=false; try{ _hasBF=(R.rows||[]).some(function(r){ return r&&r.bf; }); }catch(e){}
+    var _blocked=(auto&&!_hasBF&&Math.abs(fin-cur)>0.001);
+    if(!_blocked&&Math.abs(fin-cur)>0.001){ root.onHand=fin; n++; msg.push('คงเหลือ '+fmt(cur)+' → '+fmt(fin)); }
   }catch(e){}
   /* 2) คัดแยก · ชุบ · รอเข้าสต๊อค · NG = ตามสมุดความเคลื่อนไหว */
   try{
@@ -5952,7 +6532,7 @@ function stkSyncOne(id,silent){
 /* เรียกอัตโนมัติตอนเปิดหน้ารายการดำเนินการ */
 function stkAutoSync(id){
   if(!stkAutoOn())return 0;
-  try{ return stkSyncOne(id,false); }catch(e){ return 0; }
+  try{ return stkSyncOne(id,false,true); }catch(e){ return 0; }   /* true = เส้นทางอัตโนมัติ (ระวังกว่า) */
 }
 /* อัปเดตทั้งระบบ : คงเหลือ (ตามตาราง) + บัคเก็ต (ตามสมุด) */
 function stkSyncAllScan(){
@@ -6023,9 +6603,12 @@ function stkSyncAllFix(){
 
 function ibMatSync(id){
   var p=P(id); if(!p)return;
+  /* ★ ยอดคงเหลือเก็บไว้ที่ "สต๊อคหลัก" ตัวเดียว — ถ้าเผลอเขียนลงตัวลูกจะกลายเป็นนับสต๊อกซ้ำ */
+  var t=p; try{ t=stockSrc(p)||p; }catch(e){}
   var R=ibMatRows(id), fin=R.final;
-  if(!confirm('ปรับยอดคงเหลือของ '+p.pn+'\n\nจาก '+fmt(p.onHand||0)+'  →  '+fmt(fin)+'\n\nยืนยันหรือไม่?'))return;
-  p.onHand=fin; saveDB(); toast('อัปเดตยอดคงเหลือ '+p.pn+' = '+fmt(fin),'ok');
+  var lbl=(t.id!==p.id)?('\n\n(ยอดเก็บที่สต๊อคหลัก '+t.pn+' — '+p.pn+' ใช้ยอดร่วม)'):'';
+  if(!confirm('ปรับยอดคงเหลือของ '+t.pn+'\n\nจาก '+fmt(t.onHand||0)+'  →  '+fmt(fin)+lbl+'\n\nยืนยันหรือไม่?'))return;
+  t.onHand=fin; saveDB(); toast('อัปเดตยอดคงเหลือ '+t.pn+' = '+fmt(fin),'ok');
   closeModal(); openItemLedgerMat(id); try{ render(); }catch(e){}
 }
 function ibPrintMat(id){
@@ -30591,7 +31174,7 @@ function qtimePendOf(p,wpMap,plMap){
    จึงเก็บเป็น "ส่วนต่าง" : แสดง = คำนวณ − ฐานตอนปรับ + ยอดที่ตั้งไว้
    เอกสารใหม่ที่เข้ามาหลังจากนี้ยังบวกเพิ่มให้ตามปกติ
    ============================================================ */
-var PEND_KEYS={recv:'Q-TIME ค้าง',plate:'ชุบ ค้าง',sort:'คัดแยก ค้าง'};
+var PEND_KEYS={recv:'Q-TIME ค้าง',plate:'ชุบ ค้าง',sort:'คัดแยก ค้าง',stk:'รอชั่ง ค้าง'};
 function pendAdjGet(p,k){ try{ var a=p&&p.pendAdj&&p.pendAdj[k]; return (a&&a.set)?a:null; }catch(e){ return null; } }
 function pendAdjApply(p,k,computed){
   var a=pendAdjGet(p,k); if(!a)return computed;
@@ -30642,7 +31225,8 @@ function pendAdjOpen(pid,k){
 function pendCell(pid,k,v,extraTitle){
   var p=P(pid), a=p?pendAdjGet(p,k):null;
   return '<span class="linkish" style="cursor:pointer;'+(a?'border-bottom:1px dotted var(--brand)':'')+'" '
-    +'onclick="pendAdjOpen(\''+pid+'\',\''+k+'\')" title="'+(extraTitle||'')+(a?' · ปรับยอดไว้เอง — คลิกเพื่อแก้/ยกเลิก':' · คลิกเพื่อปรับยอด')+'">'+fmt(v)+(a?' ✎':'')+'</span>';
+    +'onclick="pendAdjOpen(\''+pid+'\',\''+k+'\')" title="'+(extraTitle||'')+(a?' · ปรับยอดไว้เอง — คลิกเพื่อแก้/ยกเลิก':' · คลิกเพื่อปรับยอด')
+    +((typeof qTip==='function'&&qTip(v,p))?(' · '+qTip(v,p)):'')+'">'+fmtQ(v,p)+(a?' ✎':'')+'</span>';
 }
 
 
@@ -30688,16 +31272,19 @@ function wipPendMap(){
     var ev=[];
     (DB.docs||[]).forEach(function(d){
       if(!d||d.status!=='approved'||d.statOnly)return;
+      if(plIsPlan(d))return;                    /* ★ แผนจัดส่ง ไม่ใช่ใบส่งชุบ — ห้ามบวกเข้ายอดรอชุบ */
       var t=d.type, k='';
       if(t==='RW')k='rw';
       else if(t==='QC'||t==='QI'||t==='QS'||t==='QSE')k='sort';
       else if(t==='PL'||t==='PS'||t==='PR')k='pl';
+      else if(t==='SI'||t==='SII'||t==='SIS'||t==='SSE')k='stkin';   /* ★ รับเข้าสต๊อค — ใช้หักยอด "รอชั่ง" */
       if(!k)return;
       var ts=(Date.parse((d.date||'')+'T00:00:00')||0)||(d.ts||0);
       (d.lines||[]).forEach(function(l){
         var pid=l&&(l.productId||l.fgId); if(!pid)return;
         if(k==='rw'){ var q=Number(l.receivedQty!=null?l.receivedQty:l.qty)||0; if(q)ev.push({p:pid,t:ts,k:'rw',q:q}); }
-        else if(k==='sort'){ var so=(Number(l.ok)||0)+(Number(l.ng)||0); if(so)ev.push({p:pid,t:ts,k:'sort',q:so}); }
+        else if(k==='stkin'){ var qs=Number(l.weighed!=null?l.weighed:l.qty)||0; if(qs)ev.push({p:pid,t:ts,k:'stkin',q:qs}); }
+        else if(k==='sort'){ var so=(Number(l.ok)||0)+(Number(l.ng)||0); if(so)ev.push({p:pid,t:ts,k:'sort',q:so,ok:Number(l.ok)||0}); }
         else {
           var sv=Number(l.sentQty)||0, rv=Number(l.recvQty)||0;
           if(!sv&&!rv){ if(t==='PR')rv=Number(l.qty)||0; else sv=Number(l.qty)||0; }
@@ -30709,15 +31296,19 @@ function wipPendMap(){
     ev.sort(function(a,b){ return (a.t-b.t); });
     var M={};
     ev.forEach(function(e){
-      var st=M[e.p]||(M[e.p]={recv:0,plate:0,sort:0});
+      var st=M[e.p]||(M[e.p]={recv:0,plate:0,sort:0,stk:0});
+      if(st.stk===undefined)st.stk=0;
       if(e.k==='rw')st.recv+=e.q;
       else if(e.k==='ps'){ var t1=Math.min(st.recv,e.q); st.recv-=t1; st.plate+=e.q; }
       else if(e.k==='pr'){ st.plate-=e.q; if(st.plate<0)st.plate=0; st.sort+=e.q; }
-      else if(e.k==='sort'){ var t2=Math.min(st.sort,e.q); st.sort-=t2; var rest=e.q-t2; if(rest>0){ var t3=Math.min(st.recv,rest); st.recv-=t3; } }
-      if(st.recv<0)st.recv=0; if(st.sort<0)st.sort=0;
+      else if(e.k==='sort'){ var t2=Math.min(st.sort,e.q); st.sort-=t2; var rest=e.q-t2; if(rest>0){ var t3=Math.min(st.recv,rest); st.recv-=t3; }
+        st.stk+=(Number(e.ok)||0); }                         /* ★ คัดผ่าน OK → เข้าคิว "รอชั่ง" */
+      else if(e.k==='stkin'){ st.stk-=e.q; }                 /* ★ รับเข้าสต๊อคแล้ว → ออกจากคิวรอชั่ง */
+      if(st.recv<0)st.recv=0; if(st.sort<0)st.sort=0; if(st.stk<0)st.stk=0;
     });
     Object.keys(M).forEach(function(k2){ var st=M[k2];
-      st.recv=Math.round(st.recv*1000)/1000; st.plate=Math.round(st.plate*1000)/1000; st.sort=Math.round(st.sort*1000)/1000; });
+      st.recv=Math.round(st.recv*1000)/1000; st.plate=Math.round(st.plate*1000)/1000;
+      st.sort=Math.round(st.sort*1000)/1000; st.stk=Math.round((st.stk||0)*1000)/1000; });
     _wpCache=M; _wpKey=key;
     return M;
   }catch(e){ return {}; }
