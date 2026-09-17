@@ -349,7 +349,7 @@ body.form-full-open{overflow:hidden}
         <a class="btn sm" href="RTK-TQM.html" style="background:#1B3A5C;color:#fff;text-decoration:none" title="เปิดระบบ RTK-TQM (QCDMS) — คุณภาพ/ข้อร้องเรียน">📊 RTK-TQM</a>
         <button class="btn sm ghost" onclick="mkPanel()" title="ส่งงานให้ผู้ผลิตภายนอก / รับผลงานกลับ (ช่องทางคลาวด์เล็ก)">🏭 ผู้ผลิตภายนอก</button><button class="btn sm ghost" onclick="stgDoctor()" title="ตรวจ/ลดขนาดข้อมูล กันพื้นที่เต็ม">🧰 ลดขนาดข้อมูล</button><button class="btn sm ghost" onclick="exportData()">⬇ สำรองข้อมูล</button>
         <button class="btn sm ghost" onclick="document.getElementById('importFile').click()">⬆ นำเข้า</button>
-        <button class="btn sm" style="background:#eff6ff;color:#1d4ed8" onclick="bkOpen()" title="สำรองข้อมูลอัตโนมัติ — ดูชุดสำรองย้อนหลัง / กู้คืน / ดาวน์โหลดเป็นไฟล์">💾 สำรองอัตโนมัติ</button>
+        <button class="btn sm" style="background:#eff6ff;color:#1d4ed8" onclick="abkOpen()" title="สำรองข้อมูลอัตโนมัติ — ดูชุดสำรองย้อนหลัง / กู้คืน / ดาวน์โหลดเป็นไฟล์">💾 สำรองอัตโนมัติ</button>
         <button class="btn sm" style="background:#ecfdf5;color:#065f46" onclick="openRestoreMenu()" title="กู้คืนจากสำเนาสำรองอัตโนมัติในเครื่อง">🛟 กู้คืน</button>
         <button id="recoverBtn" class="btn sm" style="background:#fef3c7;color:#92400e;display:none" onclick="recoverFromBackup()" title="กู้รายการสินค้า+ยอดสต๊อก จากไฟล์สำรองใน GitHub">🔧 กู้คืนข้อมูล</button>
         <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(this)">
@@ -716,10 +716,12 @@ const SEED={
 
 /* ---------- State ---------- */
 let DB=null;
-const APP_BUILD='SRVBAK-2026.09.16e';
+const APP_BUILD='DPSTEP-2026.09.17a';
 /* บันทึกการแก้ไขล่าสุด (แสดงเมื่อเอาเมาส์ชี้ที่ build — ไม่เอาไปต่อท้าย APP_BUILD เพราะทำให้แถบบนล้นจอ) */
 const APP_NOTE=[
- 'SRVBAK-2026.09.16e · สำรองบนเครื่องแม่ข่าย : เพิ่มไฟล์รายชั่วโมง (เดิมมีแค่รายวันและเขียนทับ) + ดู/กู้คืน/ดาวน์โหลดจากหน้า 💾 สำรองอัตโนมัติ ได้เลย (ต้องอัป server.js ด้วย)',
+ 'DPSTEP-2026.09.17a · การผลิต (กระบวนการย่อย) ที่ผู้ผลิตกรอกไม่หายอีก — เพิ่ม steps เข้ารายการช่องที่ผู้ผลิตแก้ได้ + เทียบค่าแบบอาเรย์ + ส่งเข้าสำนักงานอัตโนมัติ',
+ 'KOAUTO-2026.09.16g · KICK OFF & ACTION PLAN : บันทึกอัตโนมัติระหว่างกรอก + บันทึกก่อนปิดหน้าต่างเสมอ (เดิมถ้าไม่กดปุ่มบันทึกแล้วปิดด้วยกากบาท ข้อมูลหายหมด)',
+ 'SRVBAK-2026.09.16f · แก้ชื่อฟังก์ชันซ้ำ (bkOpen ชนกับหน้าตรวจยอดคัดแยก ทำให้ปุ่ม 💾 สำรองอัตโนมัติ เปิดผิดหน้า) · สำรองบนเครื่องแม่ข่าย : เพิ่มไฟล์รายชั่วโมง (เดิมมีแค่รายวันและเขียนทับ) + ดู/กู้คืน/ดาวน์โหลดจากหน้า 💾 สำรองอัตโนมัติ ได้เลย (ต้องอัป server.js ด้วย)',
  'AUTOBAK-2026.09.16d · สำรองข้อมูลอัตโนมัติ 8 ชุดย้อนหลังใน IndexedDB (ทุก 4 ชม. · เปิด/ปิดโปรแกรม · ก่อนเก็บเข้าคลัง/ล้างประวัติซ้ำ/นำเข้า) + ปุ่ม 💾 สำรองอัตโนมัติ สำหรับดู/กู้/ดาวน์โหลด',
  'BFPOS-2026.09.16c · ตัดแถว "ยอดยกมา" ที่ติดลบออก (ยอดยกมาติดลบไม่ได้ = เป็นส่วนต่างที่ต้องตรวจ) · แถวที่เหลือมีที่มาอธิบายไว้ในทูลทิป',
  'NONEG-2026.09.16b · หน้าสินค้าคงคลัง : ยอดค้างที่ติดลบแสดงเป็น 0 (Q-TIME · รอชุบ · รอคัด · รอชั่ง) ค่าจริงยังดูได้ในแถบติดตามกระบวนการของบัญชีคุม',
@@ -849,7 +851,7 @@ function bkIdx(){ try{ return JSON.parse(localStorage.getItem('rtk_bkidx')||'[]'
 function bkIdxSet(a){ try{ localStorage.setItem('rtk_bkidx',JSON.stringify(a||[])); }catch(e){} }
 function bkOn(){ try{ return localStorage.getItem('rtk_bkoff')!=='1'; }catch(e){ return true; } }
 function bkToggle(){ try{ localStorage.setItem('rtk_bkoff',bkOn()?'1':'0'); }catch(e){}
-  toast(bkOn()?'เปิดสำรองอัตโนมัติแล้ว':'ปิดสำรองอัตโนมัติ (เครื่องนี้)','ok'); try{ bkOpen(); }catch(e){} }
+  toast(bkOn()?'เปิดสำรองอัตโนมัติแล้ว':'ปิดสำรองอัตโนมัติ (เครื่องนี้)','ok'); try{ abkOpen(); }catch(e){} }
 async function bkSave(reason,force){
   try{
     if(!force&&!bkOn())return null;
@@ -931,7 +933,9 @@ function bkSrvRestore(name){
       }catch(e){ toast('กู้คืนไม่สำเร็จ: '+(e&&e.message||e),'err'); }
     })(); });
 }
-function bkOpen(){
+/* ★ ชื่อ bkOpen ถูกใช้แล้วโดยหน้า "ตรวจยอดคัดแยก" (bkScan) — ตั้งชื่อซ้ำจะทับกันหายไปทั้งคู่
+   หน้าสำรองข้อมูลจึงใช้ชื่อ abkOpen (auto-backup) */
+function abkOpen(){
   var idx=bkIdx().slice().reverse();
   var body=''
    +'<div class="hint" style="margin-bottom:9px"><span class="i">💾</span><div>ระบบสำรองข้อมูลให้อัตโนมัติ <b>ทุก '+(BK_EVERY/3600000)+' ชั่วโมง</b> · ตอนเปิด/ปิดโปรแกรม · และก่อนทำรายการที่เสี่ยง (เก็บเอกสารเข้าคลัง · ล้างประวัติซ้ำ · นำเข้าไฟล์)<br>'
@@ -983,7 +987,7 @@ async function bkSrvDraw(){
 }
 async function bkNow(){ var r=await bkSave('กดเอง',true);
   if(r)toast('สำรองแล้ว '+fmt(r.n)+' เอกสาร ('+fmt(r.kb)+' KB)','ok'); else toast('สำรองไม่สำเร็จ — พื้นที่ในเครื่องอาจเต็ม','err');
-  try{ bkOpen(); }catch(e){} }
+  try{ abkOpen(); }catch(e){} }
 async function bkDownload(id){
   try{ var js=await idbGet(id); if(!js){ toast('ไม่พบชุดสำรองนี้','err'); return; }
     var r=bkIdx().find(function(x){return x.id===id;})||{};
@@ -2557,8 +2561,10 @@ function mkInboxApply(row){
       var _ac=0;
       (typeof MK_EDIT_FIELDS!=='undefined'?MK_EDIT_FIELDS:['ackDate','ackBy']).forEach(function(f){
         if(p[f]===undefined)return;
-        if(String(p[f]==null?'':p[f])!==String(cur[f]==null?'':cur[f])){ cur[f]=p[f]; _ac=1; }
+        if(!mkValSame(p[f],cur[f])){ cur[f]=p[f]; _ac=1; }
       });
+      /* ★ ได้กระบวนการย่อยจากผู้ผลิตแล้ว → คำนวณยอด OK/NG/วันที่เสร็จ ของใบนี้ใหม่ให้ตรงกัน */
+      if(_ac&&p.steps!==undefined){ try{ dpStepsRecalc(cur); dpStepsApply(cur); }catch(e){} }
       st.seen[ev]=1; return _ac;
     }  /* ออฟฟิศตัดสินแล้ว = ของออฟฟิศชนะ (ยกเว้นช่องข้างบน) */
     var keep={status:cur.status,approvedBy:cur.approvedBy,approvedAt:cur.approvedAt,no:cur.no||p.no};
@@ -2613,7 +2619,15 @@ function mkIsOwn(d){ try{ return !!(d&&d.mkFrom)&&String(d.mkFrom).toUpperCase()
 /* ★ ช่องที่ "ผู้ผลิตเป็นคนกรอก" ในรายงานผลิตประจำวัน — ไม่กระทบยอดสต๊อก
    เก็บแยกไว้ในเครื่องผู้ผลิต แล้วทาบกลับทุกครั้งที่รับชุดงานใหม่จากสำนักงาน
    (เดิม : ชุดงานจากสำนักงานทับทับค่าที่เพิ่งกรอก → "บันทึกแล้วไม่จำ") */
-var MK_EDIT_FIELDS=['ackDate','ackBy','doneDate','doneQty','inspector','note'];
+/* ★ steps = "การผลิต (กระบวนการย่อย)" ที่ผู้ผลิตกรอกเอง — เดิมไม่อยู่ในรายการนี้
+   ผู้ผลิตกรอกแล้วบันทึก แต่พอรับชุดงานรอบใหม่จากสำนักงานก็ถูกทับหาย ("บันทึกแล้วไม่จำ")
+   stepOk/stepNg/stepAt เป็นยอดสรุปที่คำนวณจาก steps จึงต้องตามไปด้วย */
+var MK_EDIT_FIELDS=['ackDate','ackBy','doneDate','doneQty','inspector','note','steps','stepOk','stepNg','stepAt'];
+/* เทียบค่าแบบรองรับทั้งข้อความและอาเรย์/ออบเจกต์ (steps เป็นอาเรย์ — เทียบด้วย String() ไม่ได้) */
+function mkValSame(a,b){
+  try{ if((a&&typeof a==='object')||(b&&typeof b==='object'))return JSON.stringify(a)===JSON.stringify(b); }catch(e){ return false; }
+  return String(a==null?'':a)===String(b==null?'':b);
+}
 function mkEditKey(){ return 'rtk_mkedit_'+MK_MODE; }
 function mkEditGet(){ try{ return JSON.parse(localStorage.getItem(mkEditKey())||'{}')||{}; }catch(e){ return {}; } }
 function mkEditSet(o){ try{ localStorage.setItem(mkEditKey(),JSON.stringify(o)); }catch(e){} }
@@ -2636,7 +2650,7 @@ function mkEditApply(docs){
       var e=o[id]||{}, d=docs[i], same=true;
       MK_EDIT_FIELDS.forEach(function(f){
         if(e[f]===undefined)return;
-        if(String(d[f]==null?'':d[f])!==String(e[f]==null?'':e[f])){ d[f]=e[f]; same=false; }
+        if(!mkValSame(d[f],e[f])){ d[f]=e[f]; same=false; }     /* ★ รองรับ steps ที่เป็นอาเรย์ */
       });
       /* สำนักงานรับค่าไปแล้วครบ และผ่านมาเกิน 3 วัน → เลิกทาบ (ให้ออฟฟิศเป็นตัวจริง) */
       if(same&&(Date.now()-(e.__at||0))>3*86400000){ delete o[id]; drop=true; }
@@ -15015,19 +15029,32 @@ function dpStepsApply(d){
   if(g.finish)d.endDate=g.finish;
   d.stepOk=ok; d.stepNg=ng; d.stepAt=todayISO();
 }
+/* ★ เครื่องผู้ผลิตภายนอก : ต้องจดว่า "steps ใบนี้ผู้ผลิตเป็นคนแก้"
+   ไม่งั้นชุดงานรอบใหม่จากสำนักงานจะทับหาย และตัวแก้ก็ไม่ถูกส่งเข้าออฟฟิศ */
+function dpStepSync(d){
+  try{
+    if(!d)return;
+    saveDB();
+    if(typeof MK_MODE!=='undefined'&&MK_MODE){
+      mkEditNote(d.id,'steps',d.steps);
+      mkEditNote(d.id,'stepOk',d.stepOk); mkEditNote(d.id,'stepNg',d.stepNg); mkEditNote(d.id,'stepAt',d.stepAt);
+      try{ mkQueueBuild(); }catch(e){}
+    }
+  }catch(e){}
+}
 function dpStepField(i,f,v){
   var d=DB.docs.find(function(x){return x.id===_dpStepDoc;}); if(!d||!d.steps||!d.steps[i])return;
   d.steps[i][f]=v;
   if(f==='ok'){ var t=String(v==null?'':v).trim();
     if(t==='')delete d.steps[i].okManual; else d.steps[i].okManual=true; }
-  if(f==='ok'||f==='ng'){ dpStepsRecalc(d); saveDB(); dpStepsModal(d); return; }
-  saveDB();
+  if(f==='ok'||f==='ng'){ dpStepsRecalc(d); dpStepSync(d); dpStepsModal(d); return; }
+  dpStepSync(d);
 }
-function dpStepAdd(){ var d=DB.docs.find(function(x){return x.id===_dpStepDoc;}); if(!d)return; d.steps=d.steps||[]; d.steps.push({name:'',start:todayISO(),end:'',ok:'',ng:'',maker:d.maker||''}); dpStepsRecalc(d); saveDB(); dpStepsModal(d); }
-function dpStepDel(i){ var d=DB.docs.find(function(x){return x.id===_dpStepDoc;}); if(!d)return; d.steps.splice(i,1); dpStepsRecalc(d); saveDB(); dpStepsModal(d); }
+function dpStepAdd(){ var d=DB.docs.find(function(x){return x.id===_dpStepDoc;}); if(!d)return; d.steps=d.steps||[]; d.steps.push({name:'',start:todayISO(),end:'',ok:'',ng:'',maker:d.maker||''}); dpStepsRecalc(d); dpStepSync(d); dpStepsModal(d); }
+function dpStepDel(i){ var d=DB.docs.find(function(x){return x.id===_dpStepDoc;}); if(!d)return; d.steps.splice(i,1); dpStepsRecalc(d); dpStepSync(d); dpStepsModal(d); }
 function dpStepsSaveClose(){
   var d=DB.docs.find(function(x){return x.id===_dpStepDoc;});
-  if(d){ try{ dpStepsRecalc(d); }catch(e){} try{ dpStepsApply(d); }catch(e){} }
+  if(d){ try{ dpStepsRecalc(d); }catch(e){} try{ dpStepsApply(d); }catch(e){} try{ dpStepSync(d); }catch(e){} }
   saveDB(); closeModal(); render();
   if(d){ var g={ok:0,ng:0}; try{ g=dpStepAgg(d); }catch(e){}
     toast('บันทึกกระบวนการแล้ว · งานดี OK '+fmt(g.ok)+(g.ng?(' · NG '+fmt(g.ng)):''),'ok'); }
@@ -19263,7 +19290,26 @@ function koOpen(id){
       +'<button class="btn" onclick="koPrint()">🖨️ พิมพ์ KICK OFF</button>'
       +'<button class="btn" onclick="apnPrint()">🖨️ พิมพ์ ACTION PLAN</button>'
       +'<button class="btn pri" onclick="koSave(1)">💾 บันทึก / Save</button>'});
-  setTimeout(function(){ koAttRows(); ppapRows(); apnRows(); },20);
+  setTimeout(function(){ koAttRows(); ppapRows(); apnRows(); koAutoSave(); },20);
+}
+/* ★ บันทึกอัตโนมัติระหว่างกรอก
+   เดิมฟอร์มนี้เก็บค่าเฉพาะตอนกด "💾 บันทึก / Save" เท่านั้น
+   ถ้ากรอกแล้วปิดด้วยกากบาท (✕) หรือกด Esc ข้อมูลที่พิมพ์จะหายทั้งหมด
+   → ดักทุกช่องในฟอร์ม : พิมพ์แล้วบันทึกให้เองภายในครึ่งวินาที และบันทึกทันทีเมื่อออกจากช่อง */
+function koAutoSave(){
+  try{
+    var root=document.querySelector('.modal-b'); if(!root||root.__koAuto)return;
+    root.__koAuto=1;
+    var t=null, flush=function(){ clearTimeout(t); t=null;
+      try{
+        if(!document.getElementById('ko_resolution'))return;   /* ไม่ใช่ฟอร์ม KICK OFF แล้ว */
+        if(window.__koId&&koFind(window.__koId))koSave(0);
+      }catch(e){} };
+    root.addEventListener('input',function(){ clearTimeout(t); t=setTimeout(flush,500); },true);
+    root.addEventListener('change',flush,true);
+    root.addEventListener('focusout',flush,true);        /* คลิกออกจากช่อง / กดปิด = บันทึกทันที */
+    window.__koFlush=flush;
+  }catch(e){}
 }
 /* ---------- รายการเอกสาร PPAP ตามระดับที่เลือก ---------- */
 function ppapAllOn(){ return !!window.__ppapAll; }
@@ -19365,9 +19411,11 @@ function koCollect(){
   k.feas=k.feas||{}; k.feasNote=k.feasNote||{};
   KO_FEAS.forEach(function(f){ var v=g('kof_'+f[0]); if(v!==null)k.feas[f[0]]=v; var n=g('kon_'+f[0]); if(n!==null)k.feasNote[f[0]]=n; });
   k.team=k.team||{}; KO_TEAM.forEach(function(t){ var v=g('kot_'+t[0]); if(v!==null)k.team[t[0]]=v; });
-  var att=[]; for(var i=0;i<(k.att||[]).length;i++){ if(!document.getElementById('koa_n'+i))continue;
+  /* ★ เก็บผู้เข้าประชุมเมื่อฟอร์มถูกวาดแล้วเท่านั้น — ถ้าลบจนหมดก็ต้องบันทึกว่าว่างด้วย */
+  var att=[], attShown=false;
+  for(var i=0;i<(k.att||[]).length;i++){ if(!document.getElementById('koa_n'+i))continue; attShown=true;
     att.push({name:g('koa_n'+i)||'',dept:g('koa_d'+i)||'',role:g('koa_r'+i)||''}); }
-  if(att.length)k.att=att;
+  if(attShown)k.att=att;
   var acts=[]; for(var j=0;j<(k.acts||[]).length;j++){ if(!document.getElementById('apa_ac'+j)){ acts.push(k.acts[j]); continue; }
     acts.push({ph:g('apa_ph'+j)||'p1',act:g('apa_ac'+j)||'',actEn:(k.acts[j]||{}).actEn||'',resp:g('apa_rs'+j)||'',
       s1:g('apa_s1'+j)||'',s2:g('apa_s2'+j)||'',fin:g('apa_fn'+j)||'',st:g('apa_st'+j)||'open',ev:g('apa_ev'+j)||''}); }
@@ -31687,7 +31735,10 @@ function uiBusy(){
   for(var i=0;i<ids.length;i++){var b=document.getElementById(ids[i]);if(b&&b.style.display!=='none')return true;}
   return false;
 }
-function closeModal(){document.getElementById('modalRoot').innerHTML='';if(window.__pendingSync){window.__pendingSync=false;try{if(supa){if(JSON.stringify(DB)!==lastSyncedJSON){pushCloud(true);}else{reloadFromCloud();}}}catch(e){}}}
+function closeModal(){
+  /* ★ ฟอร์มที่ยังกรอกค้างอยู่ ต้องบันทึกก่อนปิดเสมอ (กดกากบาท/Esc แล้วข้อมูลหาย) */
+  try{ if(window.__koFlush){ var f=window.__koFlush; window.__koFlush=null; f(); } }catch(e){}
+  document.getElementById('modalRoot').innerHTML='';if(window.__pendingSync){window.__pendingSync=false;try{if(supa){if(JSON.stringify(DB)!==lastSyncedJSON){pushCloud(true);}else{reloadFromCloud();}}}catch(e){}}}
 function confirmBox(title,msg,onYes){
   window.__yes=onYes;
   document.getElementById('modalRoot').innerHTML=`<div class="overlay"><div class="modal" style="max-width:440px"><div class="modal-h"><h3>${title}</h3></div>
