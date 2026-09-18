@@ -473,14 +473,25 @@ async function lanLoad(){
   try{ loc=await localBest(); }catch(e){ loc=null; }
   try{ var _bs=await baseGet(); base=_bs?JSON.parse(_bs):null; }catch(e){ base=null; }
   try{ pend=(localStorage.getItem('rtk_pending')==='1'); }catch(e){}
+  /* ★ ธงนี้เก็บใน localStorage ซึ่งเกือบเต็ม (ข้อมูล 4.4 MB จากโควตา 5 MB)
+     ถ้าเขียนธงไม่สำเร็จ ระบบจะนึกว่า "ไม่มีอะไรค้าง" แล้วดึงของเซิร์ฟเวอร์มาทับทั้งชุด
+     → งานที่เพิ่งบันทึกหายทันที ("บันทึกแล้วไม่จำ") จึงจำไว้ในหน่วยความจำอีกชั้น */
+  try{ if(window.__dirtyLocal)pend=true; }catch(e){}
   try{ const r=await fetchTO(lanBase+'/api/state',{cache:'no-store'},12000); if(!r.ok)throw 0;
     const j=await r.json(); lanOK=true;
     if(j&&j.data&&j.data.products){
       var srv=j.data, merged=false;
-      if(loc&&loc.products&&pend&&typeof mergeDB==='function'){
+      /* ★ มีข้อมูลในเครื่อง = ต้อง "รวม" เสมอ ห้ามดึงของเซิร์ฟเวอร์มาทับทั้งชุด
+         เดิมรวมเฉพาะตอนธง rtk_pending เป็น 1 — ถ้าธงหาย (เขียน localStorage ไม่สำเร็จ)
+         งานที่บันทึกไว้ในเครื่องจะถูกทับหายทั้งหมดในรอบซิงก์ถัดไป
+         การรวมแบบ 3 ทางปลอดภัยอยู่แล้ว : ช่องที่เราไม่ได้แตะ ของเซิร์ฟเวอร์ชนะตามปกติ */
+      if(loc&&loc.products&&typeof mergeDB==='function'){
         /* ★ 3-way merge : ใช้ "ฐานที่ซิงก์ล่าสุด" เป็นตัวเทียบ → สิ่งที่เราลบจะไม่ถูกฟื้นคืน
               และงานที่เพิ่งบันทึกแต่ยังไม่ทันซิงก์จะไม่หาย */
-        try{ DB=mergeDB(base,loc,srv); merged=true; }catch(e){ DB=srv; }
+        /* ★ ดันขึ้นแม่ข่าย "เฉพาะเมื่อเครื่องนี้มีการแก้ไขจริง" เท่านั้น
+           ถ้าดันทุกครั้งที่ผลรวมต่างจากเซิร์ฟเวอร์ จะกลายเป็นวงวน :
+           เราดัน → เครื่องอื่นเห็นเปลี่ยน → รวมแล้วต่าง → ดันกลับ → ไม่จบ และทับงานกันเอง */
+        try{ DB=mergeDB(base,loc,srv); merged=pend; }catch(e){ DB=srv; merged=false; }
         /* ไม่มีฐานเทียบ (เพิ่งติดตั้ง/ล้างแคช) → กันเฉพาะโมดูลที่เซิร์ฟเวอร์ยังไม่มีข้อมูลเลย */
         if(!base){
           try{
@@ -558,6 +569,42 @@ function mergeDB(base, mine, srv){
       else if(s===undefined){ out[k]=m; }
       else { out[k]= (JSON.stringify(m)!==JSON.stringify(b)) ? m : s; } // ฟิลด์ทั่วไป: เราแตะ=ของเรา, ไม่แตะ=ของเซิร์ฟเวอร์
     });
+    /* ★★ "8 การปฏิบัติงาน" (operation) เก็บเป็นออบเจกต์ที่ข้างในเป็นอาเรย์ :
+         kickoff · ipc · ofc · mk19 · custScore ฯลฯ
+       เดิมรวมทั้งก้อน — เครื่องไหนมีอะไรค้างแม้แต่นิดเดียว จะเอาก้อนทั้งหมดของตัวเอง
+       ไปทับของส่วนกลาง งานที่เครื่องอื่นเพิ่งบันทึกจึงหายทันที ("บันทึกแล้วไม่จำ")
+       แก้เป็น : รวมทีละโมดูล และทีละรายการด้วย id เหมือนเอกสาร */
+    try{
+      var _bo=(base&&base.operation)||{}, _mo=(mine&&mine.operation)||{}, _so=(srv&&srv.operation)||{};
+      if(typeof _mo==='object'&&typeof _so==='object'){
+        var _ks={}; [_bo,_mo,_so].forEach(function(o){ if(o&&typeof o==='object')Object.keys(o).forEach(function(x){ _ks[x]=1; }); });
+        var _oo={};
+        Object.keys(_ks).forEach(function(x){
+          var b2=_bo[x], m2=_mo[x], s2=_so[x];
+          if(Array.isArray(m2)&&Array.isArray(s2)) _oo[x]=mergeById(Array.isArray(b2)?b2:[],m2,s2);
+          else if(m2===undefined) _oo[x]=s2;
+          else if(s2===undefined) _oo[x]=m2;
+          else _oo[x]=(JSON.stringify(m2)!==JSON.stringify(b2))?m2:s2;
+        });
+        out.operation=_oo;
+      }
+    }catch(e){}
+    /* ★ ตั้งค่า (settings) ก็เป็นก้อนเดียวเหมือนกัน — รวมทีละหัวข้อ
+       ไม่งั้นเครื่องที่แก้ "รายชื่อผู้ผลิต" จะทับ "กระบวนการย่อย" ที่อีกเครื่องเพิ่งเพิ่ม */
+    try{
+      var _bs=(base&&base.settings)||{}, _ms=(mine&&mine.settings)||{}, _ss=(srv&&srv.settings)||{};
+      if(_ms&&_ss&&typeof _ms==='object'&&typeof _ss==='object'&&!Array.isArray(_ms)&&!Array.isArray(_ss)){
+        var _sk={}; [_bs,_ms,_ss].forEach(function(o){ if(o&&typeof o==='object')Object.keys(o).forEach(function(x){ _sk[x]=1; }); });
+        var _os={};
+        Object.keys(_sk).forEach(function(x){
+          var b3=_bs[x], m3=_ms[x], s3=_ss[x];
+          if(m3===undefined) _os[x]=s3;
+          else if(s3===undefined) _os[x]=m3;
+          else _os[x]=(JSON.stringify(m3)!==JSON.stringify(b3))?m3:s3;
+        });
+        out.settings=_os;
+      }
+    }catch(e){}
     /* ★ รายการที่เคยลบ (ทุกเครื่องรวมกัน) ต้องไม่ฟื้นกลับมา */
     try{
       var T={};
@@ -682,6 +729,7 @@ async function _lanPushDo(force){
     const j=await r.json().catch(()=>({}));
     lastSyncedJSON=json; _dbJSON=json; lanLastUpdated=new Date(now).getTime(); lanOK=true; lanCloud=!!(j&&j.cloud);
     try{lsSet('rtk_pending','0');}catch(e){}
+    try{ window.__dirtyLocal=false; }catch(e){}   /* ★ ขึ้นเครื่องแม่ข่ายเรียบร้อยแล้ว */
     try{ baseSet(json); }catch(e){}
     setSyncStatus(lanCloud?'lan_cloud':'lan_only');
   }catch(e){ lanOK=false; _lastSyncErr=((e&&e.message)||String(e)); setSyncStatus('pending'); }
@@ -716,9 +764,14 @@ const SEED={
 
 /* ---------- State ---------- */
 let DB=null;
-const APP_BUILD='DPSTEP-2026.09.17a';
+const APP_BUILD='NOSTORM-2026.09.18a';
 /* บันทึกการแก้ไขล่าสุด (แสดงเมื่อเอาเมาส์ชี้ที่ build — ไม่เอาไปต่อท้าย APP_BUILD เพราะทำให้แถบบนล้นจอ) */
 const APP_NOTE=[
+ 'NOSTORM-2026.09.18a · ★ ต้นเหตุจริงของ "บันทึกแล้วไม่จำ" ทุกหน้า : render() เรียก saveDB() ทุกครั้งที่วาดจอ ทำให้ทุกเครื่องดันข้อมูลขึ้นแม่ข่ายรัว ๆ แล้วเขียนทับกันเอง (พบ 6 เครื่องเขียน 13 ครั้งใน 40 วินาที) · แก้ให้บันทึก/ดันขึ้นเฉพาะเมื่อข้อมูลเปลี่ยนจริง',
+ 'QTONLY-2026.09.17e · การไหลที่ไม่ผ่านการชุบ : Q-TIME กับ รอคัด เป็นยอดเดียวกัน แสดงที่ "รอคัด" ช่องเดียว Q-TIME เว้นเป็น "—" · การไหลที่ต้องชุบยังแสดง Q-TIME ตามจริง',
+ 'FILLBAL-2026.09.17d · ยอดค้างติดลบ : เติมยอดตั้งต้นให้อัตโนมัติรายเลขที่ใบสั่งซื้อ/ผลิต (จำนวน/วันที่/เวลา ตามบริบทของใบนั้น) ไม่กระทบยอดคงเหลือ · ยกเลิกรายบรรทัดได้และคืนได้',
+ 'OPMERGE-2026.09.17c · ต้นเหตุจริงของ "บันทึกแล้วไม่จำ" — 8 การปฏิบัติงาน (KICK OFF · IPC · OFFLINE CHECK · MK19 · ประเมินลูกค้า) และตั้งค่า ถูกรวมแบบยกก้อน เครื่องหนึ่งบันทึกแล้วอีกเครื่องทับหาย · เปลี่ยนเป็นรวมทีละรายการด้วย id',
+ 'NOWIPE-2026.09.17b · แก้ต้นเหตุ "บันทึกแล้วไม่จำ" ทั้งระบบ — รอบซิงก์เคยดึงข้อมูลเซิร์ฟเวอร์มาทับทั้งชุดเมื่อธง rtk_pending หาย (localStorage เกือบเต็ม) ตอนนี้รวมข้อมูลเสมอ + จำสถานะค้างในหน่วยความจำอีกชั้น',
  'DPSTEP-2026.09.17a · การผลิต (กระบวนการย่อย) ที่ผู้ผลิตกรอกไม่หายอีก — เพิ่ม steps เข้ารายการช่องที่ผู้ผลิตแก้ได้ + เทียบค่าแบบอาเรย์ + ส่งเข้าสำนักงานอัตโนมัติ',
  'KOAUTO-2026.09.16g · KICK OFF & ACTION PLAN : บันทึกอัตโนมัติระหว่างกรอก + บันทึกก่อนปิดหน้าต่างเสมอ (เดิมถ้าไม่กดปุ่มบันทึกแล้วปิดด้วยกากบาท ข้อมูลหายหมด)',
  'SRVBAK-2026.09.16f · แก้ชื่อฟังก์ชันซ้ำ (bkOpen ชนกับหน้าตรวจยอดคัดแยก ทำให้ปุ่ม 💾 สำรองอัตโนมัติ เปิดผิดหน้า) · สำรองบนเครื่องแม่ข่าย : เพิ่มไฟล์รายชั่วโมง (เดิมมีแค่รายวันและเขียนทับ) + ดู/กู้คืน/ดาวน์โหลดจากหน้า 💾 สำรองอัตโนมัติ ได้เลย (ต้องอัป server.js ด้วย)',
@@ -1694,7 +1747,14 @@ function saveDB(){
   var ok=true;
   try{
     var cur=JSON.stringify(DB);
+    /* ★★ เทียบก่อนว่า "ข้อมูลเปลี่ยนจริงหรือไม่"
+       render() เรียก saveDB() ทุกครั้งที่วาดจอ (ทุกรอบซิงก์ · ทุกครั้งที่เปลี่ยนหน้า/ปิดหน้าต่าง)
+       ถ้าถือว่าเป็นการแก้ไขทุกครั้ง เครื่องจะดันข้อมูลขึ้นแม่ข่ายรัวๆ
+       หลายเครื่องพร้อมกัน = ต่างคนต่างเขียนทับกัน "ใครเขียนทีหลังชนะ"
+       งานที่เพิ่งบันทึกจึงถูกทับหายภายในไม่กี่วินาที ("บันทึกแล้วไม่จำ") */
+    var _noChange=(_dbJSON!==null&&_dbJSON!==undefined&&cur===_dbJSON);
     _dbJSON=cur;                                   /* ★ เก็บไว้เทียบ ไม่ต้อง stringify ซ้ำในลูปซิงก์ */
+    if(_noChange){ updateUndoBtns(); return; }      /* ไม่มีอะไรเปลี่ยน → ไม่ต้องเขียน ไม่ต้องดันขึ้นแม่ข่าย */
     var big=(cur.length>1500000);                  /* ข้อมูลใหญ่ → ไม่เก็บ undo (กันหน่วง/พื้นที่เต็ม) */
     if(!_histLock&&!big){
       if(_lastSnap!==null&&cur!==_lastSnap){ _undoStack.push(_lastSnap); if(_undoStack.length>8)_undoStack.shift(); _redoStack.length=0; }
@@ -1725,6 +1785,7 @@ function saveDB(){
     try{ if(!MK_MODE)maxSnapKeep(cur); }catch(e){}   /* ชุดสำรองใหญ่สุด = เฉพาะเครื่องออฟฟิศ */
   }catch(e){ ok=false; }
   if(!ok)storageAlert();
+  try{ window.__dirtyLocal=true; }catch(e){}   /* ★ จำไว้ในหน่วยความจำด้วย เผื่อเขียนธงลง localStorage ไม่สำเร็จ */
   try{lsSet('rtk_pending','1');}catch(e){}
   scheduleSync();updateUndoBtns();
 }
@@ -4724,6 +4785,22 @@ function procTotMap(){
   _ptCache=M; _ptKey=key; return M;
 }
 /* ยอดค้าง 4 ช่องของสินค้า 1 รายการ (รวมรหัสซ้ำในกลุ่มเดียวกันแล้ว) */
+/* ยอดที่ระบบเติมให้ของสินค้าหนึ่งรายการ (แคชไว้ — ต้องคิดจากบัญชีคุมซึ่งหนัก) */
+var _ftRes={},_ftKey='';
+function ibFillTotOf(p){
+  try{
+    if(!p||p.stockOf)return null;
+    var ck=((DB.docs||[]).length)+'/'+Object.keys(fillOffMap()).length;
+    if(_ftKey!==ck){ _ftRes={}; _ftKey=ck; }
+    if(_ftRes[p.id]!==undefined)return _ftRes[p.id];
+    if(!fillStages(p).length){ _ftRes[p.id]=null; return null; }
+    var L=ibLedger(p.id), rows=[];
+    (L.rows||[]).forEach(function(r){ var d=(DB.docs||[]).find(function(x){return x.id===r.id;})||{};
+      r.cells=ibMatCell(r,d); rows.push(r); });
+    var t=ibFillCalc(p,rows).tot;
+    _ftRes[p.id]=t; return t;
+  }catch(e){ return null; }
+}
 var _ppRes={},_ppResKey='';
 function procPend(p){
   var z={qt:0,plate:0,sort:0,stk:0,na:true};
@@ -4738,15 +4815,21 @@ function procPend(p){
     var M=procTotMap(), G=ibIdGroup(p.id), t={wd:0,rw:0,ps:0,pr:0,ok:0,ng:0,si:0,po:0,gr:0};
     Object.keys(G).forEach(function(id){ var e=M[id]; if(!e)return; for(var k in t)t[k]+=(e[k]||0); });
     /* ★ ซื้อมา–ขายไป (วัตถุดิบ/วัสดุสิ้นเปลือง) : ขั้นแรกคือ "รับวัตถุดิบ" ไม่ใช่ "รับชิ้นงาน" */
+    /* ★ รวมยอดที่ระบบ "เติมยอดตั้งต้น" ให้ด้วย — หน้าสินค้าคงคลังจะได้ตรงกับบัญชีคุม */
+    try{ var _ft=ibFillTotOf(p); if(_ft)for(var _k in _ft)t[_k]=(t[_k]||0)+(Number(_ft[_k])||0); }catch(e){}
     var buy=(p.type==='RM'||p.type==='SUP');
     var plate=/^ชุบ/.test(prodFlow(p)||''), sorted=t.ok+t.ng;
-    var R=buy?{qt:t.gr-sorted, plate:0, sort:t.gr-sorted, stk:t.ok-t.si}
+    /* ★ การไหลที่ไม่ผ่านการชุบ : "Q-TIME" กับ "รอคัด" เป็นยอดเดียวกัน (ของที่รับมาแล้วยังไม่ได้คัด)
+       แสดงซ้ำสองช่องทำให้สับสน → แสดงที่ "รอคัด" ช่องเดียว ส่วน Q-TIME เว้นเป็น "—"
+       การไหลที่ต้องชุบ ยังมี Q-TIME จริง (รับชิ้นงานแล้วยังไม่ส่งชุบ) จึงแสดงตามเดิม */
+    var R=buy?{qt:null, plate:0, sort:t.gr-sorted, stk:t.ok-t.si}
         :plate?{qt:t.rw-t.ps, plate:t.ps-t.pr, sort:t.pr-sorted, stk:t.ok-t.si}
-               :{qt:t.rw-sorted, plate:0, sort:t.rw-sorted, stk:t.ok-t.si};
+               :{qt:null, plate:0, sort:t.rw-sorted, stk:t.ok-t.si};
     /* ★ หน้าสินค้าคงคลังแสดงยอดค้างติดลบไม่ได้ (พนักงานสับสน) → ปัดเป็น 0
        ค่าจริงเก็บไว้ใน R.raw ให้แถบติดตามกระบวนการในบัญชีคุมใช้ไล่ตรวจส่วนต่างต่อ */
     R.raw={};
     ['qt','plate','sort','stk'].forEach(function(k){
+      if(R[k]===null){ R.raw[k]=null; return; }        /* ช่องที่ไม่ใช้ในการไหลนี้ — แสดงเป็น "—" */
       var v=Math.round((R[k]||0)*1000)/1000;
       try{ v=pendAdjRaw(p,({qt:'recv',plate:'plate',sort:'sort',stk:'stk'})[k],v); }catch(e){}
       R.raw[k]=v;
@@ -4919,7 +5002,13 @@ function renderInvTable(){
           +(_bar!=null?(' · ค้างรับ '+fmt(w)+' กก. ÷ '+fmt2(_bw)+' กก./เส้น = '+fmt2(_bar)+' เส้น'):'');
         const _in=(_bar!=null)?(fmt2(_bar)+' <span style="font-size:9px;color:#64748b">เส้น</span>'):(w?fmtQ(w,_pp):'-');
         return '<td class="num '+(w?'':'muted')+'" title="'+_tt+(qTip(w,_pp)?(' · '+qTip(w,_pp)):'')+'">'+_in+'</td>';})()}
-      ${invCols.qtime!==false?(()=>{const _pp=invRoot(p);const v=_kids(_pp).length?roll(qtOf,_pp):qtOf(_pp);return `<td class="num ${v?'':'muted'}">${(v==null)?'<span class="muted" title="การไหลนี้ของเข้าช่องอื่นทันที จึงไม่มียอด Q-TIME ค้าง">—</span>':(v?('<b style="color:var(--amber,#b45309)">'+pendCell(_pp.id,'recv',v,'Q-TIME ค้าง = รับชิ้นงานแล้ว ยังไม่ไหลไปขั้นถัดไป')+'</b>'):'0')}</td>`;})():''}
+      ${invCols.qtime!==false?(()=>{const _pp=invRoot(p);
+        /* ★ ช่องนี้เป็น null เมื่อการไหลไม่ผ่านการชุบ — ยอดไปแสดงที่ "รอคัด" ช่องเดียว */
+        const _q0=qtOf(_pp);
+        const v=(_q0==null)?null:(_kids(_pp).length?roll(qtOf,_pp):_q0);
+        const _tip=(function(){ try{ var fl=prodFlow(_pp)||''; if(isDirectFlow(fl))return 'การไหลนี้ของเข้าคงเหลือทันที จึงไม่มียอด Q-TIME ค้าง';
+          return 'การไหลนี้ไม่ผ่านการชุบ — ของที่รับมาแล้วยังไม่ได้คัด เป็นยอดเดียวกับช่อง "รอคัด" จึงแสดงที่ช่องนั้นช่องเดียว'; }catch(e){ return ''; } })();
+        return `<td class="num ${v?'':'muted'}">${(v==null)?'<span class="muted" title="'+_tip+'">—</span>':(v?('<b style="color:var(--amber,#b45309)">'+pendCell(_pp.id,'recv',v,'Q-TIME ค้าง = รับชิ้นงานแล้ว ยังไม่ส่งชุบ')+'</b>'):'0')}</td>`;})():''}
       ${invCols.atp!==false?(()=>{const _pp=invRoot(p);const v=roll(platDispOf,_pp);return `<td class="num ${v?'':'muted'}">${dirOf(_pp)?fmtQ(v,_pp):pendCell(_pp.id,'plate',v,'ชุบค้าง = ส่งชุบแล้วยังไม่รับกลับ')}</td>`;})():''}
       ${invCols.rcv!==false?(()=>{const _pp=invRoot(p);const v=roll(sortOf,_pp);return `<td class="num ${v?'':'muted'}">${pendCell(_pp.id,'sort',v,'คัดแยกค้าง = ของพร้อมคัด แต่ยังคัดไม่เสร็จ')}</td>`;})():''}${invCols.stk!==false?(()=>{const _pp=invRoot(p);const v=roll(stkOf,_pp);return `<td class="num ${v?'':'muted'}">${dirOf(_pp)?fmtQ(v,_pp):pendCell(_pp.id,'stk',v,'รอชั่ง = คัดแยกผ่าน OK แล้ว ยังไม่ทำใบรับเข้าสต๊อค'+(_kids(p).length?' · รวมรายการย่อย':''))}</td>`;})():''}
       <td style="text-align:right;white-space:nowrap"><button class="btn sm" onclick="openItemLedger('${p.id}')" title="รายการดำเนินการในชื่อนี้ (เต็มหน้าจอ)">ดู</button> ${(p.type==='RM'||p.type==='SUP')?`<button class="btn sm" onclick="splitBarsDialog('${p.id}')" title="ตัดแบ่งเส้น (เช่น 6ม.→3ม.) · ดูบัญชีเส้นแยกตามความยาว และประวัติการตัด">✂️</button> `:''}<button class="btn sm" onclick="printProductCard('${p.id}')" title="พิมพ์บัตรสินค้า">🖨️</button> <button class="btn sm" onclick="openProductForm('${p.id}')">✏️ แก้ไข</button> <button class="btn sm danger" onclick="delProduct('${p.id}')">🗑️ ลบ</button></td>
@@ -6074,6 +6163,15 @@ function ibMatRows(id){
       }
     }
   }catch(e){}
+  /* ★ เติมยอดตั้งต้นรายใบสั่งซื้อ/ผลิต เมื่อขั้นถัดไปทำเกินขั้นก่อนหน้า (ยอดค้างติดลบ) */
+  try{
+    var _fc=ibFillCalc(pr,out);
+    if(_fc.rows.length){
+      out=out.concat(_fc.rows);
+      out.sort(function(a,b){ var da=String(a.date||''),db=String(b.date||''); if(da!==db)return da.localeCompare(db); return (a.ts||0)-(b.ts||0); });
+    }
+    window.__ibFillTot=_fc.tot;
+  }catch(e){}
   out=ibMatArrange(out,R);
   /* ★ รายการ "ปรับยอดแมท" (ถ้ามี) — แทรกตามวันที่ ไม่กระทบยอดคงเหลือ */
   try{
@@ -6198,9 +6296,10 @@ function ibMatTable(p,rows){
    + '<th style="padding:6px 7px;border-bottom:'+bd+';text-align:right;white-space:nowrap;background:#eef6ff;border-left:2px solid var(--line)">คงเหลือ</th>'
    + '<th style="padding:6px;border-bottom:'+bd+';width:70px"></th></tr></thead><tbody>'
    +(vis.length?vis.map(function(r){
-      var auto=!!r.auto, _bfr=!!r.bf;
-      return '<tr'+(_bfr?' style="background:#fff7e6"':(auto?' style="background:#f2fbf5"':''))+'>'
-       +'<td style="padding:5px 7px;border-bottom:'+bd+'"><span class="tag '+(_bfr?'amber':(auto?'green':'gray'))+'"'
+      var auto=!!r.auto, _bfr=!!r.bf, _fl=!!r.fill;
+      return '<tr'+(_fl?' style="background:#eef6ff"':(_bfr?' style="background:#fff7e6"':(auto?' style="background:#f2fbf5"':'')))+'>'
+       +'<td style="padding:5px 7px;border-bottom:'+bd+'"><span class="tag '+(_fl?'cyan':(_bfr?'amber':(auto?'green':'gray')))+'"'
+         +(_fl?(' title="'+esc('ใบสั่งซื้อ/ผลิต '+(r.fillPO||'-')+' : ขั้นถัดไปทำเกินขั้นก่อนหน้า ระบบจึงเติม "'+r.fillWhat+'" ให้ '+fmt(r.qty)+' เพื่อให้คุมยอดต่อได้ — ไม่กระทบยอดคงเหลือ · กดปุ่ม ✕ ท้ายบรรทัดเพื่อยกเลิก')+'"'):'')
          +(_bfr?(' title="'+esc(r.bfTip||'ยอดยกมาจากเอกสารที่ถูกเก็บเข้าคลัง (ลดขนาดข้อมูล) — ไม่ใช่เอกสารจริง มีไว้ให้ยอดสะสมตรงกับยอดคงเหลือ')+'"'):'')+'>'+esc(r.label)+'</span>'
          +(r.status==='pending'?' <span class="tag amber" style="font-size:9px" title="ยังไม่อนุมัติ — ยังไม่กระทบยอดคงเหลือ">รออนุมัติ · ยังไม่ตัดยอด</span>':'')
          +(r.status==='statonly'?' <span class="tag gray" style="font-size:9px" title="บันทึกเพื่อดูสถิติ ไม่กระทบยอด">สรุปเท่านั้น</span>':'')
@@ -6221,7 +6320,9 @@ function ibMatTable(p,rows){
              cell+='<td class="num" style="padding:5px 7px;border-bottom:'+bd+';background:#fffbf2;border-left:2px solid var(--line);font-weight:800;color:'+(mb<0?'var(--red)':'#b45309')+'" title="แมทเหลือสะสม (รับแมทลูกค้า − เบิกวัตถุดิบ)">'+fmt(mb)+'</td>'; }
            return cell; }).join('')
        +'<td class="num" style="padding:5px 7px;border-bottom:'+bd+';background:#f5faff;border-left:2px solid var(--line);font-weight:800;color:'+((r.bal||0)<0?'var(--red)':'var(--ink)')+'"'+(qTip(r.bal||0,p)?(' title="'+esc(qTip(r.bal||0,p))+'"'):'')+'>'+fmtQ(r.bal||0,p)+'</td>'
-       +'<td style="padding:4px 6px;border-bottom:'+bd+';text-align:right">'+(auto?'':ibActBtn(r,p.id))+'</td>'
+       +'<td style="padding:4px 6px;border-bottom:'+bd+';text-align:right">'
+         +(_fl?('<button class="btn sm danger" style="padding:2px 7px" title="ยกเลิกการเติมยอดตั้งต้นของใบนี้ (ยอดค้างจะกลับไปติดลบตามเอกสารจริง)" onclick="fillCancel(\''+esc(r.fillPid)+'\',\''+esc(r.fillPO)+'\',\''+esc(r.fillStage)+'\')">✕ ยกเลิก</button>')
+           :(auto?'':ibActBtn(r,p.id)))+'</td>'
        +'</tr>';
      }).join('')
     :'<tr><td colspan="'+(9+IB_USE_COLS.length+(_mbShow?1:0))+'" class="muted" style="padding:20px;text-align:center">ไม่มีรายการตามตัวกรอง</td></tr>')
@@ -6266,7 +6367,7 @@ function ibFlowSteps(p,sum){
      ขั้นตอนจริงคือ สั่งซื้อวัตถุดิบ → รับวัตถุดิบ → คัดแยก → รับเข้าสต๊อค */
   if(!dir&&(p&&(p.type==='RM'||p.type==='SUP'))){
     st.push({k:'wip',lbl:'WIP',sub:'สั่งซื้อแล้วผู้ขายยังส่งไม่ครบ',aL:'สั่งซื้อวัตถุดิบ',a:po,bL:'รับวัตถุดิบ',b:gr,noCmp:true,cmpLbl:'ค้างรับตาม PO'});
-    st.push({k:'sort',lbl:'Q-TIME / รอคัด',sub:'รับวัตถุดิบแล้วยังคัดไม่เสร็จ',aL:'รับวัตถุดิบ',a:gr,bL:'คัดแยก OK+NG',b:sorted});
+    st.push({k:'sort',lbl:'รอคัด',sub:'รับวัตถุดิบแล้วยังคัดไม่เสร็จ (การไหลนี้ไม่มี Q-TIME แยก)',aL:'รับวัตถุดิบ',a:gr,bL:'คัดแยก OK+NG',b:sorted});
     st.push({k:'stk',lbl:'รอชั่ง',sub:'คัดผ่านแล้วยังไม่รับเข้าสต๊อค',aL:'คัดแยก OK',a:ok,bL:'รับเข้าสต๊อค',b:si});
     return {dir:false,plate:false,buy:true,flow:fl,steps:st};
   }
@@ -6280,7 +6381,7 @@ function ibFlowSteps(p,sum){
     st.push({k:'sort',lbl:'รอคัด',sub:'รับชุบแล้วยังคัดไม่เสร็จ',aL:'รับชุบ',a:pr,bL:'คัดแยก OK+NG',b:sorted});
   }else{
     /* ไม่ผ่านการชุบ : ของที่รับชิ้นงานเข้ามาคือของที่รอคัด — Q-TIME กับ รอคัด เป็นตัวเดียวกัน */
-    st.push({k:'sort',lbl:'Q-TIME / รอคัด',sub:'รับชิ้นงานแล้วยังคัดไม่เสร็จ',aL:'รับชิ้นงาน',a:rw,bL:'คัดแยก OK+NG',b:sorted});
+    st.push({k:'sort',lbl:'รอคัด',sub:'รับชิ้นงานแล้วยังคัดไม่เสร็จ (การไหลนี้ไม่มี Q-TIME แยก)',aL:'รับชิ้นงาน',a:rw,bL:'คัดแยก OK+NG',b:sorted});
   }
   st.push({k:'stk',lbl:'รอชั่ง',sub:'คัดผ่านแล้วยังไม่รับเข้าสต๊อค',aL:'คัดแยก OK',a:ok,bL:'รับเข้าสต๊อค',b:si});
   return {dir:false,plate:plate,flow:fl,steps:st};
@@ -6301,6 +6402,96 @@ function ibFlowInvOf(p,k){
     if(k==='stk')  return R.stk;
   }catch(e){}
   return null;
+}
+/* ============================================================
+   ＋ เติมยอดตั้งต้นอัตโนมัติ (รายเลขที่ใบสั่งซื้อ/ผลิต)
+   บางใบสั่งผลิตมีการ "ทำขั้นถัดไปเกินขั้นก่อนหน้า" เช่น รับชิ้นงานมากกว่ายอดเบิกวัตถุดิบ
+   ทำให้ยอดค้างของขั้นนั้นติดลบ และคุมยอดต่อไม่ได้
+   ระบบจะเติมยอดตั้งต้นให้เท่าจำนวนที่ขาด ลงวันที่/เวลา "ก่อนใบแรกของ PO นั้น"
+   เพื่อให้สายการผลิตของ PO นั้นเริ่มต้นสมดุล — ไม่กระทบยอดคงเหลือ (eff = 0)
+   ยกเลิกได้รายบรรทัด (เก็บไว้ในตั้งค่า ซิงก์ทุกเครื่อง)
+   ============================================================ */
+function fillOffMap(){ try{ ensureSettings(); if(!DB.settings.__fillOff)DB.settings.__fillOff={}; return DB.settings.__fillOff; }catch(e){ return {}; } }
+function fillKey(pid,po,st){ return String(pid)+'|'+String(po||'-')+'|'+st; }
+function fillCancel(pid,po,st){
+  var m=fillOffMap(); m[fillKey(pid,po,st)]=1; saveDB();
+  try{ memoBust(); }catch(e){}
+  try{ if(window.__ibLedger==='mat')openItemLedgerMat(pid); else openItemLedger(pid); }catch(e){ try{ render(); }catch(_e){} }
+  try{ toast('ยกเลิกการเติมยอดตั้งต้นของ '+(po||'-')+' แล้ว','ok'); }catch(e){}
+}
+function fillRestore(pid){
+  var m=fillOffMap(), n=0;
+  Object.keys(m).forEach(function(k){ if(k.indexOf(String(pid)+'|')===0){ delete m[k]; n++; } });
+  saveDB(); try{ memoBust(); }catch(e){}
+  try{ if(window.__ibLedger==='mat')openItemLedgerMat(pid); else openItemLedger(pid); }catch(e){ try{ render(); }catch(_e){} }
+  try{ toast(n?('คืนการเติมยอดตั้งต้น '+n+' รายการแล้ว'):'ไม่มีรายการที่ถูกยกเลิกไว้','ok'); }catch(e){}
+}
+/* ขั้นตอนของสินค้านี้ : [คีย์ยอดค้าง, ช่องที่ต้องเติม, ชื่อที่แสดง] เรียงตามสายการผลิต */
+function fillStages(p){
+  var fl=''; try{ fl=prodFlow(p)||''; }catch(e){}
+  var dir=false; try{ dir=isDirectFlow(fl); }catch(e){}
+  if(dir)return [];
+  if(p&&(p.type==='RM'||p.type==='SUP'))
+    return [['wip','po','สั่งซื้อวัตถุดิบ'],['sort','gr','รับวัตถุดิบ'],['stk','ok','คัดแยก OK']];
+  if(/^ชุบ/.test(fl))
+    return [['wip','wd','เบิกวัตถุดิบ'],['recv','rw','รับชิ้นงาน'],['plate','ps','ส่งชุบ'],['sort','pr','รับชุบ'],['stk','ok','คัดแยก OK']];
+  return [['wip','wd','เบิกวัตถุดิบ'],['sort','rw','รับชิ้นงาน'],['stk','ok','คัดแยก OK']];
+}
+/* คำนวณยอดที่ต้องเติม แยกตาม PO — คืน {rows:[แถวสำหรับบัญชีคุม], tot:{ช่อง:ยอดรวม}} */
+var _fillCache={},_fillKeyN='';
+function ibFillCalc(p,rows){
+  var z={rows:[],tot:{}};
+  try{
+    if(!p||p.stockOf)return z;
+    var stg=fillStages(p); if(!stg.length)return z;
+    var off=fillOffMap(), byPO={};
+    (rows||[]).forEach(function(r){
+      if(!r||!r.posted||r.fill)return;
+      var po=String(r.order||'').trim()||'(ไม่ระบุ)';
+      var b=byPO[po]||(byPO[po]={c:{},d:'',ts:0});
+      var c=r.cells||{};
+      for(var k in c){ var v=Number(c[k])||0; if(v)b.c[k]=(b.c[k]||0)+v; }
+      var dt=String(r.date||''); if(dt&&(!b.d||dt<b.d)){ b.d=dt; b.ts=Number(r.ts)||0; }
+    });
+    var out=[], tot={};
+    Object.keys(byPO).forEach(function(po){
+      var b=byPO[po], c=b.c;
+      var N=function(k){ return Number(c[k])||0; };
+      /* ★ ไล่ย้อนจากขั้นท้ายขึ้นมา : ขั้นก่อนหน้าต้องมีของไม่น้อยกว่าขั้นถัดไป
+         ถ้าเติมเฉพาะขั้นที่ติดลบโดยไม่ไล่ขึ้นไป ขั้นก่อนหน้าจะกลายเป็นติดลบแทน */
+      var need={}, cum, ng=N('ng');
+      if(p.type==='RM'||p.type==='SUP'){
+        cum=Math.max(N('ok'),N('si')); need.stk=cum-N('ok');
+        cum=Math.max(N('gr'),cum+ng);  need.sort=cum-N('gr');
+        cum=Math.max(N('po'),cum);     need.wip=cum-N('po');
+      }else if(/^ชุบ/.test(prodFlow(p)||'')){
+        cum=Math.max(N('ok'),N('si')); need.stk=cum-N('ok');
+        cum=Math.max(N('pr'),cum+ng);  need.sort=cum-N('pr');
+        cum=Math.max(N('ps'),cum);     need.plate=cum-N('ps');
+        cum=Math.max(N('rw'),cum);     need.recv=cum-N('rw');
+        cum=Math.max(N('wd'),cum);     need.wip=cum-N('wd');
+      }else{
+        cum=Math.max(N('ok'),N('si')); need.stk=cum-N('ok');
+        cum=Math.max(N('rw'),cum+ng);  need.sort=cum-N('rw');
+        cum=Math.max(N('wd'),cum);     need.wip=cum-N('wd');
+      }
+      stg.forEach(function(s){
+        var q=Math.round((need[s[0]]||0)*1000)/1000;
+        if(!(q>0.001))return;
+        if(off[fillKey(p.id,po,s[0])])return;                 /* ผู้ใช้ยกเลิกไว้ */
+        var cells={}; cells[s[1]]=q; var need2=q;
+        out.push({id:'',type:'FILL',label:'＋ เติมยอดตั้งต้น',fill:true,auto:true,
+          fillPO:po,fillStage:s[0],fillWhat:s[2],fillPid:p.id,
+          no:'— เติมให้ '+s[2]+' พอกับขั้นถัดไป —',
+          date:b.d||'',ts:(b.ts||0)-1,posted:true,status:'approved',
+          qty:need2,eff:0,setTo:null,cells:cells,
+          actor:'',vendor:'',order:(po==='(ไม่ระบุ)'?'':po),ext:''});
+        tot[s[1]]=(tot[s[1]]||0)+need2;
+      });
+    });
+    out.sort(function(a,b2){ var d1=String(a.date||''),d2=String(b2.date||''); if(d1!==d2)return d1.localeCompare(d2); return (a.ts||0)-(b2.ts||0); });
+    return {rows:out,tot:tot};
+  }catch(e){ return z; }
 }
 function ibFlowStrip(p,sum,flt){
   try{
@@ -6406,6 +6597,12 @@ function openItemLedgerMat(id){
    +  (function(){ var tw=[]; try{ tw=ibTwins(p.id); }catch(e){}
         return tw.length?('<span class="tag red" title="มีรายการรหัสเดียวกันแยกกันอยู่ ทำให้ยอดกระจาย">⚠️ รหัสซ้ำ '+tw.length+' รายการ</span>'
           +'<button class="btn sm" style="background:#dc2626;color:#fff;font-weight:700" onclick="ibMergeTwins(\''+p.id+'\')" title="รวมสต๊อกรายการรหัสซ้ำให้เป็นตัวเดียว">🔗 รวมสต๊อก</button>'):''; })()
+   +  (function(){
+        var nf=rows.filter(function(r){return r.fill;}).length;
+        var noff=0; try{ var m=fillOffMap(); Object.keys(m).forEach(function(k){ if(k.indexOf(p.id+'|')===0)noff++; }); }catch(e){}
+        return (nf?('<span class="tag cyan" title="ใบสั่งซื้อ/ผลิตที่ขั้นถัดไปทำเกินขั้นก่อนหน้า ระบบเติมยอดตั้งต้นให้เพื่อให้คุมยอดต่อได้ (ไม่กระทบยอดคงเหลือ)">＋ เติมยอดตั้งต้น '+nf+' รายการ</span>'):'')
+          +(noff?('<button class="btn sm" style="border-color:#0284c7;color:#0369a1" onclick="fillRestore(\''+p.id+'\')" title="คืนการเติมยอดตั้งต้นที่เคยยกเลิกไว้">↩ คืนที่ยกเลิกไว้ '+noff+'</button>'):'');
+      })()
    +  (nMov?'<span class="tag cyan">⇡ จัดลำดับรับเข้าก่อน '+nMov+' รายการ</span>':'')
    +  (nAuto?'<span class="tag green">＋ เติมรับชิ้นงานอัตโนมัติ '+nAuto+' รายการ</span>':'')
    +  (nMatAuto?'<span class="tag amber">＋ เติมรับแมทอัตโนมัติ '+nMatAuto+' รายการ (แมทเหลือไม่ติดลบ)</span>':'')
