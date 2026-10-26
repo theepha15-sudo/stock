@@ -1084,9 +1084,10 @@ const SEED={
 
 /* ---------- State ---------- */
 let DB=null;
-const APP_BUILD='FCMKSG-2026.10.26h';
+const APP_BUILD='FCMKHV-2026.10.26i';
 /* บันทึกการแก้ไขล่าสุด (แสดงเมื่อเอาเมาส์ชี้ที่ build — ไม่เอาไปต่อท้าย APP_BUILD เพราะทำให้แถบบนล้นจอ) */
 const APP_NOTE=[
+  '🐞 FORECAST 3 เดือน หน้าผู้ผลิต (Online) รายการหาย : เครื่องผู้ผลิตคำนวณ ของที่มีอยู่ เองจากข้อมูลบางส่วน + ออฟฟิศส่งค่าที่ใช้ยอดสะสมเก่า (p.wip) → ได้ยอดเกินจริง ต้องผลิตเพิ่ม = 0 ทุกรายการ → ใบพิมพ์ (ซ่อนรายการ 0) ว่าง · แก้ : ออฟฟิศกับผู้ผลิตใช้สูตรเดียวกัน (fcMkCalc · ยอดเดียวกับสินค้าคงคลัง) และเครื่องผู้ผลิตใช้ค่าที่ออฟฟิศส่งมาเท่านั้น · ทุกผู้ผลิตตัวเลขตรงกับหน้าออฟฟิศ',
   '🖨️ ผลิตประจำวัน → FORECAST 3 เดือน (FM-PL-02) : ไม่พิมพ์รายการที่เป็น 0 ทุกเดือน · ช่องลงนามใส่ชื่ออัตโนมัติ ผู้จัดทำ ALISA.K · ผู้ตรวจสอบ CHANUNPORN.R · ผู้อนุมัติ WECHAYAN.R · ผู้รับทราบ = ชื่อผู้ผลิต (พร้อมลายเซ็นถ้ามี) · วันที่ = วันที่พิมพ์ · ใช้กับทุกผู้ผลิต (RTK-K · VS4 · AKE · JARUN · JH · KDK · ROOT · ไถเฉิงเทค · RTK-V · RTK-N · SOM · SM ฯลฯ) · แก้ชื่อได้ที่ settings.fcMkSig',
   '🖨️ Forecast Supplier : เปลี่ยนป้ายช่องลงนามซ้ายสุดจาก ผู้ผลิต (Maker) เป็น ผู้ขาย (Supplier) ตามบริบทใบ (ชื่อยังดึงอัตโนมัติจาก ผู้ขาย/ผู้ผลิต ในสินค้าคงคลัง · แก้ได้เหมือนเดิม)',
   '🖨️ Forecast Supplier (FM-PL-04) : เพิ่มช่องลงนาม ผู้ผลิต (Maker) ด้านซ้าย — ชื่อดึงอัตโนมัติจาก ผู้ขาย/ผู้ผลิต ในสินค้าคงคลังของชิ้นงานที่เลือก · แก้ชื่อได้ในหน้าต่างเลือกชิ้นงานก่อนพิมพ์ (จำไว้กับใบ Forecast · ล้างช่อง = กลับเป็นอัตโนมัติ)',
@@ -3918,16 +3919,13 @@ function mkSnapBuild(mk){
       var keep=[];
       (d.lines||[]).forEach(function(l){
         if(!l)return;
-        var c=null; try{ c=plCalc(l,_onOrd); }catch(e){}
-        c=c||{}; if(!c.p){ try{ c.p=fcProdOf(l); }catch(e){} }
+        var c=fcMkCalc(l,_onOrd);
         var mkr=''; try{ mkr=fcMakerOf(l,c); }catch(e){ mkr=l.maker||''; }
         if(!mkr||String(mkr).toUpperCase()!==U)return;
         var q=JSON.parse(JSON.stringify(l));
         q.maker=mkr;                                        /* ล็อกชื่อผู้ผลิตมากับบรรทัด */
         var p=c.p;
-        var have=(Number(c.onHand)||0)+(Number(c.stk)||0)+(Number(c.sort)||0)+(Number(c.atPlating)||0)+(Number(c.qtime)||0)+(Number(c.makerOut)||0);
-        if(!have&&p)have=(Number(p.onHand)||0)+(Number(p.passedQC)||0)+(Number(p.wip)||0)+(Number(p.atPlating)||0)+(Number(_onOrd[p.id])||0);
-        q.mkHave=Math.round(have*1000)/1000;                /* ของที่มีอยู่ (คำนวณจากฝั่งออฟฟิศ) */
+        q.mkHave=fcMkHaveC(c);                              /* ★ 26/10i สูตรเดียวกับหน้าออฟฟิศ (fcMkRows) */                /* ของที่มีอยู่ (คำนวณจากฝั่งออฟฟิศ) */
         if(p){ q.fgId=p.id; if(!q.name)q.name=p.pn+((p.name&&p.name!=='-')?(' '+p.name):''); }
         keep.push(q);
       });
@@ -44586,6 +44584,14 @@ function fcMakerOf(l,c){
   if(!v&&c)v=c.maker||'';
   return fcMkShort(v);
 }
+/* ★ 26/10i สูตรเดียว (ออฟฟิศ + ชุดงานที่ส่งผู้ผลิต) : ยอดขั้นต่าง ๆ จาก plCalc (= สินค้าคงคลัง) · หาสินค้าไม่เจอ = ค่าจากสินค้า (ไม่ใช้ p.wip สะสมเก่า) */
+function fcMkCalc(l,onOrder){ var c=null; try{ c=plCalc(l,onOrder||{}); }catch(e){} if(!c)c={};
+  if(!c.p){ var _p=fcProdOf(l); if(_p){ c.p=_p; c.pn=(_p.pn+((_p.name&&_p.name!=='-')?(' '+_p.name):'')); var pp={}; try{ pp=procPend(_p)||{}; }catch(e){}
+      c.onHand=Math.max(0,Number(_p.onHand)||0); c.sort=Math.max(0,Number(pp.sort)||0); c.stk=Math.max(0,Number(pp.stk)||0);
+      c.atPlating=Math.max(0,Number(pp.plate!=null?pp.plate:_p.atPlating)||0); c.qtime=Math.max(0,Number(pp.qt)||0); c.wipBk=c.wipBk||0;
+      c.makerOut=(onOrder&&(onOrder[_p.id]||0))||0; } }
+  if(!c.pn)c.pn=String((l&&l.name)||''); return c; }
+function fcMkHaveC(c){ c=c||{}; return Math.round(((Number(c.onHand)||0)+(Number(c.stk)||0)+(Number(c.sort)||0)+(Number(c.atPlating)||0)+(Number(c.qtime)||0)+(Number(c.makerOut)||0))*1000)/1000; }
 /* รวม Forecast ลูกค้า 3 เดือน แยกตามชิ้นงานของผู้ผลิตรายนั้น */
 function fcMkRows(mk){
   var key=fcMkKey(mk), onOrder={}, out={}, ml=monthLabels();
@@ -44594,16 +44600,7 @@ function fcMkRows(mk){
     if(!d||d.type!=='FC'||d.status==='cancelled')return;
     (d.lines||[]).forEach(function(l){
       if(!l)return;
-      var c=null; try{ c=plCalc(l,onOrder); }catch(e){}
-      if(!c)c={};
-      if(!c.p){                                            /* ★ plCalc หาสินค้าไม่เจอ → หาเองให้ครบทุกหมวด */
-        var _p=fcProdOf(l);
-        if(_p){ c.p=_p; c.pn=(_p.pn+((_p.name&&_p.name!=='-')?(' '+_p.name):''));
-          c.onHand=Number(_p.onHand)||0; c.sort=Number(_p.wip)||0; c.stk=Number(_p.passedQC)||0;
-          c.atPlating=Number(_p.atPlating)||0; c.qtime=c.qtime||0; c.wipBk=c.wipBk||0;
-          c.makerOut=(onOrder&&(onOrder[_p.id]||0))||0; }
-      }
-      if(!c.pn)c.pn=String((l&&l.name)||'');
+      var c=fcMkCalc(l,onOrder);
       var mkr=fcMakerOf(l,c);
       if(key&&fcMkKey(mkr)!==key)return;
       var p=c.p, id=(mkr||'(ยังไม่ระบุ)')+'||'+((p&&p.id)||('pn:'+String(c.pn||'').split(' ')[0]));   /* ★ แยกรายผู้ผลิต ไม่รวมกัน */
@@ -44616,7 +44613,7 @@ function fcMkRows(mk){
           onHand:c.onHand||0,stk:c.stk||0,sort:c.sort||0,atPlating:c.atPlating||0,qtime:c.qtime||0,
           wipBk:c.wipBk||0,onOrd:c.makerOut||0};
       }
-      if(l.mkHave!=null){ var hv=Number(l.mkHave)||0; if(hv>(Number(r.mkHave)||0))r.mkHave=hv; }
+      if(l.mkHave!=null){ var hv=Number(l.mkHave)||0; if(r.mkHave==null||hv>(Number(r.mkHave)||0))r.mkHave=hv; }   /* ★ 26/10i ค่า 0 จากออฟฟิศก็ใช้ (เดิมข้าม → คำนวณเองได้ยอดเกิน) */
       r.m1+=Number(l.m1)||0; r.m2+=Number(l.m2)||0; r.m3+=Number(l.m3)||0;
       if(d.no)r.docs[d.no]=1;
       if(l.customer&&!r.cust)r.cust=l.customer;
@@ -44626,7 +44623,7 @@ function fcMkRows(mk){
     var r=out[k];
     r.ref=Object.keys(r.docs).slice(0,3).join(', ');
     var _hv=(r.onHand||0)+(r.stk||0)+(r.sort||0)+(r.atPlating||0)+(r.qtime||0)+(r.onOrd||0);
-    if(!_hv&&r.mkHave!=null)_hv=Number(r.mkHave)||0;        /* เครื่องผู้ผลิต : ใช้ค่าที่ออฟฟิศส่งมา */
+    if(r.mkHave!=null)_hv=Number(r.mkHave)||0;        /* ★ 26/10i เครื่องผู้ผลิต : ใช้ค่าที่ออฟฟิศส่งมาเท่านั้น (เครื่องผู้ผลิตมีข้อมูลไม่ครบ คำนวณเองได้ยอดเกิน) */
     r.have=Math.round(_hv*1000)/1000;
     r.dem=Math.round(((r.m1||0)+(r.m2||0)+(r.m3||0))*1000)/1000;
     /* ต้องผลิตเพิ่มรายเดือน — ทบยอดของที่มีอยู่ไปเรื่อยๆ */
