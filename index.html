@@ -1084,9 +1084,10 @@ const SEED={
 
 /* ---------- State ---------- */
 let DB=null;
-const APP_BUILD='FCMKWIP-2026.10.27b';
+const APP_BUILD='FCCUST6-2026.10.27c';
 /* บันทึกการแก้ไขล่าสุด (แสดงเมื่อเอาเมาส์ชี้ที่ build — ไม่เอาไปต่อท้าย APP_BUILD เพราะทำให้แถบบนล้นจอ) */
 const APP_NOTE=[
+  '📈 สร้าง Forecast ลูกค้า : ลูกค้า CYF ส่ง Forecast 6 เดือน → ฟอร์มขึ้น 6 ช่องเดือนอัตโนมัติเมื่อลูกค้าเป็น CYF (พิมพ์ชื่อหรือระบบเติมจาก PART) · ใบพิมพ์ Forecast และ Forecast Supplier ของ CYF แสดง 6 เดือน · ตั้งจำนวนเดือนรายลูกค้าได้ที่ settings.fcCustN (เช่น {"CYF":6})',
   '🐞 FORECAST 3 เดือน ช่อง ของที่มีอยู่ ไม่ตรงสินค้าคงคลัง (32841B000P-02 SOM = 11,985 แต่สินค้าคงคลัง FG 2,985 + WIP 3,000 = 5,985) : เดิมนับ ใบสั่งผลิตทั้งใบ 9,000 (รวมส่วนที่รับเข้าแล้ว 6,000) · แก้เป็นยอดเดียวกับสินค้าคงคลัง = คงเหลือ + WIP ค้างรับ + รอรับเข้า + รอชุบ + รอคัด + รอชั่ง (plCalc รวมที่จะมี) ทั้งหน้าออฟฟิศและหน้าผู้ผลิตออนไลน์ · ใช้กับทุกชิ้นงาน',
   '🐞 FORECAST 3 เดือน หน้าผู้ผลิต (Online) รายการหาย : เครื่องผู้ผลิตคำนวณ ของที่มีอยู่ เองจากข้อมูลบางส่วน + ออฟฟิศส่งค่าที่ใช้ยอดสะสมเก่า (p.wip) → ได้ยอดเกินจริง ต้องผลิตเพิ่ม = 0 ทุกรายการ → ใบพิมพ์ (ซ่อนรายการ 0) ว่าง · แก้ : ออฟฟิศกับผู้ผลิตใช้สูตรเดียวกัน (fcMkCalc · ยอดเดียวกับสินค้าคงคลัง) และเครื่องผู้ผลิตใช้ค่าที่ออฟฟิศส่งมาเท่านั้น · ทุกผู้ผลิตตัวเลขตรงกับหน้าออฟฟิศ',
   '🖨️ ผลิตประจำวัน → FORECAST 3 เดือน (FM-PL-02) : ไม่พิมพ์รายการที่เป็น 0 ทุกเดือน · ช่องลงนามใส่ชื่ออัตโนมัติ ผู้จัดทำ ALISA.K · ผู้ตรวจสอบ CHANUNPORN.R · ผู้อนุมัติ WECHAYAN.R · ผู้รับทราบ = ชื่อผู้ผลิต (พร้อมลายเซ็นถ้ามี) · วันที่ = วันที่พิมพ์ · ใช้กับทุกผู้ผลิต (RTK-K · VS4 · AKE · JARUN · JH · KDK · ROOT · ไถเฉิงเทค · RTK-V · RTK-N · SOM · SM ฯลฯ) · แก้ชื่อได้ที่ settings.fcMkSig',
@@ -35427,7 +35428,10 @@ function fc9List(){ try{ var a=DB.settings&&DB.settings.fc9pn; if(Array.isArray(
 function fc9Is(l){ try{ if(!l)return false; var L=fc9List().map(normPN).filter(function(k){ return k.length>=6; }), p=l.fgId?P(l.fgId):null;
   var ks=[p?normPN(p.pn):'', normPN(String(l.name||'').split(/\s+/)[0]), normPN(l.name||'')]; return ks.some(function(k){ return k&&L.some(function(x){ return k===x||k.indexOf(x)===0||(k.length>=10&&x.length>=10&&typeof calLev1==='function'&&calLev1(k.slice(0,x.length+1),x)); }); }); }catch(e){ return false; } }   /* ★ ต่างกัน 1 ตัวอักษร (K04A = K04 ในสินค้าคงคลัง) นับเป็นชิ้นงานเดียวกัน */
 /* จำนวนเดือนที่แสดง/พิมพ์ของรายการ : 9 (fc9) · 6 (fc6) · 4 */
-function fcNOf(l){ return fc9Is(l)?9:(fc6Is(l)?6:4); }
+/* ★ 27/10c จำนวนเดือน Forecast ตามลูกค้า (CYF = 6) · แก้ได้ที่ DB.settings.fcCustN {ชื่อย่อ:จำนวน} */
+var FC_CUST_N={'CYF':6};
+function fcCustN(cust){ try{ var m=Object.assign({},FC_CUST_N,(DB.settings&&DB.settings.fcCustN)||{}), k=custKeyN(cust); if(!k)return 0; var n=0; Object.keys(m).forEach(function(c){ if(custKeyN(c)===k)n=Math.max(n,Number(m[c])||0); }); return n; }catch(e){ return 0; } }
+function fcNOf(l,d){ var n=fc9Is(l)?9:(fc6Is(l)?6:4); var cn=fcCustN((l&&l.customer)||(d&&d.customer)||''); return Math.max(n,cn||0); }
 /* ยอดเดือนที่ i (0 = เดือนนี้) : มีทุกเดือนจากการสแกน (l.mv) ใช้ก่อน · ไม่มี = m1..m6 */
 function fcMonVals(l,n){ var o=[], c=fcCurK(), mv=(l&&l.mv&&typeof l.mv==='object')?l.mv:null; for(var i=0;i<n;i++){ var v=mv&&mv[c+i]!=null?mv[c+i]:(i<6?l['m'+(i+1)]:0); o.push(Number(v)||0); } return o; }
 function fc6List(){ try{ var a=DB.settings&&DB.settings.fc6pn; if(Array.isArray(a)&&a.length)return a; }catch(e){} return FC6_PN; }
@@ -35437,10 +35441,11 @@ function fc6Is(l){ try{ if(!l)return false; var L=fc6List().map(normPN).filter(f
 function fcCurK(){ var d=new Date(); return d.getFullYear()*12+d.getMonth(); }
 function fcKLbl(k){ var th=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.']; k=Number(k); return th[((k%12)+12)%12]+' '+String(Math.floor(k/12)+543).slice(2); }
 function fcMvOf(l){ if(l&&l.mv&&typeof l.mv==='object')return l.mv; var o={}, c=fcCurK(); for(var i=0;i<6;i++){ var v=l?l['m'+(i+1)]:null; if(v!=null&&v!=='')o[c+i]=Number(v)||0; } return o; }
-function fcDocK(d){ var c=fcCurK(); if(d&&Array.isArray(d.fcK)&&d.fcK.length)return d.fcK.map(Number); var n=(d&&(d.lines||[]).some(function(l){ return fc6Is(l)||l.m5!=null||l.m6!=null; }))?6:4, o=[]; for(var i=0;i<n;i++)o.push(c+i); return o; }
+function fcDocK(d){ var c=fcCurK(); if(d&&Array.isArray(d.fcK)&&d.fcK.length){ var K0=d.fcK.map(Number), cn0=fcCustN(d.customer); if(cn0>0){ for(var x0=K0[K0.length-1]+1;x0<=c+cn0-1;x0++)K0.push(x0); } return K0; } var n=(d&&(d.lines||[]).some(function(l){ return fc6Is(l)||l.m5!=null||l.m6!=null; }))?6:4, o=[]; n=Math.max(n,fcCustN(d&&d.customer)||0); for(var i=0;i<n;i++)o.push(c+i); return o; }
 function fcValK(l,k){ var mv=fcMvOf(l); return Number(mv[k])||0; }
 function fcSyncM(l){ var mv=l.mv||{}, c=fcCurK(); for(var i=0;i<6;i++){ var v=mv[c+i]; if(i<4)l['m'+(i+1)]=Number(v)||0; else if(v!=null||l['m'+(i+1)]!=null)l['m'+(i+1)]=Number(v)||0; } return l; }
-function fcFormK(){ var K=window.__fcK; if(!Array.isArray(K)||!K.length){ var c=fcCurK(); K=[c,c+1,c+2,c+3]; } if(planLines.some(fc6Is)||planLines.some(fc9Is)){ var c2=fcCurK(), _e=planLines.some(fc9Is)?8:5; for(var x=K[K.length-1]+1;x<=c2+_e;x++)K.push(x); } window.__fcK=K; return K; }
+function fcFormK(){ var K=window.__fcK; if(!Array.isArray(K)||!K.length){ var c=fcCurK(); K=[c,c+1,c+2,c+3]; }
+  try{ var _cn=fcCustN((document.getElementById('pl_cust')||{}).value||''); if(_cn>0){ var c3=fcCurK(); K=K.slice(); for(var x3=K[K.length-1]+1;x3<=c3+_cn-1;x3++)K.push(x3); } }catch(e){}   /* ★ 27/10c ลูกค้าที่ส่ง Forecast N เดือน (CYF = 6) */ if(planLines.some(fc6Is)||planLines.some(fc9Is)){ var c2=fcCurK(), _e=planLines.some(fc9Is)?8:5; for(var x=K[K.length-1]+1;x<=c2+_e;x++)K.push(x); } window.__fcK=K; return K; }
 function fcMonAdd(dir){ var K=fcFormK().slice(); if(dir>0)K.push(K[K.length-1]+1); else if(dir<0&&K.length>1)K.pop(); else if(dir===-2)K.unshift(K[0]-1); window.__fcK=K; renderPlanLines('FC'); }
 function monthLabelsN(n){const d=new Date();const th=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];var o=[];for(var i=0;i<n;i++){const m=new Date(d.getFullYear(),d.getMonth()+i,1);o.push(th[m.getMonth()]+' '+String(m.getFullYear()+543).slice(2));}return o;}
 function monthLabels(){const d=new Date();const th=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];return [0,1,2,3].map(i=>{const m=new Date(d.getFullYear(),d.getMonth()+i,1);return th[m.getMonth()]+' '+String(m.getFullYear()+543).slice(2)})}
@@ -36244,11 +36249,11 @@ function fcsPick(docId){
   _fcsDoc=docId; _fcsCust=String(d.customer||'').trim();
   var docs=(DB.docs||[]).filter(function(x){ return x&&x.type==='FC'&&x.status!=='cancelled'&&String(x.customer||'').trim()===_fcsCust; })
     .sort(function(a,b){ return (a.id===docId?-1:(b.id===docId?1:String(b.no||'').localeCompare(String(a.no||'')))); });
-  var _NM=4; docs.forEach(function(x){ (x.lines||[]).forEach(function(l){ _NM=Math.max(_NM,fcNOf(l)); }); }); var ml=monthLabelsN(_NM), _moo=null; try{ _moo=plOnOrderMap(); }catch(e){}
+  var _NM=4; docs.forEach(function(x){ (x.lines||[]).forEach(function(l){ _NM=Math.max(_NM,fcNOf(l,x)); }); }); var ml=monthLabelsN(_NM), _moo=null; try{ _moo=plOnOrderMap(); }catch(e){}
   var body='<div class="hint" style="margin-bottom:8px"><span class="i">🖨️</span><div>ติ๊กเลือกชิ้นงานที่ต้องการพิมพ์ · ลูกค้า <b>'+esc(_fcsCust||'-')+'</b> · ตั้งต้นติ๊กรายการของใบ <b>'+esc(d.no||'')+'</b> ไว้ให้ · พิมพ์เป็น <b>Forecast Supplier ('+esc(fcsCode())+' Rev.00)</b><br>ใบพิมพ์แสดง <b>ยอดสุทธิ</b> = Forecast หักสต๊อคคงเหลือ (ตัดเดือนแรกก่อน) · ไม่แสดงสต๊อคให้ผู้ขาย</div></div>'
    +'<div style="display:flex;gap:6px;margin-bottom:6px"><button class="btn sm" onclick="fcsAll(true)">☑ เลือกทั้งหมด</button><button class="btn sm" onclick="fcsAll(false)">☐ ไม่เลือก</button><button class="btn sm" onclick="fcsAll(\'doc\')">เฉพาะใบ '+esc(d.no||'')+'</button><span id="fcs_cnt" class="muted" style="margin-left:auto;font-size:12px"></span></div>'
    +'<div style="max-height:56vh;overflow:auto"><table style="font-size:12.5px;width:100%"><thead><tr><th style="width:30px"></th><th>ใบ</th><th>Part Number</th><th class="num">สต๊อคคงเหลือ</th>'+ml.map(function(m){ return '<th class="num">'+esc(m)+'</th>'; }).join('')+'<th class="num">รวม FC</th><th class="num" title="ยอดที่พิมพ์ในใบ = Forecast หักสต๊อคคงเหลือ">สุทธิ (พิมพ์)</th></tr></thead><tbody>'
-   +docs.map(function(x){ return (x.lines||[]).map(function(l,i){ var _n=fcNOf(l), _vs=fcMonVals(l,_n), tot=_vs.reduce(function(a,b){ return a+b; },0);
+   +docs.map(function(x){ return (x.lines||[]).map(function(l,i){ var _n=fcNOf(l,x), _vs=fcMonVals(l,_n), tot=_vs.reduce(function(a,b){ return a+b; },0);
        return '<tr><td><input type="checkbox" class="fcs_ck" data-doc="'+x.id+'" data-i="'+i+'"'+(x.id===docId?' checked':'')+' onchange="fcsCount()" style="width:auto;transform:scale(1.2)"></td><td class="muted">'+esc(x.no||'')+'</td><td>'+esc(fcsLineName(l))+'</td><td class="num" style="color:var(--brand)">'+fmt(fcsStock(l,_moo))+'</td>'
         +ml.map(function(m,k){ return k>=_n?'<td class="num muted">-</td>':'<td class="num">'+fmt(_vs[k])+'</td>'; }).join('')+'<td class="num">'+fmt(tot)+'</td><td class="num" style="color:var(--teal)"><b>'+fmt(fcsNet(l,fcsStock(l,_moo),_n).reduce(function(a,b){ return a+b; },0))+'</b></td></tr>'; }).join(''); }).join('')
    +'</tbody></table></div>';
@@ -36267,13 +36272,13 @@ function fcsGo(){ var sel=[]; document.querySelectorAll('.fcs_ck:checked').forEa
 function fcsPrint(sel,mode){
   ensureSettings(); var co=DB.settings.company||{}, g=poSignFCSGet(), ml=monthLabels(), e=function(v){ return esc(v==null?'':v); };
   var rows=[], nos={}, cust='';
-  (sel||[]).forEach(function(s){ var d=(DB.docs||[]).find(function(x){ return x&&x.id===s.doc; }); if(!d)return; var l=(d.lines||[])[s.i]; if(!l)return; nos[d.no||'']=1; cust=cust||d.customer||''; rows.push(l); });
+  var _ld=new Map(); (sel||[]).forEach(function(s){ var d=(DB.docs||[]).find(function(x){ return x&&x.id===s.doc; }); if(!d)return; var l=(d.lines||[])[s.i]; if(!l)return; nos[d.no||'']=1; cust=cust||d.customer||''; rows.push(l); _ld.set(l,d); });
   if(!rows.length){ toast('ไม่พบรายการ','err'); return; }
   var sig=function(nm){ try{ return nm?(clmSigImg(nm)||''):''; }catch(x){ return ''; } };
   var _mkName=window.__fcsMaker||''; if(!_mkName){ var _d0=(DB.docs||[]).find(function(x){ return x&&(sel||[]).some(function(s){ return s.doc===x.id; })&&x.fcsMaker; }); _mkName=(_d0&&_d0.fcsMaker)||fcsMakerAuto(rows); }
-  var h6=rows.some(fc6Is), NM=Math.max.apply(null,rows.map(fcNOf).concat([4])); ml=monthLabelsN(NM);   /* ★ 26/10e fc9 = 9 เดือน */   /* ★ มีชิ้นงาน 6 เดือน (SYS) → 6 เดือน + REMARK */
+  var h6=rows.some(fc6Is), NM=Math.max.apply(null,rows.map(function(l){ return fcNOf(l,_ld.get(l)); }).concat([4])); ml=monthLabelsN(NM);   /* ★ 26/10e fc9 = 9 เดือน */   /* ★ มีชิ้นงาน 6 เดือน (SYS) → 6 เดือน + REMARK */
   var T=[], TS=0, _oo=null; for(var _k=0;_k<=NM;_k++)T.push(0); try{ _oo=plOnOrderMap(); }catch(x){}
-  var tr=rows.map(function(l,i){ var st=fcsStock(l,_oo), six=fc6Is(l); TS+=st; var v=fcsNet(l,st,fcNOf(l)), t=v.reduce(function(a,b){ return a+b; },0); v.forEach(function(x,k){ T[k]+=x; }); T[NM]+=t;   /* ★ ยอดสุทธิหลังหักสต๊อค */
+  var tr=rows.map(function(l,i){ var st=fcsStock(l,_oo), six=fc6Is(l); TS+=st; var v=fcsNet(l,st,fcNOf(l,_ld.get(l))), t=v.reduce(function(a,b){ return a+b; },0); v.forEach(function(x,k){ T[k]+=x; }); T[NM]+=t;   /* ★ ยอดสุทธิหลังหักสต๊อค */
     var cells=v.map(function(x){ return '<td class="r">'+fmt(x)+'</td>'; }); while(cells.length<NM)cells.push('<td class="r" style="color:#999">-</td>');
     return '<tr><td class="c">'+(i+1)+'</td><td>'+e(fcsLineName(l))+'</td>'+cells.join('')+'<td class="r b">'+fmt(t)+'</td></tr>'; }).join('');
   var sb=function(lbl,en,nm){ var im=sig(nm); return '<td><div class="sb">'+(im?'<img src="'+im+'">':'')+'</div><div class="sn">'+e(nm)+'</div><div class="sl">'+lbl+'<br><span>'+en+'</span></div></td>'; };
@@ -37409,7 +37414,7 @@ function openPlanForm(type,edit){
   modal({title:PLAN[type].icon+' '+(edit?'แก้ไข':'สร้าง')+PLAN[type].label,size:'full',body:`
     <div class="row c2">
       <div class="field"><label>เลขที่</label><input id="pl_no" value="${edit?esc(edit.no):esc(peekPlan(type))}"></div>
-      <div class="field"><label>ลูกค้า <span class="req">*</span> <span class="muted" style="font-weight:400;font-size:11px">— ดึงอัตโนมัติจาก PART ในสินค้าคงคลัง</span></label><input id="pl_cust" value="${edit?esc(edit.customer||''):''}" placeholder="พิมพ์ PART ด้านล่าง แล้วชื่อย่อลูกค้าจะขึ้นเอง" oninput="this.dataset.auto='0'" autocomplete="off"><div id="pl_custHint" class="muted" style="font-size:11px;margin-top:2px"></div></div>
+      <div class="field"><label>ลูกค้า <span class="req">*</span> <span class="muted" style="font-weight:400;font-size:11px">— ดึงอัตโนมัติจาก PART ในสินค้าคงคลัง</span></label><input id="pl_cust" value="${edit?esc(edit.customer||''):''}" placeholder="พิมพ์ PART ด้านล่าง แล้วชื่อย่อลูกค้าจะขึ้นเอง" oninput="this.dataset.auto='0';if(window.__planType==='FC'){try{renderPlanLines('FC');}catch(e){}}" autocomplete="off"><div id="pl_custHint" class="muted" style="font-size:11px;margin-top:2px"></div></div>
     </div>${extra}
     ${type==='FC'?`<div class="hint" style="margin:4px 0"><span class="i">📅</span><div>จำนวนเดือน = ตาม Forecast ลูกค้า (แนบไฟล์แล้วปรับช่องเอง · ➕/➖ เดือน ที่หัวตาราง) · ระบบคำนวณ 4 เดือน : ${ml[0]} / ${ml[1]} / ${ml[2]} / ${ml[3]}</div></div>`:''}
     <details style="margin:6px 0" open><summary style="cursor:pointer;font-size:12.5px;color:var(--brand);font-weight:600">📎 แนบไฟล์ PDF / Excel / รูปภาพ → อ่านอัตโนมัติ  หรือ  วางข้อความ (Copy-Paste)</summary>
@@ -37728,7 +37733,10 @@ function ocrPreprocess(cv){try{var ctx=cv.getContext('2d');var im=ctx.getImageDa
    ============================================================ */
 var CAL_MON={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,sept:9,oct:10,nov:11,dec:12};
 /* ★ 26/10d หัวเดือนภาษาไทย ก.ค.-26 · มี.ค.-27 · ม.ค. 70 (ปี 2 หลัก : <50 = ค.ศ. · ≥50 = พ.ศ.) */
-function calThMon(t){ t=String(t||'').replace(/\s+/g,''); var m=/^([\u0E00-\u0E7F.]+?)[\-\/]?(\d{2}|\d{4})?$/.exec(t); if(!m)return null; var a=m[1]; if(!/\./.test(a)||a.replace(/[^\u0E00-\u0E7F]/g,'').length<2)return null;
+var CAL_TH_FULL=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+function calThMon(t){ t=String(t||'').replace(/\s+/g,'');
+  var fm=/^([\u0E00-\u0E7F]{4,})[\-\/]?(\d{2}|\d{4})?$/.exec(t); if(fm){ var fi=CAL_TH_FULL.indexOf(fm[1]); if(fi>=0){ var fy=fm[2]?Number(fm[2]):0; if(fy&&fy<100)fy=fy>=50?(fy+2500-543):(fy+2000); if(fy>2400)fy-=543; return {mo:fi+1,y:fy}; } }   /* ★ 27/10c ชื่อเดือนเต็ม (CYF : พฤศจิกายน ธันวาคม …) */
+  var m=/^([\u0E00-\u0E7F.]+?)[\-\/]?(\d{2}|\d{4})?$/.exec(t); if(!m)return null; var a=m[1]; if(!/\./.test(a)||a.replace(/[^\u0E00-\u0E7F]/g,'').length<2)return null;
   var c=a.replace(/[^\u0E01-\u0E2E\u0E40]/g,''), mo=0;
   if(/\u0E35/.test(a)&&c==='มค')mo=3; else if(/\u0E34/.test(a)&&c==='มย')mo=6; else mo=({'มค':1,'กพ':2,'เมย':4,'พค':5,'กค':7,'สค':8,'กย':9,'ตค':10,'พย':11,'ธค':12})[c]||0;
   if(!mo)return null; var y=m[2]?Number(m[2]):0; if(y&&y<100)y=y>=50?(y+2500-543):(y+2000); if(y>2400)y-=543; return {mo:mo,y:y}; }
@@ -38117,6 +38125,7 @@ function planAutoCust(force){
     if(e.value!==c){ e.value=c; }
     try{ e.dataset.auto='1'; }catch(x){}
     if(h)h.innerHTML='✅ ดึงจากสินค้าคงคลังตาม PART ที่กรอก <span style="color:var(--muted)">(แก้เองได้)</span>';
+    try{ if(window.__planType==='FC'&&fcCustN(c)>0){ var _K0=(window.__fcK||[]).length; fcFormK(); if((window.__fcK||[]).length!==_K0)renderFcLines(document.getElementById('planRoot')); } }catch(x){}   /* ★ 27/10c ลูกค้า 6 เดือน → ขยายช่องเดือน */
   }else if(h&&!String(e.value||'').trim()){
     h.textContent='พิมพ์ PART ในตารางด้านล่าง ระบบจะเติมชื่อย่อลูกค้าให้เอง';
   }
