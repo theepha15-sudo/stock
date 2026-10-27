@@ -1084,9 +1084,10 @@ const SEED={
 
 /* ---------- State ---------- */
 let DB=null;
-const APP_BUILD='FCMKHV-2026.10.26i';
+const APP_BUILD='FCMKWIP-2026.10.27b';
 /* บันทึกการแก้ไขล่าสุด (แสดงเมื่อเอาเมาส์ชี้ที่ build — ไม่เอาไปต่อท้าย APP_BUILD เพราะทำให้แถบบนล้นจอ) */
 const APP_NOTE=[
+  '🐞 FORECAST 3 เดือน ช่อง ของที่มีอยู่ ไม่ตรงสินค้าคงคลัง (32841B000P-02 SOM = 11,985 แต่สินค้าคงคลัง FG 2,985 + WIP 3,000 = 5,985) : เดิมนับ ใบสั่งผลิตทั้งใบ 9,000 (รวมส่วนที่รับเข้าแล้ว 6,000) · แก้เป็นยอดเดียวกับสินค้าคงคลัง = คงเหลือ + WIP ค้างรับ + รอรับเข้า + รอชุบ + รอคัด + รอชั่ง (plCalc รวมที่จะมี) ทั้งหน้าออฟฟิศและหน้าผู้ผลิตออนไลน์ · ใช้กับทุกชิ้นงาน',
   '🐞 FORECAST 3 เดือน หน้าผู้ผลิต (Online) รายการหาย : เครื่องผู้ผลิตคำนวณ ของที่มีอยู่ เองจากข้อมูลบางส่วน + ออฟฟิศส่งค่าที่ใช้ยอดสะสมเก่า (p.wip) → ได้ยอดเกินจริง ต้องผลิตเพิ่ม = 0 ทุกรายการ → ใบพิมพ์ (ซ่อนรายการ 0) ว่าง · แก้ : ออฟฟิศกับผู้ผลิตใช้สูตรเดียวกัน (fcMkCalc · ยอดเดียวกับสินค้าคงคลัง) และเครื่องผู้ผลิตใช้ค่าที่ออฟฟิศส่งมาเท่านั้น · ทุกผู้ผลิตตัวเลขตรงกับหน้าออฟฟิศ',
   '🖨️ ผลิตประจำวัน → FORECAST 3 เดือน (FM-PL-02) : ไม่พิมพ์รายการที่เป็น 0 ทุกเดือน · ช่องลงนามใส่ชื่ออัตโนมัติ ผู้จัดทำ ALISA.K · ผู้ตรวจสอบ CHANUNPORN.R · ผู้อนุมัติ WECHAYAN.R · ผู้รับทราบ = ชื่อผู้ผลิต (พร้อมลายเซ็นถ้ามี) · วันที่ = วันที่พิมพ์ · ใช้กับทุกผู้ผลิต (RTK-K · VS4 · AKE · JARUN · JH · KDK · ROOT · ไถเฉิงเทค · RTK-V · RTK-N · SOM · SM ฯลฯ) · แก้ชื่อได้ที่ settings.fcMkSig',
   '🖨️ Forecast Supplier : เปลี่ยนป้ายช่องลงนามซ้ายสุดจาก ผู้ผลิต (Maker) เป็น ผู้ขาย (Supplier) ตามบริบทใบ (ชื่อยังดึงอัตโนมัติจาก ผู้ขาย/ผู้ผลิต ในสินค้าคงคลัง · แก้ได้เหมือนเดิม)',
@@ -44591,7 +44592,12 @@ function fcMkCalc(l,onOrder){ var c=null; try{ c=plCalc(l,onOrder||{}); }catch(e
       c.atPlating=Math.max(0,Number(pp.plate!=null?pp.plate:_p.atPlating)||0); c.qtime=Math.max(0,Number(pp.qt)||0); c.wipBk=c.wipBk||0;
       c.makerOut=(onOrder&&(onOrder[_p.id]||0))||0; } }
   if(!c.pn)c.pn=String((l&&l.name)||''); return c; }
-function fcMkHaveC(c){ c=c||{}; return Math.round(((Number(c.onHand)||0)+(Number(c.stk)||0)+(Number(c.sort)||0)+(Number(c.atPlating)||0)+(Number(c.qtime)||0)+(Number(c.makerOut)||0))*1000)/1000; }
+/* ★ 27/10a ของที่มีอยู่ = ตัวเลขชุดเดียวกับตารางสินค้าคงคลัง (invPrintCalc : คงเหลือ + WIP ค้างรับ + Q-TIME + ชุบ + คัด + รอชั่ง · ติดลบนับ 0) — ใช้ได้ทุกประเภท (FG / RMC / RM) */
+var _fcMkIpcM=null;
+function fcMkIpc(){ if(_fcMkIpcM&&Date.now()-_fcMkIpcM.t<3000)return _fcMkIpcM.c; var c=invPrintCalc(); _fcMkIpcM={t:Date.now(),c:c}; return c; }
+function fcMkHaveP(p){ var I=fcMkIpc(), s=0; ['onHand','wip','qt','plate','sort','stk'].forEach(function(k){ var v=0; try{ v=Number(I.get(k,p))||0; }catch(e){} if(v>0)s+=v; }); return Math.round(s*1000)/1000; }
+function fcMkHaveC(c){ c=c||{}; if(c.p){ try{ return fcMkHaveP(c.p); }catch(e){} }
+  return Math.round(((Number(c.onHand)||0)+(Number(c.stk)||0)+(Number(c.sort)||0)+(Number(c.atPlating)||0)+(Number(c.qtime)||0)+(Number(c.makerOut)||0))*1000)/1000; }
 /* รวม Forecast ลูกค้า 3 เดือน แยกตามชิ้นงานของผู้ผลิตรายนั้น */
 function fcMkRows(mk){
   var key=fcMkKey(mk), onOrder={}, out={}, ml=monthLabels();
@@ -44609,7 +44615,7 @@ function fcMkRows(mk){
         r=out[id]={id:id,p:p,pn:(p?p.pn:String(c.pn||'').split(' ')[0]),
           name:(p?((p.name&&p.name!=='-')?p.name:''):''),
           cust:(l.customer||d.customer||(p?p.customer:'')||''),maker:(mkr||'(ยังไม่ระบุ)'),
-          m1:0,m2:0,m3:0,docs:{},
+          m1:0,m2:0,m3:0,docs:{},hv0:fcMkHaveC(c),
           onHand:c.onHand||0,stk:c.stk||0,sort:c.sort||0,atPlating:c.atPlating||0,qtime:c.qtime||0,
           wipBk:c.wipBk||0,onOrd:c.makerOut||0};
       }
@@ -44622,7 +44628,7 @@ function fcMkRows(mk){
   var rows=Object.keys(out).map(function(k){
     var r=out[k];
     r.ref=Object.keys(r.docs).slice(0,3).join(', ');
-    var _hv=(r.onHand||0)+(r.stk||0)+(r.sort||0)+(r.atPlating||0)+(r.qtime||0)+(r.onOrd||0);
+    var _hv=(r.hv0!=null)?r.hv0:((r.onHand||0)+(r.stk||0)+(r.sort||0)+(r.atPlating||0)+(r.qtime||0)+(r.onOrd||0));
     if(r.mkHave!=null)_hv=Number(r.mkHave)||0;        /* ★ 26/10i เครื่องผู้ผลิต : ใช้ค่าที่ออฟฟิศส่งมาเท่านั้น (เครื่องผู้ผลิตมีข้อมูลไม่ครบ คำนวณเองได้ยอดเกิน) */
     r.have=Math.round(_hv*1000)/1000;
     r.dem=Math.round(((r.m1||0)+(r.m2||0)+(r.m3||0))*1000)/1000;
