@@ -1084,9 +1084,18 @@ const SEED={
 
 /* ---------- State ---------- */
 let DB=null;
-const APP_BUILD='SUBTOT-2026.10.27g';
+const APP_BUILD='FCSCAN-2026.10.29g';
 /* บันทึกการแก้ไขล่าสุด (แสดงเมื่อเอาเมาส์ชี้ที่ build — ไม่เอาไปต่อท้าย APP_BUILD เพราะทำให้แถบบนล้นจอ) */
 const APP_NOTE=[
+  '🛟 สแกน Forecast (ภาพสแกน · ตะแคง) ทนขึ้น — เดิมถ้ารอบตรวจตัวเลขทีละช่องพัง/ไม่ผ่าน ระบบเงียบแล้วไป OCR หน้ากระดาษแบบไม่หมุน (ได้ "I I 5 Zz" → ไม่พบ Part) · ตอนนี้ : (1) ลองอ่านตารางจากผล OCR ที่หมุนถูกด้านอีกรอบโดยไม่ตรวจทีละช่อง (2) ยังไม่ได้ = ใช้ข้อความจากภาพที่หมุนแล้วแทน (3) บรรทัดสถานะบอกสาเหตุ [สแกน : …] เพื่อแก้ต่อได้ตรงจุด (4) ต้นเหตุจริง : OCR อ่านหัวเดือนเพี้ยน (Nov-26 Dec2s Mayr ov-27) จับได้พอดีเกณฑ์ 3 เดือน บางรอบ/บางเครื่องได้ไม่ถึง → เพิ่มรอบอ่านหัวเดือนแบบทนตัวอักษรเพี้ยน (เฉพาะเมื่อรอบปกติหาไม่เจอ · ปีเดาจากช่องข้างเคียง) + มุมหมุนสำรองเลือกมุมที่อ่านคำได้ชัดสุด (เดิมคืนหน้าตะแคง) (FORECAST A.A.A 26-Oct-26 · PO 003/6911013)',
+  '📅 ฟอร์ม สร้าง/แก้ไข Forecast ลูกค้า เพิ่มช่อง "วันที่ออก Forecast" (เก็บเป็นวันที่ของใบ d.date · ตาราง Forecast / เช็คความเพียงพอ ใช้วันที่นี้) · สแกนไฟล์แล้วเติมให้อัตโนมัติจาก Issued Date (เช่น 21-Oct-26 → 21/10/2026) · ไม่กรอก = วันที่บันทึก',
+  '🐞 สแกน Forecast A.A.A. (Forecast Information : Confirm Nov-26 · Forecast Dec-26 / Jan-27 / Feb-27) อ่านเดือนเลื่อน — ช่อง Packing (200) ถูกนับเป็นเดือน ต.ค. และช่อง Diff. เป็น มี.ค. เพราะตัวอ่านขยายคอลัมน์เดือนตามเส้นตารางไปช่องข้างเคียงที่กว้างพอกัน + เส้นตารางหนาถูกตรวจเป็น 2 เส้นชิดกัน เกิดช่องปลอมคั่นเดือน (ไฟล์ 26/10 อ่านเป็น ต.ค./ธ.ค./ม.ค./มี.ค.) → รวมเส้นชิดกันเป็นเส้นเดียว · แก้ calGridCols หยุดขยายที่ช่องที่หัวตารางเป็น Packing / Diff / Total / Price (ดูหัวตาราง 3 แถวเหนือแถวเดือนด้วย เพราะหัวช่องเหล่านี้คร่อม 2 แถว) → ได้ 4 เดือนตรงไฟล์ Nov-26 12,800 · Dec-26 12,000 · Jan-27 14,400 · Feb-27 14,400',
+  '🔢 ฟอร์ม Forecast ลูกค้า / Customer PO : ช่องตัวเลข (ยอดรายเดือน · จำนวนสั่ง · ราคา) กว้างขึ้น ชิดขวา ไม่มีปุ่มลูกศรกินที่ + บรรทัดเล็กใต้ช่องแสดงตัวเลขมีจุลภาค (20,000) — เดิมช่องเดือนกว้าง 72px เห็นแค่ "20" จากยอด 20,000',
+  '📅 ใบเบิกจ่ายสำเร็จรูป ช่องกำหนดส่งที่แก้ได้ แสดงรูปแบบเดียวกับแถวอื่น 2026-10-28 (เดิมใช้ช่องวันที่ของเบราว์เซอร์ แสดง 29/10/2026 ตามภาษาเครื่อง) · พิมพ์ได้ทั้ง 2026-10-28 / 28/10/2026 / 28/10/2569 · ปุ่ม 📅 เลือกจากปฏิทินเหมือนเดิม',
+  '🌐 บันทึกการประชุม (การสื่อสาร · FM-HR-25) ภาษาอังกฤษ / จีน — ช่องติ๊ก English / 中文 ด้านบนฟอร์ม และบนหน้าใบพิมพ์ (มุมขวาบน · ไม่พิมพ์ลงกระดาษ) ใช้ได้ทุกประเภท ประจำวัน / สัปดาห์ / เดือน / วาระพิเศษ : หัวข้อ ป้าย ตัวเลือก สถานะ บริบท SQCDM เป็นศัพท์ภาษานั้น · ข้อความที่พิมพ์ (หัวข้อ สถานที่ ประเด็น SQCDM วาระ มติ งานที่ต้องดำเนินการ ติดตามงาน คำอธิบายรูป สรุปจากระบบ) แปลอัตโนมัติ แก้คำได้ · ภาษาไทยเดิมเก็บไว้ไม่เปลี่ยน · ไทยถูกแก้ = แปลใหม่ให้เอง',
+  '🇨🇳 ข้อร้องเรียนจากลูกค้า (FM-MK-25) เพิ่มภาษาจีน (中文 จีนตัวย่อ) — ช่องติ๊ก 中文 ข้าง English ทั้งบนหน้าดูใบและในฟอร์ม (เลือกได้ทีละภาษา) : หัวข้อ/ป้าย/ตัวเลือกเป็นศัพท์งานคุณภาพภาษาจีน (围堵措施 · 根本原因 · 纠正及预防措施 · 有效性验证 …) · ข้อความไทยแปลอัตโนมัติ แก้คำได้ · คำแปลแต่ละภาษาเก็บแยก (d.en / d.zh) สลับภาษาไม่หาย · ปรับการแปลให้ส่งทีละช่องตามลำดับ + มีเส้นสำรอง (Google บล็อกเมื่อยิงถี่)',
+  '🌐 ข้อร้องเรียนจากลูกค้า (FM-MK-25) ภาษาอังกฤษ สำหรับลูกค้าต่างชาติ — ช่องติ๊ก English บนหน้าดูใบ (มุมขวาข้อ 1 · ไม่พิมพ์ลงกระดาษ) และในฟอร์ม : หัวข้อ/ป้าย/ตัวเลือก/ผู้ลงนาม เป็นศัพท์ ISO 9001 / IATF 16949 · ข้อความที่พิมพ์เป็นไทย (รายละเอียด · เรื่องที่ 2… · ควบคุมเบื้องต้น · สาเหตุ · แก้ไข · ตอบกลับ · ทวนสอบ · หมายเหตุ · ชื่อชิ้นงาน · คำอธิบายรูป) แปลอัตโนมัติ (Google Translate + คำศัพท์งานคุณภาพ · ต้องต่ออินเทอร์เน็ต) แก้คำได้ในฟอร์ม · ภาษาไทยเดิมเก็บไว้ไม่เปลี่ยน · ไทยถูกแก้ = แปลใหม่ให้เอง · ใช้ได้ทั้ง 4 ประเภท · PDF อัตโนมัติออกตามภาษาของใบ',
+  '🆕 ข้อร้องเรียนจากลูกค้า (FM-MK-25) ข้อ 2 : เพิ่มเรื่องได้หลายเรื่อง (➕ เพิ่มเรื่อง · 🗑️ ลบเรื่อง) แต่ละเรื่องมีข้อความ (ใส่สีได้) + รูป 2 รูป พร้อมคำอธิบาย (เช่น BEFORE / AFTER) · ใบพิมพ์ : รูปอยู่ขวาของข้อความแต่ละเรื่อง ความสูงรูปเท่ากับความยาวข้อความ (อย่างน้อย 32 มม.) ย่อ/ขยายพอดีกรอบไม่บิดเบี้ยว ขนาดตามจำนวนรูป (1 รูป กว้าง 60 มม. · 2 รูป 46 มม.) · ใช้ทั้ง 4 ประเภท : ข้อร้องเรียน / สอบถาม / ข้อเสนอแนะ / ชมเชย · ใบเดิมที่มีรูปเกิน 2 รูปยังแสดงครบ',
   '➕ แถว SUBTOTAL ท้ายตาราง : ใบส่งของชั่วคราว (FM-ST-25) รวม ส่ง / รับคืน / ค้าง ตามตัวกรองที่แสดง (ไม่นับใบที่ยกเลิก · รับคืน/ค้าง นับเฉพาะใบที่ต้องส่งคืน) · ใบแลกเปลี่ยนสินค้า (FM-ST-05) รวม รับคืนเสีย / จ่ายเปลี่ยน ตามตัวกรองที่แสดง',
   '🐞 Customer PO ส่งแล้วแต่ยังค้าง — ตาราง Customer PO ช่องสถานะเทียบสต๊อคกับยอดค้างส่ง (สั่ง − ส่ง) แทนจำนวนสั่งทั้งหมด · ส่งครบ = ✅ ส่งครบ · ช่องเบิกจ่ายนับใบเบิกจ่ายที่จับคู่ได้ (รวมใบที่ไม่ได้ผูก) เป็นครบด้วย · (AC4E007D00 CPO690081 สั่ง 500 · ส่ง FGI-69100674 500 แล้ว แต่เช็คความเพียงพอยังต้องการ 495 ขาด 423) — Customer PO ไม่ได้กรอกเลขที่ PO ลูกค้า ส่วนใบเบิกจ่ายไม่ได้ผูกกับ CPO และใช้เลข PO 5300003179 → จับคู่ไม่ได้ นับส่งแล้วแค่ตัวอย่าง 5 ชิ้น · แก้ cpoShipMap : ใบเบิกจ่ายที่ยังไม่ได้ผูก (ไม่ตรงเลข PO ใด) จัดสรรให้ Customer PO ที่ไม่มีเลขที่ PO ลูกค้า ของลูกค้า+ชิ้นงานเดียวกัน วันที่เบิก ≥ วันที่ CPO ตามกำหนดส่งก่อน-หลัง ไม่เกินจำนวนสั่ง (คิดใหม่ทุกครั้งที่ข้อมูลเปลี่ยน) → ตาราง Customer PO / เช็คความเพียงพอ ทุกแท็บ / ใบขอผลิต / Forecast/PO ใช้ยอดเดียวกัน',
   '🐞 เช็คความเพียงพอ (ทุกแท็บ) : สถานะ ขาด/พอ กับช่อง ดำเนินการ ขัดกัน (9004-92155A ขาด 2,095 แต่ ห้ามผลิต ของพอ 5.1 เดือน) — เพราะสถานะเทียบ Forecast 4 เดือน + PO ค้างส่ง รวมกัน ส่วนดำเนินการใช้เกณฑ์ใบขอผลิต (FM-PL-03 : Forecast ตามจำนวนเดือนที่ตั้ง · ยอดเบิกจริงของลูกค้า · PO ค้าง · MOQ) · แก้ : สถานะ / การ์ดสรุป / ตัวกรองเฉพาะที่ขาด ใช้ผลตัดสินเดียวกับช่องดำเนินการ — ไม่ต้องผลิต = 🟢 พอตามเกณฑ์ (แสดงส่วนต่างเทียบความต้องการรวมเป็นข้อมูลอ้างอิงสีส้ม) · ต้องผลิต = 🔴 ขาด/ควรผลิต พร้อมยอดแนะนำ',
@@ -29267,9 +29276,9 @@ function momOpen(id,i){
   _momD=r.mom?JSON.parse(JSON.stringify(r.mom)):momBlank(r,i);
   MOM_SQCDM.forEach(function(x){ _momD.sq=_momD.sq||{}; if(!_momD.sq[x[0]])_momD.sq[x[0]]={t:'',a:'',st:'',iss:''}; });
   ['present','follow','acts','agenda'].forEach(function(k){ if(!Array.isArray(_momD[k]))_momD[k]=[]; });
-  momRender();
+  momRender(); if(momLg(_momD)&&momTrJobs(_momD,false,momLg(_momD)).length)setTimeout(function(){ momTrAll(false); },60);
 }
-function momRead(){
+function momReadRaw(){
   var D=_momD; if(!D)return;
   var v=function(id){ var e=document.getElementById(id); return e?String(e.value||''):undefined; };
   ['type','no','title','date','tStart','tEnd','venue','chair','rec','area','absent','decide','comm','next','revBy','appBy'].forEach(function(k){ var x=v('mom_'+k); if(x!==undefined)D[k]=x; });
@@ -29315,10 +29324,10 @@ function momCustRx(){ var t=Date.now(); if(window.__momCrx&&t-window.__momCrxT<6
 function momCtxScore(txt){ txt=String(txt||''); var best='general', bs=0;
   MOM_CTX.forEach(function(c){ if(!c[6])return; var m=txt.match(new RegExp(c[6].source,'gi')); var sc=m?m.length:0; if(c[0]==='customer'){ var cr=momCustRx(); if(cr&&cr.test(txt))sc+=2; } if(sc>bs){ bs=sc; best=c[0]; } });
   return best; }
-function momCtxOf(D){ if(!D)return 'general'; if(D.ctx)return D.ctx;
+function momCtxOf(D){ if(!D)return 'general'; if(D.ctx)return D.ctx; if(D.__ctxAuto)return D.__ctxAuto;
   var c=momCtxScore(D.title||''); if(c!=='general')return c;
   return (D.type&&D.type!=='special')?'sqcdm':'general'; }
-function momAgCat(a,D){ if(a&&a.cat)return a.cat; var c=momCtxScore(a&&a.topic); return c!=='general'?c:momCtxOf(D); }
+function momAgCat(a,D){ if(a&&a.cat)return a.cat; if(a&&a.__cat)return a.__cat; var c=momCtxScore(a&&a.topic); return c!=='general'?c:momCtxOf(D); }
 function momTag(k,auto){ var c=momCtxDef(k); return '<span style="display:inline-block;padding:1px 8px;border-radius:10px;font-size:11px;font-weight:700;color:'+c[4]+';background:'+c[5]+';border:1px solid '+c[4]+'55;white-space:nowrap">'+c[1]+' '+esc(c[2])+(auto?' <span style="font-weight:400;opacity:.75">· อัตโนมัติ</span>':'')+'</span>'; }
 /* แถบเครื่องมือสี (ใช้ร่วมได้ทุกฟอร์ม : el id ใดก็ได้) */
 function rtxBar(id){ var md=' onmousedown="event.preventDefault()"';
@@ -29340,21 +29349,21 @@ function rtxBox(id,txt,h,ph,minPx){ return '<div id="'+id+'" class="ccp-rt" cont
 function rtxRead(id){ var el=document.getElementById(id); if(!el)return null; var t=String(el.innerText||'').replace(/\u00a0/g,' ').replace(/\n+$/,''); var h=ccpRichSan(el.innerHTML); return {t:t,h:/<span /.test(h)?h:''}; }
 /* อัปเดตบริบททันทีขณะพิมพ์ (ไม่วาดฟอร์มใหม่ = ไม่เสียข้อความที่กำลังพิมพ์) */
 function momCtxLive(){ var D=_momD; if(!D)return; var g=function(i){ return document.getElementById(i); };
-  if(g('mom_title'))D.title=g('mom_title').value; if(g('mom_type'))D.type=g('mom_type').value; if(g('mom_ctx'))D.ctx=g('mom_ctx').value;
+  if(g('mom_title')&&!momFormLg())D.title=g('mom_title').value; if(g('mom_type'))D.type=g('mom_type').value; if(g('mom_ctx'))D.ctx=g('mom_ctx').value;
   var k=momCtxOf(D), c=momCtxDef(k);
   if(g('momCtxChip'))g('momCtxChip').innerHTML=momTag(k,!D.ctx);
   if(g('momCtxHint'))g('momCtxHint').innerHTML=momCtxHintHTML(k);
   if(g('momSqWrap'))g('momSqWrap').style.display=k==='sqcdm'?'':'none';
   if(g('momAgHead'))g('momAgHead').innerHTML=momAgHeadTxt(k);
-  (D.agenda||[]).forEach(function(a,j){ momAgLive(j); }); }
+  (D.agenda||[]).forEach(function(a,j){ momAgLive(j); }); var _lg=momFormLg(); if(_lg){ ['momCtxChip','momCtxHint','momAgHead'].forEach(function(i){ momI18nDom(g(i),_lg); }); } }
 function momCtxHintHTML(k){ var c=momCtxDef(k); return '<div style="border-left:4px solid '+c[4]+';background:'+c[5]+';padding:6px 10px;border-radius:6px;font-size:11.5px"><b style="color:'+c[4]+'">'+c[1]+' บริบท : '+esc(c[2])+'</b> <span class="muted">'+esc(c[3])+'</span><div style="margin-top:2px">ควรบันทึก : '+c[8].map(function(x){ return '☐ '+esc(x); }).join(' &nbsp; ')+'</div></div>'; }
 function momAgHeadTxt(k){ return k==='sqcdm'?'4.1 วาระอื่น ๆ / ประเด็นหารือ — Other Agenda (แยกประเภทอัตโนมัติตามหัวข้อวาระ)':'4. วาระ / ประเด็นหารือ — Agenda & Discussion (แยกประเภทอัตโนมัติตามหัวข้อวาระ)'; }
 function momAgLive(j){ var D=_momD; if(!D||!D.agenda||!D.agenda[j])return; var a=D.agenda[j], g=function(i){ return document.getElementById(i); };
-  if(g('mom_agt_'+j))a.topic=g('mom_agt_'+j).value; if(g('mom_agc_'+j))a.cat=g('mom_agc_'+j).value;
+  if(g('mom_agt_'+j)&&!momFormLg())a.topic=g('mom_agt_'+j).value; if(g('mom_agc_'+j))a.cat=g('mom_agc_'+j).value;
   var k=momAgCat(a,D), c=momCtxDef(k);
   if(g('mom_agtag_'+j))g('mom_agtag_'+j).innerHTML=momTag(k,!a.cat);
   if(g('mom_agbox_'+j)){ g('mom_agbox_'+j).style.borderLeftColor=c[4]; g('mom_agbox_'+j).style.background=c[5]+'66'; }
-  if(g('mom_agd_'+j))g('mom_agd_'+j).setAttribute('data-ph',c[7]); }
+  if(g('mom_agd_'+j))g('mom_agd_'+j).setAttribute('data-ph',c[7]); var _lg=momFormLg(); if(_lg){ momI18nDom(g('mom_agtag_'+j),_lg); if(g('mom_agd_'+j))g('mom_agd_'+j).setAttribute('data-ph',momI18nText(c[7],_lg)); } }
 function momAgendaHTML(D){ var A=D.agenda||[], ctx=momCtxOf(D);
   var ctxOpt=function(v){ return '<option value="">🤖 อัตโนมัติ (ตามหัวข้อวาระ)</option>'+MOM_CTX.map(function(c){ return '<option value="'+c[0]+'"'+(v===c[0]?' selected':'')+'>'+c[1]+' '+esc(c[2])+'</option>'; }).join(''); };
   return '<div style="font-weight:800;margin:14px 0 6px;font-size:13px;border-left:4px solid var(--brand);padding-left:8px" id="momAgHead">'+momAgHeadTxt(ctx)+'</div>'
@@ -29596,10 +29605,256 @@ function momActSt(j,v){ var D=_momD; if(!D)return; momRead(); var a=D.acts[j]; i
 function momRtOut(a,k,e){ var h=a&&a[k+'H']; if(h&&ccpRtNorm(ccpRichTxt(h))===ccpRtNorm(a[k]))return ccpRichSan(h); return e(a?a[k]:''); }
 try{ if(!window.__rtxFocusOn){ window.__rtxFocusOn=1; document.addEventListener('focusin',function(ev){ var t=ev.target; if(t&&t.classList&&t.classList.contains('ccp-rt'))window.__rtxLast=t; }); } }catch(e){}
 
+/*MOMI18N*/
+/* ============================================================
+   ★ 29/10a บันทึกการประชุม (FM-HR-25) ภาษาอังกฤษ / จีน — ติ๊ก English / 中文 ในฟอร์มหรือบนหน้าใบพิมพ์
+   ป้าย/หัวข้อ = พจนานุกรม MOM_I18N [ไทย, อังกฤษ, จีน] แปลบน DOM (ไม่แตะช่องกรอก) · ข้อความยาว (≥5 ตัว) แทนบางส่วนได้ · ข้อความสั้นแทนเมื่อตรงทั้งก้อน
+   เนื้อหาที่พิมพ์ = แปลอัตโนมัติ (ccpTr) เก็บ o[lg][k] / o[lg]['_'+k] เหมือน FM-MK-25 · ภาษาไทยเดิมไม่ถูกแตะ
+   ฟอร์มโหมดภาษา : วาดจากสำเนาที่แทนคำแปล (momLocal) → อ่านกลับ (momRead) แล้วเขียนคืนด้วย ccpEnSet (momMergeBack)
+   ============================================================ */
+var MOM_I18N=[
+ ['(Safety · Quality · Cost · Delivery · Morale) ใช้ได้ทั้ง','(Safety · Quality · Cost · Delivery · Morale) for','（安全 · 质量 · 成本 · 交付 · 士气）适用于'],
+ ['ประจำวัน / สัปดาห์ / เดือน / วาระพิเศษ','daily / weekly / monthly / special meetings','每日 / 每周 / 每月 / 专题会议'],
+ ['· ตามข้อกำหนด ISO 9001 ข้อ 7.4 · 9.1.3 · 10.2 และ IATF 16949 · ระบบดึง','· per ISO 9001 clauses 7.4 · 9.1.3 · 10.2 and IATF 16949 · the system brings','· 依据 ISO 9001 条款 7.4 · 9.1.3 · 10.2 及 IATF 16949 · 系统自动带入'],
+ ['งานที่ยังไม่ปิดจากการประชุมครั้งก่อน','open actions from the previous meeting','上次会议未关闭的事项'],
+ ['มาให้ติดตามอัตโนมัติ','forward for follow-up automatically','以便跟进'],
+ ['1. ข้อมูลการประชุม / Meeting Information','1. Meeting Information','1. 会议信息 / Meeting Information'],
+ ['2. ผู้เข้าประชุม / Attendees','2. Attendees','2. 参会人员 / Attendees'],
+ ['3. ติดตามงานจากการประชุมครั้งก่อน / Follow-up of Previous Actions','3. Follow-up of Previous Actions','3. 上次会议事项跟进 / Follow-up of Previous Actions'],
+ ['4. ทบทวนผลการดำเนินงาน SQCDM / SQCDM Performance Review','4. SQCDM Performance Review','4. SQCDM 绩效回顾 / SQCDM Performance Review'],
+ ['5. มติ / การตัดสินใจของที่ประชุม / Decisions & Resolutions','5. Decisions & Resolutions','5. 会议决议 / Decisions & Resolutions'],
+ ['6. งานที่ต้องดำเนินการ / Action Items','6. Action Items','6. 待办事项 / Action Items'],
+ ['7. การสื่อสารผลการประชุม & ครั้งถัดไป / Communication & Next Meeting','7. Communication & Next Meeting','7. 会议结果传达及下次会议 / Communication & Next Meeting'],
+ ['8. การทบทวนและอนุมัติ / Review & Approval','8. Review & Approval','8. 审核与批准 / Review & Approval'],
+ ['4.1 วาระอื่น ๆ / ประเด็นหารือ — Other Agenda (แยกประเภทอัตโนมัติตามหัวข้อวาระ)','4.1 Other Agenda (auto-classified by agenda title)','4.1 其他议题 / 讨论事项 — Other Agenda（按议题自动分类）'],
+ ['4. วาระ / ประเด็นหารือ — Agenda & Discussion (แยกประเภทอัตโนมัติตามหัวข้อวาระ)','4. Agenda & Discussion (auto-classified by agenda title)','4. 议题 / 讨论事项 — Agenda & Discussion（按议题自动分类）'],
+ ['📷 รูปภาพประกอบการประชุม / Meeting Photos (แนบลิงก์ · สูงสุด','📷 Meeting Photos (linked · max','📷 会议照片 / Meeting Photos（链接 · 最多'],
+ ['รูป)','photos)','张）'],
+ ['บันทึกการประชุม SQCDM','SQCDM Meeting Minutes','SQCDM 会议记录'],
+ ['บันทึกการประชุม','Minutes of Meeting','会议记录'],
+ ['ประเภทการประชุม','Meeting Type','会议类型'],
+ ['เลขที่บันทึก','MoM No.','记录编号'],
+ ['หัวข้อ / วาระ','Subject','主题 / 议题'],
+ ['เช่น ประชุม SQCDM ฝ่ายผลิต / ค่าแม่พิมพ์ลูกค้า C.B. / ISO AUDIT','e.g. Production SQCDM meeting / Customer C.B. die cost / ISO audit','如：生产部 SQCDM 会议 / 客户 C.B. 模具费 / ISO 审核'],
+ ['เวลา เริ่ม – สิ้นสุด','Time','时间（开始 – 结束）'],
+ ['สถานที่ / ช่องทาง','Venue / Channel','地点 / 方式'],
+ ['ห้องประชุม / หน้างาน / ออนไลน์','Meeting room / shop floor / online','会议室 / 现场 / 线上'],
+ ['หน่วยงาน / พื้นที่','Department / Area','部门 / 区域'],
+ ['บริบทการประชุม','Context','会议类别'],
+ ['🤖 อัตโนมัติ (ตามหัวข้อที่พิมพ์)','🤖 Auto (by subject typed)','🤖 自动（按输入的主题）'],
+ ['ชื่อ-สกุล','Name','姓名'],
+ ['ตำแหน่ง / หน่วยงาน','Position / Dept.','职位 / 部门'],
+ ['+ เพิ่มผู้เข้าประชุม','+ Add attendee','+ 添加参会人员'],
+ ['ผู้ไม่มาประชุม / ลา','Absent / Apologies','缺席 / 请假'],
+ ['ชื่อ (เหตุผล)','Name (reason)','姓名（原因）'],
+ ['เรื่อง / งาน','Item','事项'],
+ ['ไม่มีงานค้างจากครั้งก่อน / No open actions','No open actions','无上次遗留事项 / No open actions'],
+ ['+ เพิ่มรายการติดตาม','+ Add follow-up item','+ 添加跟进事项'],
+ ['ประเด็น / ปัญหา / การอภิปราย','Issues / Discussion','问题 / 讨论'],
+ ['สรุปมติที่ประชุม ข้อตกลง หรือการเปลี่ยนแปลงที่ต้องสื่อสาร','Summary of resolutions, agreements or changes to be communicated','会议决议、协议或需传达的变更摘要'],
+ ['คลิกช่องที่ต้องการ → ลากคลุมข้อความ → กดสี','Click a box → select text → pick a colour','点击输入框 → 选中文字 → 选择颜色'],
+ ['อ้างอิง NC/CAR','Ref. NC/CAR','参考 NC/CAR'],
+ ['+ เพิ่มงาน','+ Add action','+ 添加事项'],
+ ['สื่อสารผลถึง / ช่องทาง','Communicated to / Channel','传达对象 / 方式'],
+ ['เช่น หัวหน้างานทุกแผนก · บอร์ด · ไลน์กลุ่ม','e.g. all supervisors · notice board · LINE group','如：各部门主管 · 公告栏 · LINE 群'],
+ ['ประชุมครั้งถัดไป','Next Meeting','下次会议'],
+ ['ผู้ทบทวน','Reviewed by','审核人'],
+ ['ผู้อนุมัติ','Approved by','批准人'],
+ ['ผู้บันทึก','Recorder','记录人'],
+ ['ปิด (ไม่บันทึก)','Close (no save)','关闭（不保存）'],
+ ['🖨️ บันทึก + พิมพ์','🖨️ Save + Print','🖨️ 保存 + 打印'],
+ ['💾 บันทึก','💾 Save','💾 保存'],
+ ['✅ บันทึกแล้ว','✅ Saved','✅ 已保存'],
+ /* ประเภท / สถานะ */
+ ['ประจำวัน / Daily','Daily','每日 / Daily'],['ประจำสัปดาห์ / Weekly','Weekly','每周 / Weekly'],['ประจำเดือน / Monthly','Monthly','每月 / Monthly'],['วาระพิเศษ / Special','Special','专题 / Special'],
+ ['ประจำสัปดาห์','Weekly','每周'],['ประจำเดือน','Monthly','每月'],['ประจำวัน','Daily','每日'],['วาระพิเศษ','Special','专题'],
+ ['🟢 ตามเป้า / On target','🟢 On target','🟢 达标 / On target'],['🟡 เฝ้าระวัง / Watch','🟡 Watch','🟡 关注 / Watch'],['🔴 ไม่ตามเป้า / Off target','🔴 Off target','🔴 未达标 / Off target'],
+ ['🟢 ตามเป้า','🟢 On target','🟢 达标'],['🟡 เฝ้าระวัง','🟡 Watch','🟡 关注'],['🔴 ไม่ตามเป้า','🔴 Off target','🔴 未达标'],
+ ['เปิด / Open','Open','未完成 / Open'],['กำลังทำ / In progress','In progress','进行中 / In progress'],['ปิดแล้ว / Closed','Closed','已关闭 / Closed'],
+ /* SQCDM */
+ ['ขวัญกำลังใจ / บุคลากร','Morale / People','士气 / 人员'],
+ ['อุบัติเหตุ · เกือบเกิดอุบัติเหตุ · PPE · 5ส · สภาพแวดล้อม','Accidents · near misses · PPE · 5S · environment','事故 · 险肇事故 · PPE · 5S · 环境'],
+ ['ของเสีย (PPM / %) · เคลมลูกค้า · NC / CAR · ผลตรวจ','Defects (PPM / %) · customer claims · NC / CAR · inspection results','不良（PPM / %）· 客户索赔 · NC / CAR · 检验结果'],
+ ['ต้นทุนของเสีย · ล่วงเวลา · วัตถุดิบ · พลังงาน','Cost of poor quality · overtime · materials · energy','不良成本 · 加班 · 原材料 · 能源'],
+ ['ส่งตรงเวลา (OTD) · แผนผลิตเทียบผลผลิต · งานค้างส่ง','On-time delivery (OTD) · plan vs. output · backlog','准时交付（OTD）· 计划 vs 产出 · 欠交'],
+ ['ขาด · ลา · มาสาย · อบรม · ข้อเสนอแนะ','Absence · leave · lateness · training · suggestions','缺勤 · 请假 · 迟到 · 培训 · 建议'],
+ ['ความปลอดภัย / สภาพแวดล้อม','Safety / Environment','安全 / 环境'],
+ ['ความปลอดภัย','Safety','安全'],['คุณภาพ / NC / ข้อร้องเรียน','Quality / NC / Complaint','质量 / NC / 投诉'],['คุณภาพ','Quality','质量'],['ต้นทุน','Cost','成本'],['การส่งมอบ','Delivery','交付'],
+ /* บริบท */
+ ['ผลการดำเนินงาน SQCDM','SQCDM Performance','SQCDM 绩效'],
+ ['สรุปผล S-Q-C-D-M · ปัญหาหน้างาน · แผนวันถัดไป','S-Q-C-D-M results · shop-floor issues · next-day plan','S-Q-C-D-M 结果 · 现场问题 · 次日计划'],
+ ['ตัวเลขเป้าหมาย / ผลจริง ทุกหัวข้อ','Target / actual for every item','各项目标 / 实际数据'],
+ ['หัวข้อ 🔴 ต้องมีงานแก้ไขในข้อ 6','🔴 items need an action in section 6','🔴 项目须在第 6 项列出纠正措施'],
+ ['ติดตามงานค้างครั้งก่อน','Follow up previous open actions','跟进上次未完成事项'],
+ ['ปัญหา (Part / Lot / จำนวน) · สาเหตุ · การแก้ไขเบื้องต้น · ป้องกันการเกิดซ้ำ','Problem (part / lot / qty) · cause · containment · recurrence prevention','问题（零件 / 批次 / 数量）· 原因 · 临时措施 · 防止再发'],
+ ['Part No. / Lot / จำนวน NG','Part No. / Lot / NG qty','零件号 / 批次 / 不良数量'],
+ ['สาเหตุราก (Why-Why / 4M)','Root cause (Why-Why / 4M)','根本原因（Why-Why / 4M）'],
+ ['การควบคุมเบื้องต้น + แก้ไขถาวร','Containment + permanent corrective action','临时围堵 + 永久纠正措施'],
+ ['อ้างอิงเลข NC / 8D ในข้อ 6','Reference NC / 8D no. in section 6','在第 6 项注明 NC / 8D 编号'],
+ ['ลูกค้า / ผู้ขาย / หน่วยงานภายนอก','Customer / Supplier / External','客户 / 供应商 / 外部单位'],
+ ['ข้อเท็จจริง · ข้อเรียกร้องของแต่ละฝ่าย · ข้อตกลงร่วม · เงื่อนไข (ราคา / การชำระ / กรรมสิทธิ์) · เอกสารยืนยัน','Facts · requests of each party · agreements · terms (price / payment / ownership) · confirming documents','事实 · 各方诉求 · 共同协议 · 条件（价格 / 付款 / 所有权）· 确认文件'],
+ ['ผู้เข้าร่วมฝั่งภายนอก (ชื่อ / ตำแหน่ง)','External attendees (name / position)','外部参会人员（姓名 / 职位）'],
+ ['ข้อตกลง + เงื่อนไขที่ยืนยันแล้ว','Agreements + confirmed terms','已确认的协议及条件'],
+ ['สิ่งที่ต้องส่งให้อีกฝ่าย + กำหนด','Deliverables to the other party + due date','需提交对方的事项 + 期限'],
+ ['ช่องทางยืนยันเป็นลายลักษณ์อักษร','Written confirmation channel','书面确认方式'],
+ ['เหตุการณ์ / จุดเสี่ยง · ผู้ได้รับผลกระทบ · สาเหตุ · มาตรการป้องกัน','Incident / hazard · persons affected · cause · preventive measures','事件 / 风险点 · 受影响人员 · 原因 · 预防措施'],
+ ['วัน-เวลา-สถานที่ของเหตุการณ์','Date, time and place of the incident','事件日期、时间、地点'],
+ ['ความรุนแรง / ผู้บาดเจ็บ','Severity / injured persons','严重程度 / 受伤人员'],
+ ['มาตรการแก้ไข + ผู้รับผิดชอบ','Corrective measures + owner','纠正措施 + 负责人'],
+ ['ทบทวนฝ่ายบริหาร / ระบบคุณภาพ / AUDIT','Management Review / QMS / Audit','管理评审 / 质量体系 / 审核'],
+ ['ผลการตรวจ / ข้อบกพร่อง · ผล KPI · ความเสี่ยง · การตัดสินใจของผู้บริหาร · ทรัพยากรที่ต้องการ','Audit results / findings · KPI results · risks · management decisions · resources needed','审核结果 / 不符合项 · KPI 结果 · 风险 · 管理层决策 · 所需资源'],
+ ['ข้อกำหนดที่เกี่ยวข้อง (ISO / IATF ข้อ)','Related requirements (ISO / IATF clause)','相关条款（ISO / IATF）'],
+ ['ข้อบกพร่อง / ข้อสังเกต (MJ / MN / OBS)','Findings / observations (MJ / MN / OBS)','不符合项 / 观察项（MJ / MN / OBS）'],
+ ['มติผู้บริหาร + ทรัพยากร','Management decisions + resources','管理层决议 + 资源'],
+ ['บุคลากร / ฝึกอบรม','People / Training','人员 / 培训'],
+ ['เรื่องบุคลากร / หลักสูตร · ผู้เกี่ยวข้อง · ผลที่ต้องการ','Personnel matter / course · people involved · expected outcome','人员事项 / 课程 · 相关人员 · 预期成果'],
+ ['รายชื่อผู้เกี่ยวข้อง / แผนก','People involved / department','相关人员 / 部门'],
+ ['หลักสูตร / วันที่ / ผู้สอน','Course / date / trainer','课程 / 日期 / 讲师'],
+ ['การวัดผล','Evaluation','效果评估'],
+ ['เปลี่ยนแปลง / งานใหม่','Change / New Product','变更 / 新产品'],
+ ['สิ่งที่เปลี่ยน (ก่อน → หลัง) · ผลกระทบ · การอนุมัติ · วันที่เริ่มใช้','What changes (before → after) · impact · approval · effective date','变更内容（前 → 后）· 影响 · 批准 · 生效日期'],
+ ['ก่อน → หลัง เปลี่ยนอะไร','Before → after: what changes','变更前 → 变更后'],
+ ['ผลกระทบ (คุณภาพ / ลูกค้า / ต้นทุน)','Impact (quality / customer / cost)','影响（质量 / 客户 / 成本）'],
+ ['เอกสารอ้างอิง ECR / PPAP','Reference documents ECR / PPAP','参考文件 ECR / PPAP'],
+ ['สาระสำคัญของวาระนี้','Key points of this agenda item','本议题要点'],
+ ['สาระสำคัญ','Key points','要点'],['ทั่วไป','General','一般'],
+ ['· อัตโนมัติ','· auto','· 自动'],['บริบท :','Context :','类别：'],['ควรบันทึก :','Should record :','应记录：'],
+ /* วาระ / รูป */
+ ['🤖 อัตโนมัติ (ตามหัวข้อวาระ)','🤖 Auto (by agenda title)','🤖 自动（按议题）'],
+ ['ยังไม่มีวาระ — กด + เพิ่มวาระ แล้วพิมพ์หัวข้อ ระบบจัดประเภทให้เอง','No agenda yet — press + Add agenda and type a title; the system classifies it','尚无议题 — 点击 + 添加议题并输入标题，系统自动分类'],
+ ['หัวข้อวาระ เช่น ค่าแม่พิมพ์ลูกค้า C.B. / ของเสีย Part xxx / อุบัติเหตุไลน์กลึง','Agenda title e.g. Customer C.B. die cost / NG part xxx / lathe line accident','议题标题，如：客户 C.B. 模具费 / 零件 xxx 不良 / 车床线事故'],
+ ['ประเภทของวาระ (อัตโนมัติ = ตามหัวข้อที่พิมพ์)','Agenda type (auto = by title typed)','议题类别（自动 = 按标题）'],
+ ['รายละเอียด / สาระสำคัญ','Details / key points','详细内容 / 要点'],
+ ['ข้อสรุป / มติของวาระนี้','Conclusion / resolution of this item','本议题结论 / 决议'],
+ ['ผู้นำเสนอ / ผู้รับผิดชอบ','Presenter / owner','报告人 / 负责人'],
+ ['+ เพิ่มวาระ','+ Add agenda','+ 添加议题'],
+ ['วาระอื่น ๆ / ประเด็นหารือ','Other agenda / discussion','其他议题 / 讨论事项'],
+ ['วาระ / ประเด็นหารือ','Agenda / Discussion','议题 / 讨论事项'],
+ ['คำอธิบายรูป เช่น ชิ้นงานที่พบปัญหา / บรรยากาศการประชุม','Caption e.g. defective part / meeting scene','图片说明，如：问题零件 / 会议现场'],
+ ['ไฟล์รูปจากคลังเอกสาร / URL','Image file from document library / URL','文档库图片文件 / URL'],
+ ['รูปภาพประกอบการประชุม','Meeting Photos','会议照片'],
+ /* สรุปจากระบบ */
+ ['📊 สรุป SQCDM อัตโนมัติจากระบบ (','📊 Automatic SQCDM summary from system (','📊 系统自动 SQCDM 汇总（'],
+ ['ช่วงข้อมูล','Period','数据区间'],['🔄 ดึงข้อมูลจากระบบ','🔄 Pull data from system','🔄 从系统获取数据'],
+ ['แหล่งข้อมูล : คัดแยก OK/NG · NC (FM-QC-03) · ข้อร้องเรียนลูกค้า (FM-MK-25) · ใบแลกเปลี่ยน (FM-ST-05) · ใบส่งของชั่วคราว (FM-ST-25) · ใบเบิกจ่าย (FM-ST-17) · Customer PO / แผนจัดส่ง · เลื่อนส่ง (FM-MK-13) · ความปลอดภัย (FM-SF-02) · อบรม (FM-HR-13) · เป้าหมายจาก KPI (SD-QMR-03) — ISO 9001 ข้อ 7.4 · 9.1.3 · 10.2 · 8.2.1 / IATF 16949 ข้อ 9.1.1.1 · 10.2.3 · 10.2.6',
+  'Data sources : sorting OK/NG · NC (FM-QC-03) · customer complaints (FM-MK-25) · exchanges (FM-ST-05) · temporary delivery bills (FM-ST-25) · FG issues (FM-ST-17) · Customer PO / delivery plan · delivery postponements (FM-MK-13) · safety (FM-SF-02) · training (FM-HR-13) · targets from KPI (SD-QMR-03) — ISO 9001 7.4 · 9.1.3 · 10.2 · 8.2.1 / IATF 16949 9.1.1.1 · 10.2.3 · 10.2.6',
+  '数据来源：挑选 OK/NG · NC (FM-QC-03) · 客户投诉 (FM-MK-25) · 换货单 (FM-ST-05) · 临时送货单 (FM-ST-25) · 成品出库单 (FM-ST-17) · 客户订单 / 交货计划 · 延期交货 (FM-MK-13) · 安全 (FM-SF-02) · 培训 (FM-HR-13) · KPI 目标 (SD-QMR-03) — ISO 9001 7.4 · 9.1.3 · 10.2 · 8.2.1 / IATF 16949 9.1.1.1 · 10.2.3 · 10.2.6'],
+ ['รายละเอียดข้อมูลประกอบ (หลักฐาน)','Supporting data details (evidence)','数据明细（证据）'],
+ ['สรุปข้อมูลจากระบบ ช่วง','System data summary, period','系统数据汇总，区间'],
+ ['ล่าสุด','Last','最近'],['ล่าสุด ','Last ','最近 '],['(ช่วง','(period','（区间'],
+ /* ใบพิมพ์ */
+ ['ยกเลิก / CANCELLED','CANCELLED','已作废 / CANCELLED'],
+ ['เลขที่ / MoM No. :','MoM No. :','编号 / MoM No. :'],['วันที่ / Date :','Date :','日期 / Date :'],['เวลา / Time :','Time :','时间 / Time :'],['วันที่ / Date','Date','日期 / Date'],
+ ['ข้อมูลการประชุม','Meeting Information','会议信息'],['ผู้เข้าประชุม','Attendees','参会人员'],['ลงชื่อ','Signature','签名'],
+ ['ติดตามงานจากการประชุมครั้งก่อน','Follow-up of Previous Actions','上次会议事项跟进'],
+ ['ทบทวนผลการดำเนินงาน SQCDM','SQCDM Performance Review','SQCDM 绩效回顾'],
+ ['สถานะ / Status : 🟢 ตามเป้า On target · 🟡 เฝ้าระวัง Watch · 🔴 ไม่ตามเป้า Off target — หัวข้อที่ 🔴 ต้องมีงานแก้ไขในหัวข้อ งานที่ต้องดำเนินการ / Off-target items require an action item',
+  'Status : 🟢 On target · 🟡 Watch · 🔴 Off target — off-target items require an action item','状态 / Status：🟢 达标 · 🟡 关注 · 🔴 未达标 — 🔴 项目须在“待办事项”中列出纠正措施'],
+ ['มติ / การตัดสินใจของที่ประชุม','Decisions & Resolutions','会议决议'],
+ ['งานที่ต้องดำเนินการ','Action Items','待办事项'],
+ ['อ้างอิง ISO 9001 ข้อ 7.4 · 9.1.3 · 10.2 / IATF 16949 · เก็บรักษาอย่างน้อย 3 ปี / Retention ≥ 3 years','Ref. ISO 9001 clauses 7.4 · 9.1.3 · 10.2 / IATF 16949 · Retention ≥ 3 years','依据 ISO 9001 条款 7.4 · 9.1.3 · 10.2 / IATF 16949 · 保存至少 3 年 / Retention ≥ 3 years'],
+ ['🖨️ พิมพ์ / บันทึก PDF','🖨️ Print / Save PDF','🖨️ 打印 / 保存 PDF'],
+ ['ประชุม SQCDM','SQCDM meeting','SQCDM 会议'],
+ ['8D กำลังดำเนินการ','8D in progress','8D 进行中'],['8D ปิดแล้ว','8D closed','8D 已关闭'],['ยังไม่ทำ 8D','No 8D yet','尚未做 8D'],['NC ยกเลิก','NC cancelled','NC 已作废'],
+ ['ใบเลื่อนส่งยกเลิก','Delay notice cancelled','延期通知已作废'],['ลูกค้าตอบแล้ว (','Customer replied (','客户已回复（'],['รอคำตอบลูกค้า','Awaiting customer reply','等待客户回复'],
+ ['ส่งแล้ว รอปิด/รับคืน','Sent, awaiting close / return','已发出，待关闭 / 退回'],['รออนุมัติ','Pending approval','待批准'],['อนุมัติแล้ว','Approved','已批准'],
+ /* คำสั้น (แทนเมื่อตรงทั้งก้อน) */
+ ['วันที่','Date','日期'],['ประธาน','Chairperson','主持人'],['หัวข้อ','Item','项目'],['เป้าหมาย','Target','目标'],['ผลจริง','Actual','实际'],['สถานะ','Status','状态'],['หมายเหตุ','Remark','备注'],
+ ['ผู้รับผิดชอบ','Owner','负责人'],['ประเด็น','Issue','问题'],['การดำเนินการ','Action','措施'],['กำหนดเสร็จ','Due','完成期限'],['ข้อสรุป','Conclusion','结论'],['วาระ','Agenda','议题'],
+ ['ผู้นำเสนอ','Presenter','报告人'],['อ้างอิง','Reference','参考'],['ยกเลิก','Cancelled','已作废'],
+ ['ปิดเรื่อง','Closed','已结案'],['รับเรื่อง','Received','已受理'],['กำลังดำเนินการ','In progress','处理中'],['ตอบกลับลูกค้าแล้ว','Replied to customer','已回复客户'],['สี','colour','颜色'],['ร่าง','Draft','草稿'],['ส่งแล้ว','Sent','已发出'],['ปิดแล้ว','Closed','已关闭']
+];
+var _momI18nIx=null;
+function momI18nIx(){ if(_momI18nIx)return _momI18nIx; var a=MOM_I18N.slice().sort(function(x,y){ return y[0].length-x[0].length; }); var ex={};
+  a.forEach(function(x){ ex[x[0]]=x; }); _momI18nIx={sub:a.filter(function(x){ return /[\s\/·()+:—→]/.test(x[0])||x[0].length>=12; }),ex:ex}; return _momI18nIx; }
+function momI18nText(t,lg){ if(!t||!/[฀-๿]/.test(t))return t; var I=momI18nIx(), k=lg==='zh'?2:1, tr=t.trim();
+  if(I.ex[tr])return t.replace(tr,I.ex[tr][k]);
+  var o=t; I.sub.forEach(function(x){ if(o.indexOf(x[0])>=0)o=o.split(x[0]).join(x[k]); }); if(!/[\u0E00-\u0E7F]/.test(o))return o;
+  /* ช่วงคำไทยที่คั่นด้วยสัญลักษณ์/รหัส (📋 ทั่วไป · S · ความปลอดภัย · ☐ สาระสำคัญ ☐ ข้อสรุป) แทนทีละช่วงเมื่อตรงทั้งช่วง */
+  return o.replace(/[\u0E00-\u0E7F](?:[\u0E00-\u0E7F ]*[\u0E00-\u0E7F])?/g,function(seg){ var x=I.ex[seg.trim()]; return x?x[k]:seg; }); }
+/* แปลป้ายบน DOM : ข้อความ (ไม่แตะช่องกรอก/ช่องข้อความมีสี/script) + placeholder/title/data-ph · อังกฤษ = ตัดป้ายอังกฤษเล็กที่ซ้ำ */
+function momI18nDom(root,lg){ if(!root||!lg)return; var doc=root.ownerDocument||document;
+  var w=doc.createTreeWalker(root,4,null), n, L=[]; while((n=w.nextNode()))L.push(n);
+  L.forEach(function(t){ var p=t.parentNode; if(!p)return; for(var q=p;q&&q!==root;q=q.parentNode){ if(q.nodeType===1&&(/^(SCRIPT|STYLE|TEXTAREA)$/.test(q.tagName)||q.getAttribute('contenteditable')||(q.classList&&q.classList.contains('lgsw'))))return; }
+    var v=momI18nText(t.nodeValue,lg); if(v!==t.nodeValue)t.nodeValue=v; });
+  Array.prototype.forEach.call(root.querySelectorAll('[placeholder],[title],[data-ph]'),function(el){ ['placeholder','title','data-ph'].forEach(function(a){ var v=el.getAttribute(a); if(v&&/[฀-๿]/.test(v))el.setAttribute(a,momI18nText(v,lg)); }); });
+  if(lg==='en'){ var nm=function(s){ return String(s||'').replace(/\s+/g,' ').trim().toLowerCase(); };
+    Array.prototype.forEach.call(root.querySelectorAll('span,i'),function(el){ if(el.children.length)return; var me=nm(el.textContent); if(me.length<3)return; var pv=el.previousSibling; while(pv&&pv.nodeType===3&&!pv.nodeValue.trim())pv=pv.previousSibling; if(!pv)return;
+      var pt=nm(pv.textContent); if(pt&&(pt===me||pt.slice(-me.length)===me))el.parentNode.removeChild(el); }); } }
+function momI18nHtml(html,lg){ try{ var doc=new DOMParser().parseFromString(html,'text/html'); momI18nDom(doc.body,lg); try{ doc.title=momI18nText(doc.title,lg); }catch(e){} doc.documentElement.setAttribute('lang',lg==='zh'?'zh-CN':'en'); return '<!DOCTYPE html>'+doc.documentElement.outerHTML; }catch(e){ return html; } }
+/* ---- เนื้อหาที่พิมพ์ ---- */
+function momLg(D){ var l=D&&D.lang; return (l==='en'||l==='zh')?l:''; }
+function momFormLg(){ var e=document.getElementById('mom_lang'); var v=e?e.value:''; return (v==='en'||v==='zh')?v:''; }
+var MOM_TR_ROOT=['title','venue','area','absent','decide','comm'];
+function momTrJobs(D,force,lg){ var J=[], add=function(path,k){ var o=ccpTrRes(D,path); if(!o||typeof o!=='object')return; var t=String(o[k]==null?'':o[k]); if(!t.trim()||!ccpHasTh(t))return; if(!force&&ccpEnOk(o,k,lg))return; J.push({path:path,k:k,src:t}); };
+  MOM_TR_ROOT.forEach(function(k){ add([],k); });
+  (D.present||[]).forEach(function(p,j){ add(['present',j],'p'); });
+  (D.follow||[]).forEach(function(f,j){ add(['follow',j],'item'); add(['follow',j],'rm'); });
+  Object.keys(D.sq||{}).forEach(function(s){ ['t','a','iss'].forEach(function(k){ add(['sq',s],k); }); });
+  (D.agenda||[]).forEach(function(a,j){ ['topic','d','concl'].forEach(function(k){ add(['agenda',j],k); }); });
+  (D.acts||[]).forEach(function(a,j){ add(['acts',j],'iss'); add(['acts',j],'act'); });
+  (D.pics||[]).forEach(function(p,i){ add(['pics',i],'c'); });
+  if(D.sys&&D.sys.det)Object.keys(D.sys.det).forEach(function(s){ (D.sys.det[s]||[]).forEach(function(l,i){ add(['sys','det',s,i],'t'); }); });
+  return J; }
+/* สำเนาสำหรับแสดงผล : แทนข้อความด้วยคำแปล (ข้อความมีสีใช้ของภาษานั้น) */
+function momLocal(D,lg){ var C=JSON.parse(JSON.stringify(D)); if(!lg)return C; try{ C.__ctxAuto=momCtxOf(D); (D.agenda||[]).forEach(function(a,j){ if(C.agenda[j])C.agenda[j].__cat=momAgCat(a,D); }); }catch(e){}
+  var put=function(src,dst,k,rich){ if(!src||!dst)return; var ok=ccpEnOk(src,k,lg); dst[k]=ccpEnGet(src,k,lg); if(rich){ var h=ok?(src[lg]['r_'+k]||''):null; if(h!==null)rich(h); } };
+  MOM_TR_ROOT.forEach(function(k){ put(D,C,k,k==='decide'?function(h){ C.rich=C.rich||{}; if(h)C.rich.decide=h; else delete C.rich.decide; }:null); });
+  (D.present||[]).forEach(function(p,j){ put(p,C.present[j],'p'); });
+  (D.follow||[]).forEach(function(f,j){ put(f,C.follow[j],'item'); put(f,C.follow[j],'rm'); });
+  Object.keys(D.sq||{}).forEach(function(s){ ['t','a','iss'].forEach(function(k){ put(D.sq[s],C.sq[s],k); }); });
+  (D.agenda||[]).forEach(function(a,j){ var c=C.agenda[j]; put(a,c,'topic'); put(a,c,'concl'); put(a,c,'d',function(h){ if(h)c.dh=h; else delete c.dh; }); });
+  (D.acts||[]).forEach(function(a,j){ var c=C.acts[j]; put(a,c,'iss',function(h){ if(h)c.issH=h; else delete c.issH; }); put(a,c,'act',function(h){ if(h)c.actH=h; else delete c.actH; }); });
+  (D.pics||[]).forEach(function(p,i){ put(p,C.pics[i],'c'); });
+  if(D.sys&&D.sys.det)Object.keys(D.sys.det).forEach(function(s){ (D.sys.det[s]||[]).forEach(function(l,i){ put(l,C.sys.det[s][i],'t'); }); });
+  return C; }
+/* อ่านฟอร์มโหมดภาษา (สำเนา L) → เขียนคืนของจริง R : ช่องแปลได้ = ccpEnSet · ช่องอื่น = คัดลอก */
+function momMergeBack(R,L,lg){ var S=function(o,k,v,h){ if(o)ccpEnSet(o,k,v,h||'',lg); };
+  ['type','no','date','tStart','tEnd','chair','rec','ctx','next','revBy','appBy','pf','pt'].forEach(function(k){ if(L[k]!==undefined)R[k]=L[k]; });
+  ['title','venue','area','absent','comm'].forEach(function(k){ if(L[k]!==undefined)S(R,k,L[k]); });
+  if(L.decide!==undefined)S(R,'decide',L.decide,L.rich&&L.rich.decide);
+  (L.present||[]).forEach(function(p,j){ var r=R.present[j]; if(!r)return; r.n=p.n; S(r,'p',p.p); });
+  (L.follow||[]).forEach(function(f,j){ var r=R.follow[j]; if(!r)return; r.own=f.own; r.st=f.st; S(r,'item',f.item); S(r,'rm',f.rm); });
+  Object.keys(L.sq||{}).forEach(function(s){ var r=R.sq&&R.sq[s], l=L.sq[s]; if(!r)return; r.st=l.st; ['t','a','iss'].forEach(function(k){ S(r,k,l[k]); }); });
+  (L.agenda||[]).forEach(function(a,j){ var r=(R.agenda||[])[j]; if(!r)return; r.cat=a.cat; r.by=a.by; S(r,'topic',a.topic); S(r,'concl',a.concl); S(r,'d',a.d,a.dh); });
+  (L.acts||[]).forEach(function(a,j){ var r=R.acts[j]; if(!r)return; ['own','due','st','ref'].forEach(function(k){ r[k]=a[k]; }); S(r,'iss',a.iss,a.issH); S(r,'act',a.act,a.actH); });
+  if(Array.isArray(L.pics)){ var old=R.pics||[], used={}; R.pics=L.pics.map(function(p){ var k=-1; old.forEach(function(o,i){ if(k<0&&!used[i]&&o&&o.u===p.u)k=i; }); if(k<0)return {u:p.u,c:p.c}; used[k]=1; var r=JSON.parse(JSON.stringify(old[k])); S(r,'c',p.c); return r; }); } }
+function momRead(){ var lg=momFormLg(); if(!lg||!_momD){ momReadRaw(); return; }
+  var R=_momD, L=momLocal(R,lg); _momD=L; try{ momReadRaw(); }finally{ _momD=R; } momMergeBack(R,L,lg); }
+var _momTrBusy=0;
+function momReform(){ var b=document.querySelector('#modalRoot .modal-b'), st=b?b.scrollTop:0; momRender(); setTimeout(function(){ var b2=document.querySelector('#modalRoot .modal-b'); if(b2)b2.scrollTop=st; },0); }
+function momTrAll(force){ var D=_momD, lg=momLg(D); if(!D||!lg||_momTrBusy)return Promise.resolve(0); var J=momTrJobs(D,force,lg); if(!J.length)return Promise.resolve(0);
+  _momTrBusy=1; var m=document.getElementById('mom_trmsg'); if(m)m.textContent='⏳ '+(lg==='zh'?'正在翻译':'Translating')+' '+J.length+'…';
+  return ccpTrSeq(J,lg).then(function(){ _momTrBusy=0; if(_momD!==D||momLg(D)!==lg)return 0; if(document.getElementById('mom_lang'))momRead(); var R=ccpTrPut(D,J,lg);
+    if(R.bad)toastRaw('⚠️ แปลอัตโนมัติไม่สำเร็จ '+R.bad+' ช่อง (ต้องต่ออินเทอร์เน็ต / Google ปฏิเสธชั่วคราว ลองกด 🔄 อีกครั้ง) — พิมพ์คำแปลในช่องเองได้','warn');
+    else toastRaw('🌐 แปลบันทึกการประชุมเป็น'+(lg==='zh'?'ภาษาจีน':'ภาษาอังกฤษ')+'แล้ว '+R.n+' ช่อง — ตรวจ/แก้คำได้ก่อนบันทึก','ok');
+    if(document.getElementById('mom_lang'))momReform(); return R.n; }); }
+function momLangToggle(lg,on){ momRead(); var D=_momD; if(!D)return; if(on)D.lang=lg; else delete D.lang; momReform(); if(on)setTimeout(function(){ momTrAll(false); },40); }
+function momReTr(){ if(!confirm('แปลข้อความภาษาไทยใหม่ทั้งหมด?\nคำแปลที่แก้เองไว้จะถูกแทนที่ด้วยคำแปลใหม่'))return; momRead(); momTrAll(true); }
+function momLangBar(D){ var lg=momLg(D);
+  var hint=lg==='en'?'Form and printout in English · Thai text is translated automatically (editable) · untick to return to Thai'
+    :lg==='zh'?'表单和打印为简体中文 · 泰文内容自动翻译（可修改）· 取消勾选返回泰文'
+    :'ติ๊กภาษาที่ต้องการ → แบบฟอร์มและใบพิมพ์เป็นภาษานั้น (แปลข้อความที่พิมพ์อัตโนมัติ · แก้คำได้) · ใช้ได้ทุกประเภทการประชุม';
+  return '<input type="hidden" id="mom_lang" value="'+lg+'"><div class="lgsw" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 8px;padding:7px 11px;border:1.5px solid '+(lg?'#2563eb':'#cbd5e1')+';border-radius:9px;background:'+(lg?'#eff6ff':'#f8fafc')+'">'
+   +CCP_LANGS.map(function(x){ return '<label style="display:inline-flex;align-items:center;gap:7px;cursor:pointer;font-weight:800;color:#1B3A5C;margin:0"><input type="checkbox" style="width:18px;height:18px"'+(lg===x[0]?' checked':'')+' onchange="momLangToggle(\''+x[0]+'\',this.checked)">🌐 '+x[1]+'</label>'; }).join('')
+   +'<span class="muted" style="font-size:11.5px">'+hint+'</span>'
+   +(lg?'<span style="flex:1"></span><span id="mom_trmsg" class="muted" style="font-size:11px"></span><button type="button" class="btn sm" onclick="momReTr()" title="แปลข้อความภาษาไทยทุกช่องใหม่ (แทนคำที่แก้เอง)">🔄 '+(lg==='zh'?'重新翻译':'Re-translate')+'</button>':'')+'</div>'; }
+/* หน้าใบพิมพ์ : ติ๊กภาษา → แปล + บันทึก แล้ววาดหน้าเดิมใหม่ */
+function momDocLang(id,i,lg,w){ var r=(supStdRows(id)||[])[i]; if(!r)return;
+  if(!r.mom){ try{ w.alert('กรุณากรอก/บันทึกการประชุมก่อน (✏️) · Please fill in the minutes first.'); }catch(e){} return; }
+  var D=r.mom; if(lg==='en'||lg==='zh')D.lang=lg; else delete D.lang; D.ts=Date.now();
+  var draw=function(msg){ try{ var h=momPrint(id,i,'page'); w.document.open(); w.document.write(h); w.document.close(); if(msg)setTimeout(function(){ try{ w.alert(msg); }catch(e){} },400); }catch(e){} };
+  var fin=function(R){ try{ saveDB(); }catch(e){} try{ render(); }catch(e){} draw(R&&R.bad?'Some text could not be translated automatically (internet required / try again). แปลอัตโนมัติไม่สำเร็จ '+R.bad+' ช่อง — ติ๊กใหม่อีกครั้ง หรือแก้ในฟอร์ม ✏️':''); };
+  if(!D.lang){ fin(); return; }
+  try{ var t=w.document.getElementById('momLangMsg'); if(t)t.textContent=lg==='zh'?'⏳ 正在翻译…':'⏳ Translating…'; }catch(e){}
+  var J=momTrJobs(D,false,D.lang); if(!J.length){ fin(); return; }
+  ccpTrSeq(J,D.lang).then(function(){ fin(ccpTrPut(D,J,D.lang)); },function(){ fin({bad:1}); }); }
+function momPrintLangSw(id,i,lg){ return '<!--LG--><div class="lgsw noprint" title="ติ๊ก = บันทึกการประชุมฉบับนี้เป็นภาษานั้น (แปลอัตโนมัติ · ไม่พิมพ์ช่องนี้ลงกระดาษ)">'+CCP_LANGS.map(function(x){ return '<label><input type="checkbox"'+(lg===x[0]?' checked':'')+' onchange="try{ var a=document.querySelectorAll(\'.lgsw input\'); for(var k=0;k<a.length;k++)a[k].disabled=true; window.opener.momDocLang(\''+String(id).replace(/[^\w-]/g,'')+'\','+Number(i)+',this.checked?\''+x[0]+'\':\'\',window); }catch(e){ alert(\'Please reopen this page from the system. กรุณาเปิดใบนี้จากระบบอีกครั้ง\'); }"> '+x[1]+'</label>'; }).join('')+'<span id="momLangMsg"></span></div><!--/LG-->'; }
 function momRender(){
   var D=_momD; if(!D)return;
   try{ momActSync(D); }catch(e){}
   try{ if(momSysOn(D)&&!D.sys&&String(D.date||'')>=momAddD(todayISO(),-14))momSysFill(D); }catch(e){}   /* ★ 22/10k สรุปอัตโนมัติครั้งแรก */
+  var _lg=momLg(D); if(_lg)D=momLocal(D,_lg);   /* ★ 29/10a โหมดภาษา : วาดจากสำเนาที่แทนคำแปล */
   var L=function(th,en){ return esc(th)+' <span class="muted" style="font-size:10px">'+esc(en)+'</span>'; };
   var I=function(id,val,ph,ty,w){ return '<input id="'+id+'"'+(ty?' type="'+ty+'"':'')+' value="'+esc(val||'')+'" placeholder="'+esc(ph||'')+'" style="width:'+(w||'100%')+';padding:4px 6px;font-size:12px">'; };
   var S=function(id,val,opts){ return '<select id="'+id+'" style="width:100%;padding:4px 6px;font-size:12px"><option value=""></option>'+opts.map(function(o){ var k=Array.isArray(o)?o[0]:o, t=Array.isArray(o)?(o[1]+' / '+o[2]):o; return '<option value="'+esc(k)+'"'+(String(val)===String(k)?' selected':'')+'>'+esc(t)+'</option>'; }).join('')+'</select>'; };
@@ -29609,7 +29864,7 @@ function momRender(){
   var x=function(kind,j){ return '<td style="'+td+';text-align:center;width:26px"><span style="cursor:pointer;color:var(--red)" onclick="momDelRow(\''+kind+'\','+j+')" title="ลบแถว">✕</span></td>'; };
   var sec=function(t){ return '<div style="font-weight:800;margin:14px 0 6px;font-size:13px;border-left:4px solid var(--brand);padding-left:8px">'+t+'</div>'; };
   var tbl=function(head,rows){ return '<div class="tbl-wrap"><table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr>'+head.map(function(h){ return '<th style="'+th+(h[1]?(';width:'+h[1]):'')+'">'+h[0]+'</th>'; }).join('')+'</tr></thead><tbody>'+rows+'</tbody></table></div>'; };
-  var body=CCP_RT_CSS
+  var body=CCP_RT_CSS+momLangBar(_momD)
    +'<div class="hint" style="margin-bottom:8px"><span class="i">📝</span><div>บันทึกการประชุม <b>SQCDM</b> (Safety · Quality · Cost · Delivery · Morale) ใช้ได้ทั้ง <b>ประจำวัน / สัปดาห์ / เดือน / วาระพิเศษ</b> · ตามข้อกำหนด ISO 9001 ข้อ 7.4 · 9.1.3 · 10.2 และ IATF 16949 · ระบบดึง<b>งานที่ยังไม่ปิดจากการประชุมครั้งก่อน</b>มาให้ติดตามอัตโนมัติ</div></div>'
    +sec('1. ข้อมูลการประชุม / Meeting Information')
    +'<div class="row c3">'
@@ -29664,6 +29919,7 @@ function momRender(){
       +'<button class="btn" onclick="momSave(1)">🖨️ บันทึก + พิมพ์</button>'
       +'<button class="btn pri" onclick="momSave(0)">💾 บันทึก</button>'});
   try{ var _ov=document.querySelector('#modalRoot .overlay'); if(_ov)_ov.removeAttribute('onclick'); }catch(e){}   /* ★ คลิกพื้นหลังไม่ปิด */
+  if(_lg){ try{ momI18nDom(document.getElementById('modalRoot'),_lg); }catch(e){} }
 }
 function momSave(andPrint){
   momRead(); var r=(supStdRows(_momId)||[])[_momI]; if(!r||!_momD){ toast('ไม่พบบรรทัดที่แก้ไข','err'); return; }
@@ -29689,7 +29945,7 @@ function momSave(andPrint){
   var _mb=document.querySelector('#modalRoot .modal-b'), _sy=_mb?_mb.scrollTop:0;
   try{ render(); }catch(e){}
   momRender();
-  try{ var _mb2=document.querySelector('#modalRoot .modal-b'); if(_mb2)_mb2.scrollTop=_sy; var _h=document.querySelector('#modalRoot .modal-h h3'); if(_h)_h.insertAdjacentHTML('beforeend',' <span style="font-size:11px;font-weight:400;color:#0ca678">✅ บันทึกแล้ว '+new Date().toLocaleTimeString('th-TH')+'</span>'); }catch(e){}
+  try{ var _mb2=document.querySelector('#modalRoot .modal-b'); if(_mb2)_mb2.scrollTop=_sy; var _h=document.querySelector('#modalRoot .modal-h h3'); if(_h)_h.insertAdjacentHTML('beforeend',' <span style="font-size:11px;font-weight:400;color:#0ca678">'+({en:'✅ Saved ',zh:'✅ 已保存 '}[momLg(_momD)]||'✅ บันทึกแล้ว ')+new Date().toLocaleTimeString('th-TH')+'</span>'); }catch(e){}
   toast('บันทึกการประชุมแล้ว','ok');
   if(andPrint)setTimeout(function(){ momPrint(_momId,_momI); },80);
 }
@@ -29720,6 +29976,7 @@ function momPrint(id,i,mode){
   var r=(supStdRows(id)||[])[i]; if(!r)return;
   var D=r.mom?JSON.parse(JSON.stringify(r.mom)):momBlank(r,i);
   try{ momActSync(D); }catch(e){}
+  var _lg=momLg(D); if(_lg)D=momLocal(D,_lg);   /* ★ 29/10a ฉบับภาษาอังกฤษ / จีน */
   ensureSettings(); var co=DB.settings.company||{};
   var code=momCode()+' Rev.00';
   var e=function(v){ return esc(v==null?'':v); };
@@ -29740,7 +29997,8 @@ function momPrint(id,i,mode){
    +".sg td{text-align:center;height:20mm;vertical-align:bottom}.sn{font-size:9px}"
    +".ft{display:flex;justify-content:space-between;font-size:8.5px;margin-top:2mm;color:#333}"
    +".cx{position:absolute;top:40%;left:0;right:0;text-align:center;font-size:56px;font-weight:800;color:rgba(220,38,38,.22);transform:rotate(-18deg)}"
-   +"@media print{.noprint{display:none}}";
+   +".lgsw{position:fixed;right:10px;bottom:10px;z-index:9;display:flex;flex-direction:column;gap:3px;padding:5px 12px;border:1.5px solid #1B3A5C;border-radius:12px;background:#fff;font-size:12px;font-weight:700;color:#1B3A5C;box-shadow:0 2px 8px rgba(0,0,0,.15)}.lgsw label{display:flex;align-items:center;gap:6px;cursor:pointer}.lgsw input{width:16px;height:16px;margin:0;cursor:pointer}#momLangMsg{font-size:10px;font-weight:400;color:#64748b}"
+   +"*{font-family:'Tahoma','TH Sarabun New','Microsoft YaHei','SimSun',sans-serif}@media print{.noprint{display:none!important}}";
   var ty=momTypeOf(D.type);
   var _dtSn='<div class="sn">วันที่ / Date '+(D.date?('<b style="text-decoration:underline">'+e(dlvDMY(D.date))+'</b>'):'......../......../........')+'</div>';   /* ★ วันที่ลงนาม = วันที่ประชุม (อัตโนมัติ) */
   var _aSig=function(nm){ var im=momSigImg(nm); return im?('<img src="'+im+'" style="max-height:6mm;max-width:20mm;object-fit:contain;display:block;margin:0 auto">'):''; };
@@ -29752,9 +30010,9 @@ function momPrint(id,i,mode){
         rows+='<tr><td class="c" style="width:6mm">'+(k+1)+'</td><td>'+e(p1.n)+'</td><td>'+e(p1.p)+'</td><td class="c" style="width:20mm;padding:.5mm">'+_aSig(p1.n)+'</td><td class="c" style="width:6mm">'+((_f(p2.n)||_f(p2.p))?(k+half+1):'')+'</td><td>'+e(p2.n)+'</td><td>'+e(p2.p)+'</td><td class="c" style="width:20mm;padding:.5mm">'+_aSig(p2.n)+'</td></tr>'; }
       return '<div class="h">'+N()+'ผู้เข้าประชุม<span class="en">Attendees</span></div>'+'<table>'+(a.length?'<tr><th>#</th><th>ชื่อ-สกุล<span class="en">Name</span></th><th>ตำแหน่ง / หน่วยงาน<span class="en">Position / Dept.</span></th><th>ลงชื่อ<span class="en">Signature</span></th><th>#</th><th>ชื่อ-สกุล<span class="en">Name</span></th><th>ตำแหน่ง / หน่วยงาน<span class="en">Position / Dept.</span></th><th>ลงชื่อ<span class="en">Signature</span></th></tr>'+rows:'')
         +(_f(D.absent)?'<tr><td colspan="8">'+L('ผู้ไม่มาประชุม / ลา','Absent / Apologies')+' '+e(D.absent)+'</td></tr>':'')+'</table>'; })():''; };
-  var html='<!DOCTYPE html><html lang="th"><head><meta charset="utf-8"><title>'+e(code)+' '+(_sp?'บันทึกการประชุม':'MoM')+' '+e(D.no||'')+'</title><style>'+css+'</style></head><body><div class="sheet">'
+  var html='<!DOCTYPE html><html lang="th"><head><meta charset="utf-8"><title>'+e(code)+' '+(_sp?'บันทึกการประชุม':'MoM')+' '+e(D.no||'')+'</title><style>'+css+'</style></head><body>'+momPrintLangSw(id,i,_lg)+'<div class="sheet">'
    +(r.cancel?('<div class="cx">ยกเลิก / CANCELLED</div>'):'')
-   +'<div class="hd"><div class="lg">RTK</div><div class="tt"><b>'+(_sp?'บันทึกการประชุม':'บันทึกการประชุม SQCDM')+'</b><div style="font-size:11px;font-weight:700;color:#111">'+(_sp?'MINUTES OF MEETING':'MINUTES OF MEETING (SQCDM)')+'</div><div>'+e(co.thName||co.name||'')+'</div></div>'
+   +'<div class="hd"><div class="lg">RTK</div><div class="tt"><b>'+(_sp?'บันทึกการประชุม':'บันทึกการประชุม SQCDM')+'</b><div style="font-size:11px;font-weight:700;color:#111">'+(_sp?'MINUTES OF MEETING':'MINUTES OF MEETING (SQCDM)')+'</div><div>'+e(_lg?(co.name||co.thName||''):(co.thName||co.name||''))+'</div></div>'
      +'<div class="no">เลขที่ / MoM No. : <b>'+e(D.no||'')+'</b><br>วันที่ / Date : <b>'+e(D.date?dlvDMY(D.date):'')+'</b><br>เวลา / Time : '+e(D.tStart||'')+(D.tEnd?(' – '+e(D.tEnd)):'')+'</div></div>'
    +'<div class="h">'+N()+'ข้อมูลการประชุม<span class="en">Meeting Information</span></div>'
    +'<table><tr><td class="k">'+L('ประเภทการประชุม','Meeting Type')+'</td><td colspan="3">'+MOM_TYPES.filter(function(t){ return D.type===t[0]; }).map(function(t){ return box(true)+e(t[1])+' <span style="font-size:8px;color:#555">'+e(t[2])+'</span>'; }).join(' ')+'</td></tr>'
@@ -29785,6 +30043,9 @@ function momPrint(id,i,mode){
    +'</div>'
    +'<div class="noprint" style="text-align:center;padding:8px"><button onclick="window.print()" style="padding:8px 22px;cursor:pointer">🖨️ พิมพ์ / บันทึก PDF</button></div>'
    +'<scr'+'ipt>setTimeout(function(){window.print()},500)</scr'+'ipt></body></html>';
+  if(mode==='html')html=html.replace(/<!--LG-->[\s\S]*?<!--\/LG-->/,'');
+  if(_lg)html=momI18nHtml(html,_lg);
+  if(mode==='page')return html.replace(/<script>setTimeout\(function\(\)\{window\.print\(\)\},500\)<\/script>/,'');
   if(mode==='html'){ return html.replace(/<div class="noprint"[\s\S]*?<\/div>/i,'').replace(/window\.print\(\)/g,'void 0'); }
   var w=window.open('','_blank'); if(!w){ toast('เบราว์เซอร์บล็อก popup','err'); return; }
   w.document.write(html); w.document.close();
@@ -31626,7 +31887,7 @@ function ccpBlank(){ return {id:'',type:'CCP',no:'',date:todayISO(),status:'open
   cont:'',contDate:'',act:'ncr',actRef:'',cause:'',corr:'',due:'',replyDate:'',reply:'',verify:'',closeDate:'',result:'',remark:'',
   sg:{cus:'',cusD:'',rcv:'',rcvD:'',app:'',appD:''}}; }
 function ccpNew(){ var D=ccpBlank(); D.no=ccpNextNo(D.date); _ccpD=D; ccpForm(); }
-function ccpEdit(id){ var d=(DB.docs||[]).find(function(x){ return x&&x.id===id; }); if(!d)return; var B=ccpBlank(); _ccpD=Object.assign(B,JSON.parse(JSON.stringify(d))); _ccpD.sg=Object.assign(B.sg,d.sg||{}); ccpForm(); }
+function ccpEdit(id){ var d=(DB.docs||[]).find(function(x){ return x&&x.id===id; }); if(!d)return; var B=ccpBlank(); _ccpD=Object.assign(B,JSON.parse(JSON.stringify(d))); _ccpD.sg=Object.assign(B.sg,d.sg||{}); ccpForm(); if(ccpLg(_ccpD)&&ccpTrJobs(_ccpD,false,ccpLg(_ccpD)).length)setTimeout(function(){ ccpTrAll(false); },60); }
 function ccpCustDl(){ var s={}; try{ (DB.settings.custList||[]).forEach(function(c){ if(c&&c.status!=='ระงับ'){ var n=String(c.shortName||c.name||'').trim(); if(n)s[n]=c.name||''; } }); }catch(e){}
   return '<datalist id="dl_ccpcust">'+Object.keys(s).sort().map(function(k){ return '<option value="'+esc(k)+'">'+esc(s[k])+'</option>'; }).join('')+'</datalist>'; }
 function ccpPnPick(){ var e=document.getElementById('ccp_pn'); if(!e)return; var v=String(e.value||'').trim(); if(!v)return; var p=null; try{ p=(DB.products||[]).find(function(x){ return x&&x.pn===v; })||findFGByPN(v); }catch(x){}
@@ -31690,12 +31951,239 @@ function ccpKindChg(v){ var D=ccpCollect(); if(!D)return; D.kind=v; var K=ccpK(v
   closeModal(); setTimeout(ccpForm,30); }
 /* ★ รูปประกอบ (ลิงก์คลังเอกสาร / URL) — เก็บเป็นลิงก์ ไม่ฝังรูป */
 var CCP_PIC_MAX=4;
-function ccpPicsHTML(D){ var P=(D.pics||[]).slice(0,CCP_PIC_MAX); var n=Math.min(CCP_PIC_MAX,Math.max(2,P.length+(P.length<CCP_PIC_MAX?1:0)));
-  var a=[]; for(var i=0;i<n;i++){ var p=P[i]||{u:'',c:''}; a.push('<div class="field"><label>🖼️ รูปที่ '+(i+1)+' · คำอธิบาย</label><input id="ccp_pc'+i+'" value="'+esc(p.c||'')+'" placeholder="เช่น ชิ้นงานที่พบปัญหา" style="margin-bottom:4px"><div style="display:flex;gap:4px"><input id="ccp_pu'+i+'" value="'+esc(p.u||'')+'" placeholder="ไฟล์รูปจากคลังเอกสาร / URL" style="flex:1" onchange="ccpCollect();ccpForm()"><button class="btn sm" onclick="ccpPicPick('+i+')" title="เลือกรูปจากคลังเอกสาร">📂</button>'+(p.u?'<button class="btn sm" onclick="ccpPicDel('+i+')" title="เอารูปนี้ออก">✕</button>':'')+'</div>'
+/* ★ 28/10b–c ภาษาต่างประเทศ (ลูกค้าต่างชาติ) : D.lang = 'en' (English) / 'zh' (中文 จีนตัวย่อ) / ว่าง = ไทย
+   ติ๊กในฟอร์ม (ccpLangBar) หรือบนหน้าดูใบ (มุมขวาข้อ 1 · ไม่พิมพ์ลงกระดาษ) → ฟอร์ม + ใบพิมพ์เป็นภาษานั้น
+   ป้าย/หัวข้อ/ตัวเลือก = พจนานุกรม CCP_K_EN / CCP_K_ZH · ข้อความที่พิมพ์ (ไทย) แปลอัตโนมัติ + แก้ได้
+   เก็บ o[lg][k] = คำแปล · o[lg]['_'+k] = ข้อความไทยที่ใช้แปล (ไทยเปลี่ยน = แปลใหม่) · o[lg]['r_'+k] = HTML สี · ภาษาไทยเดิมไม่ถูกแตะ */
+var CCP_LANGS=[['en','English'],['zh','中文 (Chinese)']];
+var CCP_EN_IN=['pname'];
+function ccpLg(D){ var l=D&&D.lang; return (l==='en'||l==='zh')?l:''; }
+function ccpL(lg,th,en,zh){ return lg==='zh'?(zh!=null?zh:en):(lg==='en'?en:th); }
+var CCP_OPT_EN={
+  ch:{tel:'Telephone',mail:'E-mail',line:'LINE / Chat',doc:'Official letter / Claim sheet',visit:'Visit / Meeting',other:'Others'},
+  kind:{complaint:'Complaint',inquiry:'Inquiry',suggest:'Suggestion',praise:'Compliment'},
+  sev:{'':'—',A:'A High : safety impact / customer line stop',B:'B Medium : customer sorting / rework required',C:'C Low : no functional impact'},
+  st:{open:'📥 Received',progress:'🔧 In progress',replied:'📤 Replied to customer',closed:'✅ Closed'}};
+var CCP_OPT_ZH={
+  ch:{tel:'电话',mail:'电子邮件',line:'LINE / 聊天',doc:'正式函件 / 索赔单',visit:'拜访 / 会议',other:'其他'},
+  kind:{complaint:'投诉 (Complaint)',inquiry:'咨询 (Inquiry)',suggest:'建议 (Suggestion)',praise:'表扬 (Compliment)'},
+  sev:{'':'—',A:'A 高 : 影响安全 / 客户停线',B:'B 中 : 客户需挑选 / 返工',C:'C 低 : 不影响使用'},
+  st:{open:'📥 已受理',progress:'🔧 处理中',replied:'📤 已回复客户',closed:'✅ 已结案'}};
+var CCP_K_EN={
+  complaint:{t:'Customer Complaint',en:'Complaint',
+    topics:[['quality','Product quality'],['delivery','Delivery / Late delivery'],['qty','Wrong / short quantity'],['pack','Packaging / Labeling'],['docs','Documentation'],['service','Price / Service'],['other','Others']],
+    s2:'2) Products concerned', p2:'2. Complaint Description',
+    detail:'Complaint details / problem found', detailPh:'What · where · when · how it was detected · quantity affected',
+    s3:'3) Actions', p3:'3. Actions &nbsp;<i>(IATF 16949 10.2.3 – 10.2.6)</i>',
+    cont:'Containment action (within 24 hrs)', contPh:'e.g. sort RTK stock / in-transit / at customer · replacement shipment', contD:'Containment date',
+    acts:[['none','Not required (inquiry / suggestion)'],['ncr','Issue NCR (FM-QC-03)'],['8d','Issue 8D / Corrective Action Plan'],['claim','Claim Sheet (FM-QC-27)']], actL:'Systemic corrective action', actRef:'NCR / 8D / Claim No.',
+    cause:'Root cause (summary)', corr:'Corrective and preventive action (summary)', due:'Customer response due date',
+    s4:'4) Customer response &amp; closure', p4:'4. Customer Response &amp; Closure',
+    reply:'Response to customer (summary)', replyD:'Response date', res:[['','—'],['ok','Accepted by customer'],['part','Partially accepted / follow-up'],['ng','Not accepted']], resL:'Customer feedback',
+    verify:'Effectiveness verification (subsequent lots monitored / no recurrence)', app:'Approved by (RTK)', appEn:'Approved by',
+    flow:'Receive → assess severity → containment within 24 hrs → issue NCR / 8D → respond to customer → verify effectiveness and close (ISO 9001 8.2.1 · 10.2 · IATF 16949 10.2.3–10.2.6)'},
+  inquiry:{t:'Customer Inquiry',en:'Inquiry',
+    topics:[['price','Price / Quotation'],['order','Order status / Delivery schedule'],['spec','Product information / Specification / Drawing'],['docs','Documents (COA · Certificates · Invoice)'],['capa','Manufacturing capability / New project'],['other','Others']],
+    s2:'2) Inquiry', p2:'2. Customer Inquiry',
+    detail:'Question / information requested by customer', detailPh:'What the customer asked · required format · required by (date)',
+    s3:'3) Response preparation', p3:'3. Response Preparation',
+    cont:'Person / department responsible for information', contPh:'e.g. Sales / QA / Planning · information to be prepared', contD:'Assigned date',
+    acts:[['none','Answered immediately'],['check','Information verification required'],['quote','Prepare quotation'],['doc','Submit documents / certificates']], actL:'Handling method', actRef:'Reference No. (quotation / document)',
+    cause:'', corr:'', due:'Answer due date',
+    s4:'4) Answer &amp; closure', p4:'4. Answer to Customer &amp; Closure',
+    reply:'Answer / information provided to customer', replyD:'Answer date', res:[['','—'],['ok','Acknowledged / satisfied'],['more','Additional information requested'],['ng','Not satisfied with the answer']], resL:'Customer feedback',
+    verify:'', app:'Answer approved by (RTK)', appEn:'Approved by',
+    flow:'Receive inquiry → assign person to gather information → answer customer by due date → customer acknowledges and close (ISO 9001 8.2.1 a/b)'},
+  suggest:{t:'Customer Suggestion',en:'Suggestion',
+    topics:[['quality','Product quality'],['delivery','Delivery'],['pack','Packaging / Labeling'],['docs','Documentation'],['service','Price / Service'],['process','Process / Communication'],['other','Others']],
+    s2:'2) Suggestion', p2:'2. Customer Suggestion',
+    detail:'Customer suggestion', detailPh:'Proposed improvement · reason · expected benefit',
+    s3:'3) Evaluation', p3:'3. Evaluation of Suggestion &nbsp;<i>(ISO 9001 10.3)</i>',
+    cont:'Person responsible for evaluation', contPh:'Department / person in charge', contD:'Assigned date',
+    acts:[['none','No action (state reason)'],['improve','Internal improvement'],['ecr','Issue ECR (FM-RD-06)'],['system','System improvement / corrective action']], actL:'Evaluation result', actRef:'Reference No. (ECR / improvement plan)',
+    cause:'Rationale / feasibility', corr:'Improvement plan (what · who · when)', due:'Target completion date',
+    s4:'4) Feedback &amp; closure', p4:'4. Feedback to Customer &amp; Closure',
+    reply:'Feedback to customer (appreciation and evaluation result)', replyD:'Feedback date', res:[['','—'],['ok','Acknowledged by customer'],['part','Follow-up on improvement'],['ng','Customer disagrees']], resL:'Customer feedback',
+    verify:'Improvement follow-up (implemented / effective)', app:'Evaluation approved by (RTK)', appEn:'Approved by',
+    flow:'Receive suggestion → evaluate feasibility → plan improvement → inform customer → follow up and close (ISO 9001 8.2.1 c · 9.1.2 · 10.3)'},
+  praise:{t:'Customer Compliment',en:'Compliment',
+    topics:[['quality','Product quality'],['delivery','On-time delivery'],['service','Service / Coordination'],['staff','Staff / Team'],['pack','Packaging'],['other','Others']],
+    s2:'2) Compliment', p2:'2. Customer Compliment',
+    detail:'Compliment from customer', detailPh:'What the customer appreciated · related job / lot / person',
+    s3:'3) Recognition', p3:'3. Recognition &amp; Best Practice Sharing',
+    cont:'Communicated to / staff recognized', contPh:'Who · channel (meeting / notice board / LINE group)', contD:'Communication date',
+    acts:[['none','Acknowledged'],['share','Shared internally'],['best','Adopted as best practice'],['reward','Proposed for recognition / award']], actL:'Follow-up', actRef:'Reference No. (WI / announcement)',
+    cause:'', corr:'Good practices / practices extended', due:'',
+    s4:'4) Thank-you &amp; closure', p4:'4. Thank-you to Customer &amp; Closure',
+    reply:'Thank-you message to customer', replyD:'Thank-you date', res:[], resL:'',
+    verify:'', app:'Acknowledged by (RTK)', appEn:'Acknowledged by',
+    flow:'Receive compliment → inform people concerned → extend as best practice → thank customer and close (ISO 9001 9.1.2 Customer satisfaction)'}
+};
+var CCP_K_ZH={
+  complaint:{t:'客户投诉',en:'Complaint',
+    topics:[['quality','产品质量'],['delivery','交付 / 延迟交货'],['qty','数量错误 / 短缺'],['pack','包装 / 标签'],['docs','文件资料'],['service','价格 / 服务'],['other','其他']],
+    s2:'2) 相关产品', p2:'2. 投诉内容 &nbsp;<i>COMPLAINT DESCRIPTION</i>',
+    detail:'投诉详情 / 发现的问题', detailPh:'什么 · 在哪里 · 何时 · 如何发现 · 涉及数量',
+    s3:'3) 处理措施', p3:'3. 处理措施 &nbsp;<i>ACTIONS (IATF 16949 10.2.3 – 10.2.6)</i>',
+    cont:'围堵措施（24小时内）', contPh:'如：挑选 RTK 库存 / 在途 / 客户处 · 补发货', contD:'围堵日期',
+    acts:[['none','不需要（咨询 / 建议）'],['ncr','开立 NCR (FM-QC-03)'],['8d','开立 8D / 纠正措施计划'],['claim','索赔单 (FM-QC-27)']], actL:'系统性纠正措施', actRef:'NCR / 8D / 索赔编号',
+    cause:'根本原因（摘要）', corr:'纠正及预防措施（摘要）', due:'回复客户期限',
+    s4:'4) 回复客户 &amp; 结案', p4:'4. 回复客户 &amp; 结案 &nbsp;<i>RESPONSE &amp; CLOSING</i>',
+    reply:'回复客户内容（摘要）', replyD:'回复日期', res:[['','—'],['ok','客户接受'],['part','部分接受 / 继续跟进'],['ng','不接受']], resL:'客户反馈',
+    verify:'有效性验证（后续批次监控 / 无再发）', app:'批准人（RTK）', appEn:'Approved by',
+    flow:'受理 → 评估严重度 → 24小时内围堵 → 开立 NCR / 8D → 回复客户 → 验证有效性后结案（ISO 9001 8.2.1 · 10.2 · IATF 16949 10.2.3–10.2.6）'},
+  inquiry:{t:'客户咨询',en:'Inquiry',
+    topics:[['price','价格 / 报价'],['order','订单状态 / 交期'],['spec','产品信息 / 规格 / 图纸'],['docs','文件（COA · 证书 · 发票）'],['capa','生产能力 / 新项目'],['other','其他']],
+    s2:'2) 咨询内容', p2:'2. 客户咨询内容 &nbsp;<i>INQUIRY</i>',
+    detail:'客户提出的问题 / 所需信息', detailPh:'客户问了什么 · 需要的格式 · 需要日期',
+    s3:'3) 准备答复', p3:'3. 答复准备 &nbsp;<i>RESPONSE PREPARATION</i>',
+    cont:'负责收集信息的人员 / 部门', contPh:'如：销售 / 品保 / 计划 · 需准备的信息', contD:'指派日期',
+    acts:[['none','立即答复'],['check','需先核实信息'],['quote','制作报价单'],['doc','提供文件 / 证书']], actL:'处理方式', actRef:'参考编号（报价单 / 文件）',
+    cause:'', corr:'', due:'答复期限',
+    s4:'4) 答复 &amp; 结案', p4:'4. 答复客户 &amp; 结案 &nbsp;<i>ANSWER &amp; CLOSING</i>',
+    reply:'提供给客户的答复 / 信息', replyD:'答复日期', res:[['','—'],['ok','已知悉 / 满意'],['more','需要更多信息'],['ng','对答复不满意']], resL:'客户反馈',
+    verify:'', app:'答复批准人（RTK）', appEn:'Approved by',
+    flow:'受理咨询 → 指派人员收集信息 → 按期答复客户 → 客户知悉后结案（ISO 9001 8.2.1 a/b）'},
+  suggest:{t:'客户建议',en:'Suggestion',
+    topics:[['quality','产品质量'],['delivery','交付'],['pack','包装 / 标签'],['docs','文件资料'],['service','价格 / 服务'],['process','流程 / 沟通'],['other','其他']],
+    s2:'2) 建议内容', p2:'2. 客户建议 &nbsp;<i>SUGGESTION</i>',
+    detail:'客户建议', detailPh:'建议改善什么 · 原因 · 预期效益',
+    s3:'3) 评估', p3:'3. 建议评估 &nbsp;<i>EVALUATION (ISO 9001 10.3)</i>',
+    cont:'评估负责人', contPh:'部门 / 负责人', contD:'指派日期',
+    acts:[['none','不采取行动（说明原因）'],['improve','内部改善'],['ecr','开立 ECR (FM-RD-06)'],['system','系统改善 / 纠正措施']], actL:'评估结果', actRef:'参考编号（ECR / 改善计划）',
+    cause:'理由 / 可行性', corr:'改善计划（做什么 · 谁 · 何时）', due:'预计完成日期',
+    s4:'4) 反馈 &amp; 结案', p4:'4. 反馈客户 &amp; 结案 &nbsp;<i>FEEDBACK &amp; CLOSING</i>',
+    reply:'反馈客户内容（致谢及评估结果）', replyD:'反馈日期', res:[['','—'],['ok','客户已知悉'],['part','跟进改善结果'],['ng','客户不同意']], resL:'客户反馈',
+    verify:'改善跟进（已实施 / 有效）', app:'评估批准人（RTK）', appEn:'Approved by',
+    flow:'受理建议 → 评估可行性 → 制定改善计划 → 通知客户 → 跟进后结案（ISO 9001 8.2.1 c · 9.1.2 · 10.3）'},
+  praise:{t:'客户表扬',en:'Compliment',
+    topics:[['quality','产品质量'],['delivery','准时交货'],['service','服务 / 协调'],['staff','员工 / 团队'],['pack','包装'],['other','其他']],
+    s2:'2) 表扬内容', p2:'2. 客户表扬内容 &nbsp;<i>COMPLIMENT</i>',
+    detail:'客户表扬内容', detailPh:'客户赞赏什么 · 相关工作 / 批次 / 人员',
+    s3:'3) 表彰', p3:'3. 表彰 &amp; 最佳实践推广 &nbsp;<i>RECOGNITION &amp; BEST PRACTICE</i>',
+    cont:'已通知 / 受表扬人员', contPh:'通知谁 · 渠道（会议 / 公告栏 / LINE 群）', contD:'通知日期',
+    acts:[['none','已知悉'],['share','内部分享'],['best','推广为最佳实践'],['reward','提报表彰 / 奖励']], actL:'后续行动', actRef:'参考编号（WI / 公告）',
+    cause:'', corr:'良好做法 / 推广的做法', due:'',
+    s4:'4) 致谢 &amp; 结案', p4:'4. 致谢客户 &amp; 结案 &nbsp;<i>THANK YOU &amp; CLOSING</i>',
+    reply:'致客户感谢信息', replyD:'致谢日期', res:[], resL:'',
+    verify:'', app:'知悉人（RTK）', appEn:'Acknowledged by',
+    flow:'受理表扬 → 通知相关人员 → 推广为最佳实践 → 感谢客户后结案（ISO 9001 9.1.2 顾客满意）'}
+};
+function ccpKL(k,lg){ if(lg===true)lg='en'; var K=ccpK(k), T=lg==='zh'?CCP_K_ZH:(lg==='en'?CCP_K_EN:null); if(!T)return K; return Object.assign({},K,T[CCP_K[k]?k:'complaint']); }
+function ccpOpt(name,arr,lg){ if(lg===true)lg='en'; var M=lg==='zh'?CCP_OPT_ZH:(lg==='en'?CCP_OPT_EN:null); if(!M)return arr; var m=M[name]||{}; return arr.map(function(x){ var y=x.slice(); if(m[x[0]]!=null)y[1]=m[x[0]]; return y; }); }
+function ccpFormLg(){ var e=document.getElementById('ccp_lang'); var v=e?e.value:''; return (v==='en'||v==='zh')?v:''; }
+/* คำแปลที่ยังตรงกับไทยปัจจุบัน (ไทยเปลี่ยน = ถือว่าเก่า → แสดงไทย/แปลใหม่) */
+function ccpEnOk(o,k,lg){ lg=lg||'en'; var E=o&&o[lg]; return !!(E&&typeof E==='object'&&E[k]!=null&&String(E[k])!==''&&E['_'+k]===String(o[k]==null?'':o[k])); }
+function ccpEnGet(o,k,lg){ lg=lg||'en'; return ccpEnOk(o,k,lg)?o[lg][k]:(o&&o[k]!=null?o[k]:''); }
+function ccpEnInit(o,k,lg){ lg=lg||'en'; if(!ccpEnOk(o,k,lg))return ccpRtInit(o,k); var E=o[lg], h=E['r_'+k]; if(h&&ccpRtNorm(ccpRichTxt(h))===ccpRtNorm(E[k]))return ccpRichSan(h); return esc(String(E[k])).replace(/\n/g,'<br>'); }
+function ccpEnOut(o,k,lg){ lg=lg||'en'; if(!ccpEnOk(o,k,lg))return ccpRtOut(o,k); var E=o[lg], h=E['r_'+k]; if(h&&ccpRtNorm(ccpRichTxt(h))===ccpRtNorm(E[k]))return ccpRichSan(h); return esc(String(E[k])); }
+/* เก็บค่าที่พิมพ์ในโหมดภาษาต่างประเทศ : ไทยว่าง = เก็บลงช่องเดิม · เท่าไทย = ยังไม่แปล · อื่น = o[lg][k] */
+function ccpEnSet(o,k,v,h,lg){ lg=lg||'en'; v=String(v==null?'':v); var cur=o[k]==null?'':String(o[k]), E=o[lg];
+  if(!cur.trim()){ o[k]=v; if(E){ delete E[k]; delete E['_'+k]; delete E['r_'+k]; } }
+  else if(v===cur){ if(E&&!(ccpEnOk(o,k,lg)&&ccpRtNorm(E[k])===ccpRtNorm(v))){ delete E[k]; delete E['r_'+k]; } }
+  else { E=o[lg]=(E&&typeof E==='object')?E:{}; E[k]=v; E['_'+k]=cur; if(h&&/<span /.test(h))E['r_'+k]=h; else delete E['r_'+k]; }
+  E=o[lg]; if(E&&!Object.keys(E).some(function(x){ return x.charAt(0)!=='_'&&x.slice(0,2)!=='r_'; }))delete o[lg]; }
+function ccpEnSrcHTML(o,k,lg){ if(!ccpEnOk(o,k,lg))return ''; var t=String(o[k]||''); return '<div class="muted" style="font-size:10.5px;margin-top:2px;white-space:pre-wrap" title="ข้อความภาษาไทยต้นฉบับ (แก้ได้เมื่อติ๊กภาษาออก)">🇹🇭 '+esc(t.length>220?t.slice(0,220)+'…':t)+'</div>'; }
+/* ---- แปลอัตโนมัติ (Google · ส่งทั้งช่องในคำขอเดียว · ทีละช่องตามลำดับ · เส้นหลัก gtx → สำรอง clients5) ---- */
+var CCP_TR_GL={
+  en:[['ชุบไม่ติด',' poor plating adhesion '],['ชุบลอก',' plating peeling '],['เกลียวเสีย',' damaged threads '],['ขนาดไม่ได้ตามแบบ',' dimensions out of specification '],['ขนาดไม่ได้',' dimensions out of specification '],['ตรวจสอบขนาด',' check dimensions '],['ตรวจรับเข้า',' incoming inspection '],['ส่งชุบ',' send for plating '],['รับชุบ',' receive from plating '],['คัดแยก',' sort '],['แม่พิมพ์',' die '],['เสียรูป',' deformed '],['ของเสีย',' defective parts '],['งานเสีย',' NG parts '],['สต๊อค',' stock '],['สต็อก',' stock '],['สต๊อก',' stock '],['ล็อต',' lot '],['สาเหตุราก',' root cause '],['ปฏิบัติการแก้ไข',' corrective action '],['ป้องกันการเกิดซ้ำ',' prevent recurrence '],['ทวนสอบ',' verify '],['ผู้ผลิต',' subcontractor '],['ใบสั่งซื้อ',' purchase order '],['กำหนดส่ง',' delivery due date '],['รอยขีดข่วน',' scratches '],['รอยบุบ',' dents '],['ครีบ',' burrs '],['สนิม',' rust ']],
+  zh:[['คัดแยก',' 挑选 '],['ผู้ผลิต',' 外包商 '],['สาเหตุราก',' 根本原因 ']]};
+var CCP_TR_POST={
+  en:[[/\bworkpieces\b/g,'parts'],[/\bWorkpieces\b/g,'Parts'],[/\bworkpiece\b/g,'part'],[/\bWorkpiece\b/g,'Part'],[/\bmolds\b/g,'dies'],[/\bmold\b/g,'die'],[/[ \t]{2,}/g,' '],[/ ([,.;:)])/g,'$1'],[/^ +| +$/gm,'']],
+  zh:[[/工件/g,'零件'],[/([　-鿿＀-￯]) +(?=[　-鿿＀-￯])/g,'$1'],[/^ +| +$/gm,'']]};
+function ccpHasTh(t){ return /[฀-๿]/.test(String(t||'')); }
+function ccpTrTl(lg){ return lg==='zh'?'zh-CN':'en'; }
+function ccpTrA(g,lg){ return fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=th&tl='+ccpTrTl(lg)+'&dt=t&q='+encodeURIComponent(g)).then(function(r){ if(!r.ok)throw new Error('HTTP '+r.status); return r.json(); })
+    .then(function(j){ if(!j||!j[0])throw new Error('bad'); return j[0].map(function(x){ return x&&x[0]||''; }).join(''); }); }
+function ccpTrB(g,lg){ return fetch('https://clients5.google.com/translate_a/t?client=dict-chrome-ex&sl=th&tl='+ccpTrTl(lg)+'&q='+encodeURIComponent(g)).then(function(r){ if(!r.ok)throw new Error('HTTP '+r.status); return r.json(); })
+    .then(function(j){ var x=Array.isArray(j)?j[0]:null; if(Array.isArray(x))x=x[0]; if(typeof x!=='string')throw new Error('bad'); return x; }); }
+function ccpTrPre(t,lg){ var g=String(t||''); (CCP_TR_GL[lg]||[]).forEach(function(x){ g=g.split(x[0]).join(x[1]); }); return g; }
+function ccpTrFin(o,lg){ o=String(o||''); (CCP_TR_POST[lg]||[]).forEach(function(p){ o=o.replace(p[0],p[1]); }); if(lg==='en')o=o.split('\n').map(function(y){ return y?y.charAt(0).toUpperCase()+y.slice(1):y; }).join('\n'); return o; }
+function ccpTr1(g,lg){ return ccpTrA(g,lg).catch(function(){ return ccpTrB(g,lg); }); }
+function ccpTr(t,lg){ lg=lg||'en'; return ccpTr1(ccpTrPre(t,lg),lg).then(function(o){ return ccpTrFin(o,lg); }); }
+function ccpTrRes(D,path){ var o=D; for(var i=0;i<path.length;i++){ if(o==null)return null; o=o[path[i]]; } return o||null; }
+function ccpTrJobs(D,force,lg){ lg=lg||ccpLg(D)||'en'; var J=[], add=function(path,k){ var o=ccpTrRes(D,path); if(!o)return; var t=String(o[k]==null?'':o[k]); if(!t.trim()||!ccpHasTh(t))return; if(!force&&ccpEnOk(o,k,lg))return; J.push({path:path,k:k,src:t}); };
+  CCP_RT_KEYS.concat(CCP_EN_IN).forEach(function(k){ add([],k); });
+  (D.pics||[]).forEach(function(p,i){ add(['pics',i],'c'); });
+  (D.more||[]).forEach(function(m,j){ add(['more',j],'detail'); (m.pics||[]).forEach(function(p,i){ add(['more',j,'pics',i],'c'); }); });
+  return J; }
+/* แปลทีละช่องตามลำดับ (กัน Google บล็อกเมื่อยิงพร้อมกัน) */
+var CCP_TR_SEP='\n\n⟦#⟧\n\n', CCP_TR_MAX=800;
+function ccpTrSeq(J,lg){ var B=[], cur=[], len=0; J.forEach(function(j){ var g=ccpTrPre(j.src,lg); j._g=g; if(cur.length&&len+g.length>CCP_TR_MAX){ B.push(cur); cur=[]; len=0; } cur.push(j); len+=g.length+8; }); if(cur.length)B.push(cur);
+  var one=function(j){ return ccpTr1(j._g,lg).then(function(o){ j.res=ccpTrFin(o,lg); },function(){ j.err=1; }); };
+  var run=function(b){ if(b.length===1)return one(b[0]); return ccpTr1(b.map(function(j){ return j._g; }).join(CCP_TR_SEP),lg).then(function(o){ var P=String(o||'').split(/\s*⟦#⟧\s*/); if(P.length!==b.length)throw new Error('split'); b.forEach(function(j,k){ j.res=ccpTrFin(P[k].replace(/^\n+|\n+$/g,''),lg); }); })
+      .catch(function(){ var q=Promise.resolve(); b.forEach(function(j){ q=q.then(function(){ return one(j); }); }); return q; }); };
+  var i=0; return new Promise(function(done){ var act=0, fin=0; if(!B.length){ done(J); return; } var nx=function(){ while(act<2&&i<B.length){ act++; run(B[i++]).then(function(){ act--; fin++; if(fin>=B.length)done(J); else setTimeout(nx,80); }); } }; nx(); }); }
+function ccpTrPut(D,J,lg){ var n=0, bad=0; J.forEach(function(j){ if(j.err||!j.res){ bad++; return; } var o=ccpTrRes(D,j.path); if(!o||String(o[j.k]==null?'':o[j.k])!==j.src)return;
+    var E=o[lg]=(o[lg]&&typeof o[lg]==='object')?o[lg]:{}; E[j.k]=j.res; E['_'+j.k]=j.src; delete E['r_'+j.k]; n++; }); return {n:n,bad:bad}; }
+var _ccpTrBusy=0;
+function ccpTrAll(force){ var D=_ccpD, lg=ccpLg(D); if(!D||!lg)return Promise.resolve(0); var J=ccpTrJobs(D,force,lg); if(!J.length)return Promise.resolve(0);
+  if(_ccpTrBusy)return Promise.resolve(0); _ccpTrBusy=1; ccpTrMsg('⏳ '+ccpL(lg,'','Translating','正在翻译')+' '+J.length+'…');
+  return ccpTrSeq(J,lg).then(function(){ _ccpTrBusy=0;
+    var D2=document.getElementById('ccp_lang')?ccpCollect():_ccpD; if(!D2||D2!==D||ccpLg(D2)!==lg)return 0; var R=ccpTrPut(D2,J,lg);
+    if(R.bad)toastRaw('⚠️ แปลอัตโนมัติไม่สำเร็จ '+R.bad+' ช่อง (ต้องต่ออินเทอร์เน็ต / Google ปฏิเสธชั่วคราว ลองกด 🔄 อีกครั้ง) — พิมพ์คำแปลในช่องเองได้','warn');
+    else toastRaw('🌐 แปลเป็น'+(lg==='zh'?'ภาษาจีน':'ภาษาอังกฤษ')+'แล้ว '+R.n+' ช่อง — ตรวจ/แก้คำได้ก่อนบันทึก','ok');
+    ccpReform(); return R.n; }); }
+function ccpTrMsg(t){ var e=document.getElementById('ccp_trmsg'); if(e)e.textContent=t; }
+function ccpLangToggle(lg,on){ var D=ccpCollect(); if(!D)return; if(on)D.lang=lg; else delete D.lang; ccpReform(); if(on)setTimeout(function(){ ccpTrAll(false); },40); }
+function ccpReTr(){ if(!confirm('แปลข้อความภาษาไทยใหม่ทั้งหมด?\nคำแปลที่แก้เองไว้จะถูกแทนที่ด้วยคำแปลใหม่'))return; ccpCollect(); ccpTrAll(true); }
+function ccpLangBar(D){ var lg=ccpLg(D);
+  var hint=lg==='en'?'Form and printout in English · Thai text is translated automatically (editable) · untick to return to Thai'
+    :lg==='zh'?'表单和打印为简体中文 · 泰文内容自动翻译（可修改）· 取消勾选返回泰文'
+    :'ติ๊กภาษาที่ต้องการ → แบบฟอร์มและใบพิมพ์เป็นภาษานั้น (แปลข้อความที่พิมพ์อัตโนมัติ · แก้คำได้)';
+  return '<input type="hidden" id="ccp_lang" value="'+lg+'"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 8px;padding:7px 11px;border:1.5px solid '+(lg?'#2563eb':'#cbd5e1')+';border-radius:9px;background:'+(lg?'#eff6ff':'#f8fafc')+'">'
+   +CCP_LANGS.map(function(x){ return '<label style="display:inline-flex;align-items:center;gap:7px;cursor:pointer;font-weight:800;color:#1B3A5C;margin:0"><input type="checkbox" style="width:18px;height:18px"'+(lg===x[0]?' checked':'')+' onchange="ccpLangToggle(\''+x[0]+'\',this.checked)">🌐 '+x[1]+'</label>'; }).join('')
+   +'<span class="muted" style="font-size:11.5px">'+hint+'</span>'
+   +(lg?'<span style="flex:1"></span><span id="ccp_trmsg" class="muted" style="font-size:11px"></span><button type="button" class="btn sm" onclick="ccpReTr()" title="แปลข้อความภาษาไทยทุกช่องใหม่ (แทนคำที่แก้เอง)">🔄 '+ccpL(lg,'','Re-translate','重新翻译')+'</button>':'')+'</div>'; }
+function ccpPicsHTML(D){ var lg=ccpLg(D); var P=(D.pics||[]).slice(0,CCP_PIC_MAX); var n=Math.min(CCP_PIC_MAX,Math.max(CCP_TOPIC_PIC,P.length));   /* ★ 28/10a 2 รูปต่อเรื่อง (ใบเดิมที่มีมากกว่าแสดงครบ) */
+  var a=[]; for(var i=0;i<n;i++){ var p=P[i]||{u:'',c:''}; a.push('<div class="field"><label>🖼️ '+ccpL(lg,'รูปที่ ','Picture ','图片 ')+(i+1)+ccpL(lg,' · คำอธิบาย',' · Caption',' · 说明')+'</label><input id="ccp_pc'+i+'" value="'+esc(lg?ccpEnGet(p,'c',lg):(p.c||''))+'" placeholder="'+ccpL(lg,'เช่น ชิ้นงานที่พบปัญหา','e.g. Defective part','如：不良零件')+'" style="margin-bottom:4px"><div style="display:flex;gap:4px"><input id="ccp_pu'+i+'" value="'+esc(p.u||'')+'" placeholder="'+ccpL(lg,'ไฟล์รูปจากคลังเอกสาร / URL','Image file from document library / URL','文档库图片文件 / URL')+'" style="flex:1" onchange="ccpCollect();ccpForm()"><button class="btn sm" onclick="ccpPicPick('+i+')" title="เลือกรูปจากคลังเอกสาร">📂</button>'+(p.u?'<button class="btn sm" onclick="ccpPicDel('+i+')" title="เอารูปนี้ออก">✕</button>':'')+'</div>'
     +(p.u?'<a href="'+esc(fpResolve(p.u))+'" target="_blank"><img src="'+esc(fpResolve(p.u))+'" style="max-width:100%;max-height:110px;margin-top:4px;border:1px solid var(--line)" onerror="this.replaceWith(document.createTextNode(\'⚠️ เปิดรูปไม่ได้ (ไม่ใช่ไฟล์รูป?)\'))"></a>':'')+'</div>'); }
   return '<div class="row c'+Math.min(4,n)+'">'+a.join('')+'</div>'; }
 function ccpPicPick(i){ ccpCollect(); filePicker(function(rel,name){ var D=_ccpD; if(!D)return; D.pics=D.pics||[]; while(D.pics.length<i)D.pics.push({u:'',c:''}); D.pics[i]=D.pics[i]||{u:'',c:''}; D.pics[i].u=rel; setTimeout(ccpForm,30); },function(){ ccpForm(); },'MK'); }
 function ccpPicDel(i){ ccpCollect(); var D=_ccpD; if(!D||!D.pics)return; D.pics.splice(i,1); ccpForm(); }
+/* เก็บรูป 1 ช่องจากฟอร์ม (คงคำแปลเดิมของคำอธิบาย ทุกภาษา) */
+function ccpPicTake(old,u,c,lg){ old=old||{}; u=String(u==null?'':u).trim(); c=String(c==null?'':c).trim(); var p=JSON.parse(JSON.stringify(old)); p.u=u;
+  if(lg){ p.c=old.c||''; ccpEnSet(p,'c',c,'',lg); } else p.c=c;
+  return (p.u||String(p.c||'').trim())?p:null; }
+/* ★ 28/10a ข้อ 2 หลายเรื่อง : D.more=[{detail,rich:{detail},pics:[{u,c}]≤2}] (เรื่องที่ 1 = D.detail + D.pics เดิม) */
+var CCP_TOPIC_PIC=2;
+function ccpReform(){ var b=document.querySelector('#modalRoot .modal-b'), st=b?b.scrollTop:0; ccpForm(); setTimeout(function(){ var b2=document.querySelector('#modalRoot .modal-b'); if(b2)b2.scrollTop=st; },0); }
+function ccpMoreHTML(D){ var M=D.more||[], lg=ccpLg(D);
+  var slot=function(j,i,p){ var su=fpResolve(p.u||''); return '<div class="field"><label>🖼️ '+ccpL(lg,'รูปที่ ','Picture ','图片 ')+(i+1)+ccpL(lg,' · คำอธิบาย',' · Caption',' · 说明')+'</label><input id="ccp_mpc'+j+'_'+i+'" value="'+esc(lg?ccpEnGet(p,'c',lg):(p.c||''))+'" placeholder="'+ccpL(lg,'เช่น ','e.g. ','如：')+(i?'AFTER':'BEFORE')+'" style="margin-bottom:4px"><div style="display:flex;gap:4px"><input id="ccp_mpu'+j+'_'+i+'" value="'+esc(p.u||'')+'" placeholder="'+ccpL(lg,'ไฟล์รูปจากคลังเอกสาร / URL','Image file from document library / URL','文档库图片文件 / URL')+'" style="flex:1" onchange="ccpCollect();ccpReform()"><button class="btn sm" onclick="ccpMPicPick('+j+','+i+')" title="เลือกรูปจากคลังเอกสาร">📂</button>'+(p.u?'<button class="btn sm danger" onclick="ccpMPicDel('+j+','+i+')" title="เอารูปออก">✕</button>':'')+'</div>'
+    +(p.u?'<a href="'+esc(su)+'" target="_blank"><img src="'+esc(su)+'" style="max-width:100%;max-height:110px;margin-top:4px;border:1px solid var(--line)" onerror="this.replaceWith(document.createTextNode(\'⚠️ เปิดรูปไม่ได้ (ไม่ใช่ไฟล์รูป?)\'))"></a>':'')+'</div>'; };
+  return '<div id="ccp_mbox">'+M.map(function(m,j){ var P=(m.pics||[]).slice(0,CCP_TOPIC_PIC); while(P.length<CCP_TOPIC_PIC)P.push({u:'',c:''});
+      return '<div style="border:1px dashed #1B3A5C;border-radius:9px;padding:6px 10px 2px;margin:8px 0;background:#fafcff"><div style="display:flex;align-items:center;gap:8px;margin-bottom:2px"><b style="color:#1B3A5C">'+ccpL(lg,'เรื่องที่ ','Topic ','事项 ')+(j+2)+'</b><span style="flex:1"></span><button type="button" class="btn sm danger" onclick="ccpMoreDel('+j+')">🗑️ '+ccpL(lg,'ลบเรื่อง','Delete topic','删除事项')+'</button></div>'
+        +'<div class="field"><label style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span>'+ccpL(lg,'รายละเอียด','Details','详细内容')+'</span>'+ccpRtBar('m'+j)+'</label><div id="ccp_m'+j+'" class="ccp-rt" contenteditable="true" data-ph="'+ccpL(lg,'พิมพ์รายละเอียดเรื่องนี้','Type the details of this topic','输入此事项的详细内容')+'" style="min-height:78px" onpaste="ccpRtPaste(event)">'+(lg?ccpEnInit(m,'detail',lg):ccpRtInit(m,'detail'))+'</div>'+(lg?ccpEnSrcHTML(m,'detail',lg):'')+'</div>'
+        +'<div class="row c2">'+P.map(function(p,i){ return slot(j,i,p); }).join('')+'</div></div>'; }).join('')
+    +'</div><button type="button" class="btn sm" style="margin:2px 0 8px;border-color:#1B3A5C;color:#1B3A5C;font-weight:700" onclick="ccpMoreAdd()" title="เพิ่มเรื่องในข้อ 2 (ข้อความ + รูป 2 รูป)">➕ '+ccpL(lg,'เพิ่มเรื่อง','Add topic','新增事项')+'</button>'; }
+function ccpMoreCollect(D){ if(!document.getElementById('ccp_mbox'))return; var lg=ccpFormLg(), old=D.more||[], mo=[];
+  for(var j=0;;j++){ var el=document.getElementById('ccp_m'+j); if(!el)break; var txt=String(el.innerText||'').replace(/ /g,' ').replace(/\n+$/,''), h=ccpRichSan(el.innerHTML), om=old[j]||{}, ps=[];
+    for(var i=0;i<CCP_TOPIC_PIC;i++){ var u=document.getElementById('ccp_mpu'+j+'_'+i), c=document.getElementById('ccp_mpc'+j+'_'+i); var p=ccpPicTake((om.pics||[])[i],u?u.value:'',c?c.value:'',lg); if(p)ps.push(p); }
+    var o=JSON.parse(JSON.stringify(om)); o.pics=ps;
+    if(lg){ o.detail=om.detail||''; ccpEnSet(o,'detail',txt,h,lg); }
+    else { o.detail=txt; if(/<span /.test(h))o.rich={detail:h}; else delete o.rich; }
+    mo.push(o); }
+  D.more=mo; }
+function ccpMoreAdd(){ var D=ccpCollect(); if(!D)return; D.more=D.more||[]; D.more.push({detail:'',pics:[]}); ccpReform(); setTimeout(function(){ var e=document.getElementById('ccp_m'+(D.more.length-1)); if(e){ e.scrollIntoView({block:'center'}); e.focus(); } },60); }
+function ccpMoreDel(j){ var D=ccpCollect(); if(!D||!D.more||!D.more[j])return; var m=D.more[j]; if((String(m.detail||'').trim()||(m.pics||[]).length)&&!confirm('ลบเรื่องที่ '+(j+2)+' ?'))return; D.more.splice(j,1); ccpReform(); }
+function ccpMPicPick(j,i){ var D=ccpCollect(); if(!D||!D.more||!D.more[j])return; filePicker(function(rel){ var m=_ccpD&&_ccpD.more&&_ccpD.more[j]; if(!m)return; m.pics=m.pics||[]; while(m.pics.length<i)m.pics.push({u:'',c:''}); m.pics[i]=m.pics[i]||{u:'',c:''}; m.pics[i].u=rel; setTimeout(ccpForm,30); },function(){ ccpForm(); },'MK'); }
+function ccpMPicDel(j,i){ var D=ccpCollect(); if(!D||!D.more||!D.more[j])return; (D.more[j].pics||[]).splice(i,1); ccpReform(); }
+/* ใบพิมพ์ : 1 เรื่อง = ข้อความซ้าย + รูปขวา · กรอบรูปยืดเท่าความสูงข้อความ (อย่างน้อย 32 มม.) · object-fit:contain */
+function ccpTopicPrint(txt,ps,lbl,first){ ps=(ps||[]).filter(function(p){ return p&&p.u; }); var n=ps.length, sep=first?'':'border-top:1px dashed #999;';
+  var t='<div class="tx" style="flex:1;min-width:0;min-height:'+(n?32:(lbl?14:24))+'mm">'+(lbl?'<div style="font-weight:700;color:#1B3A5C;margin-bottom:.6mm">'+lbl+'</div>':'')+txt+'</div>';
+  if(!n)return '<div style="display:flex;'+sep+'">'+t+'</div>';
+  var w=n>2?28:(n===2?46:60);
+  return '<div style="display:flex;align-items:stretch;'+sep+'">'+t+'<div style="display:flex;gap:2mm;padding:1.5mm 2mm;flex:0 0 auto">'
+    +ps.map(function(p){ return '<div style="width:'+w+'mm;display:flex;flex-direction:column"><div style="flex:1;position:relative;min-height:32mm;border:1px solid #999;background:#fff"><img src="'+esc(fpResolve(p.u))+'" style="position:absolute;left:0;top:0;width:100%;height:100%;object-fit:contain"></div>'+(p.c?'<div style="font-size:8px;font-weight:700;text-align:center;padding-top:.6mm">'+esc(p.c)+'</div>':'')+'</div>'; }).join('')+'</div></div>'; }
+/* ★ ช่องติ๊กภาษาบนหน้าดูใบ (มุมขวาข้อ 1 · ไม่พิมพ์ลงกระดาษ) → แปล + บันทึก d.lang แล้ววาดหน้าเดิมใหม่ */
+function ccpTrDoc(D,force,lg){ var J=ccpTrJobs(D,force,lg); if(!J.length)return Promise.resolve({n:0,bad:0}); return ccpTrSeq(J,lg).then(function(){ return ccpTrPut(D,J,lg); }); }
+function ccpDocLang(id,lg,w){ var d=(DB.docs||[]).find(function(x){ return x&&x.id===id; }); if(!d)return;
+  var draw=function(msg){ try{ var h=ccpPrint(id,'page'); w.document.open(); w.document.write(h); w.document.close(); if(msg)setTimeout(function(){ try{ w.alert(msg); }catch(e){} },400); }catch(e){} };
+  if(lg==='en'||lg==='zh')d.lang=lg; else delete d.lang; d.ts=Date.now();
+  var fin=function(r){ try{ saveDB(); }catch(e){} try{ render(); }catch(e){} draw(r&&r.bad?'Some text could not be translated automatically (internet required / try again). แปลอัตโนมัติไม่สำเร็จ '+r.bad+' ช่อง — ติ๊กใหม่อีกครั้ง หรือแก้ในฟอร์ม ✏️ แก้ไข':''); };
+  if(!d.lang){ fin(); return; }
+  try{ var t=w.document.getElementById('ccpLangMsg'); if(t)t.textContent=lg==='zh'?'⏳ 正在翻译…':'⏳ Translating…'; }catch(e){}
+  ccpTrDoc(d,false,d.lang).then(fin,function(){ fin({bad:1}); }); }
 /* ★ 22/10c ช่องข้อความแบบมีสี (rich text) ของ FM-MK-25 : ความสูงตามข้อมูล · สีตัวอักษร/ไฮไลต์ เพื่อลำดับความสำคัญ
    เก็บ d[k] = ข้อความธรรมดา (เดิม) + d.rich[k] = HTML ที่กรองแล้ว (เฉพาะ span สี/พื้น/ตัวหนา/เอียง/ขีดเส้นใต้ + br) */
 var CCP_RT_FG=[['#dc2626','แดง = สำคัญมาก / เร่งด่วน'],['#ea580c','ส้ม = สำคัญ'],['#2563eb','น้ำเงิน = ข้อมูลอ้างอิง'],['#16a34a','เขียว = เสร็จแล้ว / ผ่าน'],['#111827','ดำ (ปกติ)']];
@@ -31740,37 +32228,42 @@ function ccpRtInit(D,k){ var h=D.rich&&D.rich[k]; if(h&&ccpRtNorm(ccpRichTxt(h))
 /* ใบพิมพ์ : ใช้ HTML สีเมื่อข้อความตรงกับฉบับธรรมดา (กันกรณีถูกแก้จากที่อื่น) */
 function ccpRtOut(d,k){ var h=d&&d.rich&&d.rich[k]; if(h&&ccpRtNorm(ccpRichTxt(h))===ccpRtNorm(d[k]))return ccpRichSan(h); return esc(d&&d[k]!=null?d[k]:''); }
 var CCP_RT_KEYS=['detail','cont','cause','corr','reply','verify','remark'];
-function ccpRtCollect(D){ CCP_RT_KEYS.forEach(function(k){ var el=document.getElementById('ccp_'+k); if(!el||el.tagName==='TEXTAREA')return;
-    var txt=String(el.innerText||'').replace(/\u00a0/g,' ').replace(/\n+$/,''); D[k]=txt;
-    var h=ccpRichSan(el.innerHTML); D.rich=D.rich||{}; if(/<span /.test(h))D.rich[k]=h; else delete D.rich[k]; });
+function ccpRtCollect(D){ var lg=ccpFormLg(); CCP_RT_KEYS.forEach(function(k){ var el=document.getElementById('ccp_'+k); if(!el||el.tagName==='TEXTAREA')return;
+    var txt=String(el.innerText||'').replace(/ /g,' ').replace(/\n+$/,''); var h=ccpRichSan(el.innerHTML);
+    if(lg){ ccpEnSet(D,k,txt,h,lg); return; }   /* ★ 28/10b โหมดภาษาต่างประเทศ : เก็บลง D[lg] ไม่แตะไทย */
+    D[k]=txt; D.rich=D.rich||{}; if(/<span /.test(h))D.rich[k]=h; else delete D.rich[k]; });
   if(D.rich&&!Object.keys(D.rich).length)delete D.rich; }
-function ccpForm(){ var D=_ccpD; if(!D)return; var K=ccpK(D.kind);
-  var I=function(k,ph,ty,extra){ return '<input id="ccp_'+k+'"'+(ty?' type="'+ty+'"':'')+' value="'+esc(D[k]==null?'':D[k])+'"'+(ph?' placeholder="'+esc(ph)+'"':'')+(extra||'')+'>'; };
+function ccpForm(){ var D=_ccpD; if(!D)return; var lg=ccpLg(D), K=ccpKL(D.kind,lg), L=function(t,e,z){ return ccpL(lg,t,e,z); };
+  var val=function(k){ return lg&&CCP_EN_IN.indexOf(k)>=0?ccpEnGet(D,k,lg):D[k]; };
+  var I=function(k,ph,ty,extra){ var v=val(k); return '<input id="ccp_'+k+'"'+(ty?' type="'+ty+'"':'')+' value="'+esc(v==null?'':v)+'"'+(ph?' placeholder="'+esc(ph)+'"':'')+(extra||'')+'>'; };
   var F=function(lbl,k,ph,ty,extra){ return '<div class="field"><label>'+lbl+'</label>'+I(k,ph,ty,extra)+'</div>'; };
-  var T=function(lbl,k,rows,ph){ return '<div class="field"><label style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span>'+lbl+'</span>'+ccpRtBar(k)+'</label><div id="ccp_'+k+'" class="ccp-rt" contenteditable="true" data-ph="'+esc(ph||'')+'" style="min-height:'+((rows||3)*20+18)+'px" onpaste="ccpRtPaste(event)">'+ccpRtInit(D,k)+'</div></div>'; };
+  var T=function(lbl,k,rows,ph){ return '<div class="field"><label style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span>'+lbl+'</span>'+ccpRtBar(k)+'</label><div id="ccp_'+k+'" class="ccp-rt" contenteditable="true" data-ph="'+esc(ph||'')+'" style="min-height:'+((rows||3)*20+18)+'px" onpaste="ccpRtPaste(event)">'+(lg?ccpEnInit(D,k,lg):ccpRtInit(D,k))+'</div>'+(lg?ccpEnSrcHTML(D,k,lg):'')+'</div>'; };
   var S=function(lbl,k,arr,on){ return '<div class="field"><label>'+lbl+'</label><select id="ccp_'+k+'"'+(on?' onchange="'+on+'"':'')+'>'+arr.map(function(o){ return '<option value="'+o[0]+'"'+(String(D[k]||'')===o[0]?' selected':'')+'>'+esc(o[1])+'</option>'; }).join('')+'</select></div>'; };
   var G=function(lbl,k,ph){ return '<div class="field"><label>'+lbl+'</label><input id="ccp_sg_'+k+'" value="'+esc(D.sg[k]||'')+'" placeholder="'+esc(ph||'')+'"></div>'; };
-  var GD=function(k){ return '<div class="field"><label>วันที่</label><input type="date" id="ccp_sg_'+k+'" value="'+esc(D.sg[k]||'')+'"></div>'; };
+  var GD=function(k){ return '<div class="field"><label>'+L('วันที่','Date','日期')+'</label><input type="date" id="ccp_sg_'+k+'" value="'+esc(D.sg[k]||'')+'"></div>'; };
   var sec=function(t){ return '<div style="font-weight:800;margin:12px 0 6px;font-size:13px;color:#1B3A5C;border-bottom:2px solid #1B3A5C;padding-bottom:3px">'+t+'</div>'; };
-  var kinds='<div class="field"><label>ประเภทเรื่อง (เลือกแล้วฟอร์มด้านล่างเปลี่ยนตามบริบท)</label><div style="display:flex;gap:6px;flex-wrap:wrap">'+CCP_KIND.map(function(x){ var on=(D.kind||'complaint')===x[0], k2=ccpK(x[0]); return '<button type="button" class="btn sm'+(on?' pri':'')+'" onclick="ccpKindChg(\''+x[0]+'\')">'+k2.ic+' '+esc(x[1])+'</button>'; }).join('')+'</div><input type="hidden" id="ccp_kind" value="'+esc(D.kind||'complaint')+'"></div>';
-  var body=CCP_RT_CSS+'<div class="hint" style="margin-bottom:8px"><span class="i">'+K.ic+'</span><div><b>'+esc(K.t)+' ('+K.en+') · '+esc(ccpCode())+' Rev.00</b> — '+({complaint:'รับเรื่อง → ประเมินความรุนแรง → ควบคุมเบื้องต้นภายใน 24 ชม. → ออก NCR / 8D → ตอบกลับลูกค้า → ทวนสอบประสิทธิผลแล้วปิดเรื่อง (ISO 9001 8.2.1 · 10.2 · IATF 16949 10.2.3–10.2.6)',
+  var KIND=ccpOpt('kind',CCP_KIND,lg);
+  var kinds='<div class="field"><label>'+L('ประเภทเรื่อง (เลือกแล้วฟอร์มด้านล่างเปลี่ยนตามบริบท)','Type (the form below changes according to the selected type)','类别（选择后下方表单随之变化）')+'</label><div style="display:flex;gap:6px;flex-wrap:wrap">'+KIND.map(function(x){ var on=(D.kind||'complaint')===x[0], k2=ccpK(x[0]); return '<button type="button" class="btn sm'+(on?' pri':'')+'" onclick="ccpKindChg(\''+x[0]+'\')">'+k2.ic+' '+esc(x[1])+'</button>'; }).join('')+'</div><input type="hidden" id="ccp_kind" value="'+esc(D.kind||'complaint')+'"></div>';
+  var flowTh={complaint:'รับเรื่อง → ประเมินความรุนแรง → ควบคุมเบื้องต้นภายใน 24 ชม. → ออก NCR / 8D → ตอบกลับลูกค้า → ทวนสอบประสิทธิผลแล้วปิดเรื่อง (ISO 9001 8.2.1 · 10.2 · IATF 16949 10.2.3–10.2.6)',
       inquiry:'รับคำถาม → มอบหมายผู้หาข้อมูล → ตอบลูกค้าภายในกำหนด → ลูกค้ารับทราบแล้วปิดเรื่อง (ISO 9001 8.2.1 a/b)',
       suggest:'รับข้อเสนอแนะ → พิจารณาความเป็นไปได้ → วางแผนปรับปรุง → แจ้งผลลูกค้า → ติดตามผลแล้วปิดเรื่อง (ISO 9001 8.2.1 c · 9.1.2 · 10.3)',
-      praise:'รับคำชม → แจ้งผู้เกี่ยวข้อง → ขยายผลเป็นแนวปฏิบัติ → ขอบคุณลูกค้าแล้วปิดเรื่อง (ISO 9001 9.1.2 ความพึงพอใจลูกค้า)'})[D.kind||'complaint']+'</div></div>'
+      praise:'รับคำชม → แจ้งผู้เกี่ยวข้อง → ขยายผลเป็นแนวปฏิบัติ → ขอบคุณลูกค้าแล้วปิดเรื่อง (ISO 9001 9.1.2 ความพึงพอใจลูกค้า)'}[D.kind||'complaint'];
+  var body=CCP_RT_CSS+ccpLangBar(D)+'<div class="hint" style="margin-bottom:8px"><span class="i">'+K.ic+'</span><div><b>'+esc(K.t)+(lg==='en'?'':' ('+K.en+')')+' · '+esc(ccpCode())+' Rev.00</b> — '+(lg?K.flow:flowTh)+'</div></div>'
    +ccpCustDl()
-   +sec('1) รับเรื่อง')
+   +sec(L('1) รับเรื่อง','1) Receiving','1) 受理'))
    +kinds
-   +'<div class="row c4">'+F('NO. (อัตโนมัติ · แก้ได้)','no')+F('วันที่รับเรื่อง','date','','date')+S('ช่องทาง','ch',CCP_CH)+S('สถานะ','status',CCP_ST)+'</div>'
-   +'<div class="row '+(K.sev?'c2':'c1')+'">'+S('หัวข้อ','topic',K.topics)+(K.sev?S('ระดับความรุนแรง','sev',CCP_SEV):'')+'</div>'
-   +'<div class="row c4">'+F('ลูกค้า','customer','','',' list="dl_ccpcust"')+F('ผู้แจ้ง (ลูกค้า)','contact','ชื่อตามที่แจ้ง')+F('ตำแหน่ง / แผนก','cPos')+F('โทร / อีเมล','cTel')+'</div>'
+   +'<div class="row c4">'+F(L('NO. (อัตโนมัติ · แก้ได้)','NO. (auto · editable)','编号（自动 · 可修改）'),'no')+F(L('วันที่รับเรื่อง','Date received','受理日期'),'date','','date')+S(L('ช่องทาง','Channel','渠道'),'ch',ccpOpt('ch',CCP_CH,lg))+S(L('สถานะ','Status','状态'),'status',ccpOpt('st',CCP_ST,lg))+'</div>'
+   +'<div class="row '+(K.sev?'c2':'c1')+'">'+S(L('หัวข้อ','Topic','主题'),'topic',K.topics)+(K.sev?S(L('ระดับความรุนแรง','Severity','严重度'),'sev',ccpOpt('sev',CCP_SEV,lg)):'')+'</div>'
+   +'<div class="row c4">'+F(L('ลูกค้า','Customer','客户'),'customer','','',' list="dl_ccpcust"')+F(L('ผู้แจ้ง (ลูกค้า)','Reported by (customer)','报告人（客户）'),'contact',L('ชื่อตามที่แจ้ง','Name as reported','报告时的姓名'))+F(L('ตำแหน่ง / แผนก','Position / Department','职位 / 部门'),'cPos')+F(L('โทร / อีเมล','Tel. / E-mail','电话 / 电子邮件'),'cTel')+'</div>'
    +sec(K.s2)
    +'<datalist id="dl_ccppn">'+(DB.products||[]).filter(function(p){ return p&&p.type==='FG'&&!p.inactive; }).map(function(p){ return '<option value="'+esc(p.pn)+'">'+esc(p.name||'')+'</option>'; }).join('')+'</datalist>'
    +(K.prod==='full'
-      ?('<div class="row c4">'+F('Part No.','pn','','',' list="dl_ccppn" onchange="ccpPnPick()"')+F('ชื่อชิ้นงาน','pname')+F('Lot / วันที่ผลิต','lot')+F('PO / Invoice / ใบส่งของ','po')+'</div>'
-        +'<div class="row c3">'+F('จำนวนที่พบปัญหา','qtyNg')+F('จำนวนส่งในล็อต','qtyLot')+F('เลขที่อ้างอิงลูกค้า (Claim No.)','cRef')+'</div>')
-      :('<div class="row c4">'+F('Part No. (ถ้ามี)','pn','','',' list="dl_ccppn" onchange="ccpPnPick()"')+F('ชื่อชิ้นงาน','pname')+F('PO / เอกสารอ้างอิง','po')+F('เลขที่อ้างอิงลูกค้า','cRef')+'</div>'))
+      ?('<div class="row c4">'+F(L('Part No.','Part No.','零件号 Part No.'),'pn','','',' list="dl_ccppn" onchange="ccpPnPick()"')+F(L('ชื่อชิ้นงาน','Part name','品名'),'pname')+F(L('Lot / วันที่ผลิต','Lot / Production date','批号 / 生产日期'),'lot')+F(L('PO / Invoice / ใบส่งของ','PO / Invoice / Delivery note','订单 / 发票 / 送货单'),'po')+'</div>'
+        +'<div class="row c3">'+F(L('จำนวนที่พบปัญหา','Defective quantity','不良数量'),'qtyNg')+F(L('จำนวนส่งในล็อต','Lot quantity delivered','批次交货数量'),'qtyLot')+F(L('เลขที่อ้างอิงลูกค้า (Claim No.)','Customer reference (Claim No.)','客户参考编号（索赔编号）'),'cRef')+'</div>')
+      :('<div class="row c4">'+F(L('Part No. (ถ้ามี)','Part No. (if any)','零件号（如有）'),'pn','','',' list="dl_ccppn" onchange="ccpPnPick()"')+F(L('ชื่อชิ้นงาน','Part name','品名'),'pname')+F(L('PO / เอกสารอ้างอิง','PO / Reference document','订单 / 参考文件'),'po')+F(L('เลขที่อ้างอิงลูกค้า','Customer reference No.','客户参考编号'),'cRef')+'</div>'))
    +T(K.detail,'detail',3,K.detailPh)
    +ccpPicsHTML(D)
+   +ccpMoreHTML(D)
    +sec(K.s3)
    +'<div class="row c2">'+T(K.cont,'cont',2,K.contPh)+F(K.contD,'contDate','','date')+'</div>'
    +'<div class="row c3">'+S(K.actL,'act',K.acts)+F(K.actRef,'actRef')+(K.due?F(K.due,'due','','date'):'<div></div>')+'</div>'
@@ -31778,25 +32271,27 @@ function ccpForm(){ var D=_ccpD; if(!D)return; var K=ccpK(D.kind);
    +sec(K.s4)
    +'<div class="row c2">'+F(K.replyD,'replyDate','','date')+(K.res&&K.res.length?S(K.resL,'result',K.res):'<div></div>')+'</div>'
    +T(K.reply,'reply',2)
-   +'<div class="row c2">'+(K.verify?T(K.verify,'verify',2):'<div></div>')+F('วันที่ปิดเรื่อง','closeDate','','date')+'</div>'
-   +T('หมายเหตุ','remark',2)
-   +sec('5) ผู้ลงนาม (พิมพ์ชื่อ · แนบลายเซ็นตามชื่อ)')
-   +'<div class="row c3">'+G('ผู้แจ้ง (ลูกค้า)','cus','ว่าง = ใช้ชื่อผู้แจ้ง')+G('ผู้รับเรื่อง (RTK)','rcv','ชื่อผู้รับเรื่อง')+G(K.app,'app','ชื่อ')+'</div>'
+   +'<div class="row c2">'+(K.verify?T(K.verify,'verify',2):'<div></div>')+F(L('วันที่ปิดเรื่อง','Closing date','结案日期'),'closeDate','','date')+'</div>'
+   +T(L('หมายเหตุ','Remarks','备注'),'remark',2)
+   +sec(L('5) ผู้ลงนาม (พิมพ์ชื่อ · แนบลายเซ็นตามชื่อ)','5) Signatures (type name · signature attached by name)','5) 签名（输入姓名 · 按姓名附签名）'))
+   +'<div class="row c3">'+G(L('ผู้แจ้ง (ลูกค้า)','Reported by (customer)','报告人（客户）'),'cus',L('ว่าง = ใช้ชื่อผู้แจ้ง','Blank = reporter name','空白 = 使用报告人姓名'))+G(L('ผู้รับเรื่อง (RTK)','Received by (RTK)','受理人（RTK）'),'rcv',L('ชื่อผู้รับเรื่อง','Name','姓名'))+G(K.app,'app',L('ชื่อ','Name','姓名'))+'</div>'
    +'<div class="row c3">'+GD('cusD')+GD('rcvD')+GD('appD')+'</div>';
-  modal({title:K.ic+' '+esc(K.t)+' · '+esc(ccpCode())+' Rev.00'+(D.no?' · '+esc(D.no):''),size:'full',body:body,
-    footer:'<button class="btn" onclick="closeModal()">ปิด</button><button class="btn" onclick="ccpSave(1)">🖨️ บันทึก + พิมพ์</button><button class="btn pri" onclick="ccpSave(0)">💾 บันทึก</button>'});
+  modal({title:K.ic+' '+esc(K.t)+' · '+esc(ccpCode())+' Rev.00'+(D.no?' · '+esc(D.no):'')+(lg?' · 🌐 '+lg.toUpperCase():''),size:'full',body:body,
+    footer:'<button class="btn" onclick="closeModal()">'+L('ปิด','Close','关闭')+'</button><button class="btn" onclick="ccpSave(1)">🖨️ '+L('บันทึก + พิมพ์','Save + Print','保存 + 打印')+'</button><button class="btn pri" onclick="ccpSave(0)">💾 '+L('บันทึก','Save','保存')+'</button>'});
   try{ var _ov=document.querySelector('#modalRoot .overlay'); if(_ov)_ov.removeAttribute('onclick'); }catch(e){}   /* ★ คลิกพื้นหลังไม่ปิด — ออกได้เฉพาะปุ่ม ปิด */
 }
-function ccpCollect(){ var D=_ccpD; if(!D)return null; var v=function(id){ var e=document.getElementById(id); return e?String(e.value==null?'':e.value):null; };
-  if(document.getElementById('ccp_pu0')){ var _pp=[]; for(var _i=0;_i<CCP_PIC_MAX;_i++){ var _u=v('ccp_pu'+_i), _c=v('ccp_pc'+_i); if(_u==null)break; _u=_u.trim(); if(_u||(_c&&_c.trim()))_pp.push({u:_u,c:(_c||'').trim()}); } D.pics=_pp; }
-  ['no','date','status','ch','kind','topic','sev','customer','contact','cPos','cTel','cRef','pn','pname','lot','po','qtyNg','qtyLot','detail','cont','contDate','act','actRef','cause','corr','due','replyDate','reply','verify','closeDate','result','remark'].forEach(function(k){ var _e=document.getElementById('ccp_'+k); if(_e&&_e.getAttribute('contenteditable'))return; var x=v('ccp_'+k); if(x!=null)D[k]=x; });
+function ccpCollect(){ var D=_ccpD; if(!D)return null; var v=function(id){ var e=document.getElementById(id); return e?String(e.value==null?'':e.value):null; }, lg=ccpFormLg();
+  if(document.getElementById('ccp_pu0')){ var _pp=[], _old=D.pics||[]; for(var _i=0;_i<CCP_PIC_MAX;_i++){ var _u=v('ccp_pu'+_i), _c=v('ccp_pc'+_i); if(_u==null)break; var _p=ccpPicTake(_old[_i],_u,_c,lg); if(_p)_pp.push(_p); } D.pics=_pp; }
+  ['no','date','status','ch','kind','topic','sev','customer','contact','cPos','cTel','cRef','pn','pname','lot','po','qtyNg','qtyLot','detail','cont','contDate','act','actRef','cause','corr','due','replyDate','reply','verify','closeDate','result','remark'].forEach(function(k){ var _e=document.getElementById('ccp_'+k); if(_e&&_e.getAttribute('contenteditable'))return; var x=v('ccp_'+k); if(x==null)return; if(lg&&CCP_EN_IN.indexOf(k)>=0)ccpEnSet(D,k,x,'',lg); else D[k]=x; });
   Object.keys(D.sg).forEach(function(k){ var x=v('ccp_sg_'+k); if(x!=null)D.sg[k]=x.trim(); });
   try{ ccpRtCollect(D); }catch(e){}
+  try{ ccpMoreCollect(D); }catch(e){}
   return D; }
 function ccpSave(andPrint){ var D=ccpCollect(); if(!D)return;
   D.no=String(D.no||'').trim(); if(!D.no)D.no=ccpNextNo(D.date,D.id);
   if(ccpNoUsed(D.no,D.id)){ toast('เลขที่ '+D.no+' มีอยู่แล้ว — แก้เลขที่ก่อนบันทึก','err'); return; }
   if(!String(D.customer||'').trim()){ toast('กรุณาระบุลูกค้า','err'); return; }
+  if(D.more){ D.more=D.more.filter(function(m){ return String(m.detail||'').trim()||(m.pics||[]).some(function(p){ return p&&p.u; }); }); if(!D.more.length)delete D.more; }   /* ★ 28/10a ไม่เก็บเรื่องว่าง */
   if(!String(D.detail||'').trim()){ toast('กรุณาระบุรายละเอียดเรื่องที่แจ้ง','err'); return; }
   if(D.closeDate&&D.status!=='closed')D.status='closed';
   var d=D.id?(DB.docs||[]).find(function(x){ return x&&x.id===D.id; }):null;
@@ -31807,7 +32302,7 @@ function ccpSave(andPrint){ var D=ccpCollect(); if(!D)return;
   try{ if(d.ncId){ var _nc=(DB.docs||[]).find(function(x){ return x&&x.id===d.ncId&&x.type==='NC'; }); if(_nc&&_nc.ccpId!==d.id){ _nc.ccpId=d.id; if(!_nc.ref)_nc.ref=d.no; _nc.ts=Date.now(); } } }catch(e){}   /* ★ ออกจากใบ NC → ผูกกลับ */
   try{ saveDB(); }catch(e){}
   /* ★ 22/10d บันทึกแล้วไม่ออกจากหน้าต่าง — ออกได้เฉพาะปุ่ม ปิด · _ccpD ถือ id แล้ว บันทึกซ้ำ = แก้ใบเดิม */
-  try{ var _ni=document.getElementById('ccp_no'); if(_ni)_ni.value=d.no; var _h=document.querySelector('#modalRoot .modal-h h3'); if(_h){ var _K=ccpK(d.kind); _h.innerHTML=_K.ic+' '+esc(_K.t)+' · '+esc(ccpCode())+' Rev.00 · '+esc(d.no||'')+' <span style="font-size:11px;font-weight:400;color:#0ca678">✅ บันทึกแล้ว '+new Date().toLocaleTimeString('th-TH')+'</span>'; } }catch(e){}
+  try{ var _ni=document.getElementById('ccp_no'); if(_ni)_ni.value=d.no; var _h=document.querySelector('#modalRoot .modal-h h3'); if(_h){ var _lg=ccpLg(d), _K=ccpKL(d.kind,_lg); _h.innerHTML=_K.ic+' '+esc(_K.t)+' · '+esc(ccpCode())+' Rev.00 · '+esc(d.no||'')+(_lg?' · 🌐 '+_lg.toUpperCase():'')+' <span style="font-size:11px;font-weight:400;color:#0ca678">✅ '+ccpL(_lg,'บันทึกแล้ว','Saved','已保存')+' '+new Date().toLocaleTimeString('th-TH')+'</span>'; } }catch(e){}
   try{ render(); }catch(e){} toast('บันทึกข้อร้องเรียน '+d.no+' แล้ว','ok');
   if(andPrint)setTimeout(function(){ ccpPrint(d.id); },80); }
 function ccpCancel(id){ var d=(DB.docs||[]).find(function(x){ return x&&x.id===id; }); if(!d)return;
@@ -31839,7 +32334,7 @@ function ccpRegHTML(full){
    +'<button class="btn pri" onclick="ccpNew()">+ รับเรื่องใหม่</button></div></div>'
    +'<div class="panel-b nopad">'+(rows.length?('<div class="tbl-wrap"><table style="font-size:12px;white-space:nowrap"><thead><tr><th>NO.</th><th>วันที่</th><th>ลูกค้า / ผู้แจ้ง</th><th>ประเภท</th><th>หัวข้อ</th><th>ระดับ</th><th>Part No.</th><th>เรื่องที่แจ้ง</th><th>NCR / 8D</th><th>กำหนดตอบ</th><th>สถานะ</th><th style="text-align:center" title="แนบลิงก์ไฟล์ PDF '+esc(ccpCode())+'">'+esc(ccpCode())+'</th><th style="text-align:center" title="ติ๊กเพื่อส่งไป งานไม่ตรงตามข้อกำหนด (NC) → NCR / CORRECTIVE ACTION">ส่ง NC</th><th></th></tr></thead><tbody>'
      +rows.map(function(d){ var kd=ccpOf(CCP_KIND,d.kind).split(' (')[0];
-       return '<tr><td class="pn linkish" onclick="ccpPrint(\''+d.id+'\',\'preview\')"><b>'+esc(d.no||'')+'</b></td><td class="muted">'+esc(d.date||'')+'</td>'
+       return '<tr><td class="pn linkish" onclick="ccpPrint(\''+d.id+'\',\'preview\')"><b>'+esc(d.no||'')+'</b>'+(ccpLg(d)?' <span class="tag" style="background:'+(ccpLg(d)==='zh'?'#dc2626':'#2563eb')+';color:#fff;font-size:9.5px" title="ใบภาษา'+(ccpLg(d)==='zh'?'จีน':'อังกฤษ')+'">'+(ccpLg(d)==='zh'?'中文':'EN')+'</span>':'')+'</td><td class="muted">'+esc(d.date||'')+'</td>'
         +'<td><b>'+esc(d.customer||'-')+'</b><div class="muted" style="font-size:10.5px">'+esc(d.contact||'')+'</div></td>'
         +'<td><span class="tag '+(d.kind==='complaint'?'red':d.kind==='praise'?'green':'gray')+'">'+esc(kd)+'</span></td><td>'+esc(ccpOf(ccpK(d.kind).topics,d.topic))+'</td>'
         +'<td class="c">'+(d.sev?'<b style="color:'+(d.sev==='A'?'#dc2626':d.sev==='B'?'#d97706':'#64748b')+'">'+esc(d.sev)+'</b>':'-')+'</td>'
@@ -31853,47 +32348,52 @@ function ccpRegHTML(full){
      +'</tbody></table></div>'):'<div class="empty"><div class="big">📣</div><div class="t">ยังไม่มีเรื่อง</div><div>กด + รับเรื่องใหม่ เมื่อลูกค้าแจ้งข้อร้องเรียน / สอบถาม / ข้อเสนอแนะ</div></div>')+'</div></div>';
 }
 function ccpPrint(id,mode){
-  var d=(DB.docs||[]).find(function(x){ return x&&x.id===id; }); if(!d){ toast('ไม่พบเอกสาร','err'); return; } var K=ccpK(d.kind);
+  var d=(DB.docs||[]).find(function(x){ return x&&x.id===id; }); if(!d){ toast('ไม่พบเอกสาร','err'); return; }
+  var lg=ccpLg(d), K=ccpKL(d.kind,lg), L=function(t,en,zh){ return ccpL(lg,t,en,zh); };   /* ★ 28/10b–c ใบภาษาอังกฤษ / จีน (d.lang) */
   var e=function(v){ return esc(v==null?'':v); }, sg=Object.assign(ccpBlank().sg,d.sg||{}), dmy=function(v){ try{ return v?dlvDMY(v):''; }catch(x){ return v||''; } };
   var sgImg=function(nm){ if(!nm)return ''; try{ return clmSigImg(nm)||''; }catch(x){ return ''; } };
-  var box=function(lbl,en,nm,dt,noImg){ var im=noImg?'':sgImg(nm); return '<td><div class="sh">'+lbl+'<br><i>'+en+'</i></div><div class="sb">'+(im?'<img src="'+im+'">':'')+'</div><div class="sn">( '+(nm?e(nm):'&nbsp;'.repeat(30))+' )</div><div class="sd">วันที่ '+(dt?e(dmy(dt)):'......./......./.......')+'</div></td>'; };
+  var box=function(lbl,en,zh,nm,dt){ var im=sgImg(nm); return '<td><div class="sh">'+(lg==='en'?en:(lg==='zh'?zh:lbl)+'<br><i>'+en+'</i>')+'</div><div class="sb">'+(im?'<img src="'+im+'">':'')+'</div><div class="sn">( '+(nm?e(nm):'&nbsp;'.repeat(30))+' )</div><div class="sd">'+L('วันที่','Date','日期')+' '+(dt?e(dmy(dt)):'......./......./.......')+'</div></td>'; };
   var ck=function(arr,v){ return arr.filter(function(x){ return x[0]; }).map(function(x){ return '<span class="ck"><span class="cb">'+(x[0]===v?'✓':'')+'</span>'+e(x[1])+'</span>'; }).join(''); };
   var R=function(th,val,th2,val2){ return '<tr><td class="k">'+th+'</td><td'+(th2?'':' colspan="3"')+'>'+val+'</td>'+(th2?'<td class="k">'+th2+'</td><td>'+val2+'</td>':'')+'</tr>'; };
-  var tx=function(t,v,h){ return '<div class="sec">'+t+'</div><div class="tx" style="min-height:'+(h||10)+'mm">'+v+'</div>'; }, rt=function(k){ return ccpRtOut(d,k); };
-  var css="@page{size:A4 portrait;margin:8mm}*{font-family:'Tahoma',sans-serif;box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}html,body{margin:0}body{color:#111;font-size:9.6px}#pg{width:194mm;margin:0 auto}"
+  var rt=function(k){ return lg?ccpEnOut(d,k,lg):ccpRtOut(d,k); };
+  var picsL=function(ps){ return (ps||[]).map(function(p){ return p?Object.assign({},p,{c:lg?ccpEnGet(p,'c',lg):p.c}):p; }); };
+  var css="@page{size:A4 portrait;margin:8mm}*{font-family:'Tahoma','Microsoft YaHei','SimSun',sans-serif;box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}html,body{margin:0}body{color:#111;font-size:9.6px}#pg{width:194mm;margin:0 auto}"
    +".fr{border:1.5px solid #111}.hd{display:flex;border-bottom:1.5px solid #111;height:19mm}.hd .lg{width:34mm;border-right:1.5px solid #111;display:flex;align-items:center;justify-content:center;overflow:hidden}"
    +".hd .tt{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:1.5px solid #111}.hd .tt b{font-size:16px}.hd .tt i{font-size:12px;font-weight:700;font-style:normal;font-family:Georgia,serif}"
    +".hd .rr{width:50mm;display:flex;flex-direction:column}.hd .rr div{flex:1;display:flex;align-items:center;border-bottom:1px solid #111}.hd .rr div:last-child{border-bottom:none}.hd .rr span{width:16mm;font-size:8.5px;font-weight:700;padding-left:2mm;border-right:1px solid #111;height:100%;display:flex;align-items:center}.hd .rr b{flex:1;text-align:center;font-size:11.5px}"
    +"table{border-collapse:collapse;width:100%}.kv td{border:1px solid #999;padding:.9mm 2mm;font-size:9.4px;vertical-align:top}.kv .k{background:#f3f6fa;font-weight:700;width:30mm;white-space:nowrap}"
    +".sec{background:#e9eef5;border-top:1.5px solid #111;border-bottom:1px solid #111;font-weight:700;font-size:9.6px;padding:.8mm 2mm}.sec i{font-weight:400;font-size:8px}"
    +".tx{padding:1.2mm 2.5mm;white-space:pre-wrap;font-size:9.5px;line-height:1.45}.ck{display:inline-block;white-space:nowrap;margin-right:2.5mm}.cb{display:inline-block;width:3.2mm;height:3.2mm;border:1px solid #111;text-align:center;line-height:2.9mm;font-size:8.5px;font-weight:800;margin-right:1mm;vertical-align:middle}"
-   +".ckl{padding:1mm 2mm;line-height:1.9;font-size:9px;border-bottom:1px solid #999}"
+   +".ckl{padding:1mm 2mm;line-height:1.9;font-size:9px;border-bottom:1px solid #999;position:relative}"
+   +".lgsw{position:absolute;right:3mm;top:1.2mm;display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:4px 12px;border:1.5px solid #1B3A5C;border-radius:12px;background:#fff;font-size:12px;font-weight:700;color:#1B3A5C;user-select:none}.lgsw label{display:flex;align-items:center;gap:6px;cursor:pointer}.lgsw input{width:16px;height:16px;cursor:pointer;margin:0}#ccpLangMsg{font-size:10px;font-weight:400;color:#64748b}"
    +".sg{border-top:1.5px solid #111}.sg td{width:33.3%;border-right:1px solid #111;text-align:center;vertical-align:top;padding:0}.sg td:last-child{border-right:none}.sh{font-size:9px;font-weight:700;padding:.6mm;border-bottom:1px solid #111}.sh i{font-weight:400;font-size:7.5px}.sb{height:13mm;display:flex;align-items:center;justify-content:center}.sb img{max-height:12mm;max-width:34mm;object-fit:contain}.sn{font-size:9px;font-weight:700;min-height:4mm}.sd{font-size:8.5px;border-top:1px solid #111;padding:.6mm}"
-   +".ft{display:flex;justify-content:space-between;font-size:8px;font-weight:700;margin-top:1mm}@media print{.noprint{display:none}}";
-  var html='<!DOCTYPE html><html lang="th"><head><meta charset="utf-8"><title>'+e(ccpCode())+' '+e(d.no||'')+'</title><style>'+css+'</style></head><body><div id="pg"><div class="fr">'
+   +".ft{display:flex;justify-content:space-between;font-size:8px;font-weight:700;margin-top:1mm}@media print{.noprint{display:none!important}}";
+  var sid=String(d.id).replace(/[^\w-]/g,'');
+  var langSw='<!--LG--><div class="lgsw noprint" title="ติ๊ก = ใบนี้เป็นภาษานั้น (แปลข้อความอัตโนมัติ · ไม่พิมพ์ช่องนี้ลงกระดาษ)">'+CCP_LANGS.map(function(x){ return '<label><input type="checkbox"'+(lg===x[0]?' checked':'')+' onchange="try{ var a=document.querySelectorAll(\'.lgsw input\'); for(var i=0;i<a.length;i++)a[i].disabled=true; window.opener.ccpDocLang(\''+sid+'\',this.checked?\''+x[0]+'\':\'\',window); }catch(e){ alert(\'Please reopen this page from the system. กรุณาเปิดใบนี้จากระบบอีกครั้ง\'); }"> '+x[1]+'</label>'; }).join('')+'<span id="ccpLangMsg"></span></div><!--/LG-->';
+  var html='<!DOCTYPE html><html lang="'+(lg==='en'?'en':lg==='zh'?'zh-CN':'th')+'"><head><meta charset="utf-8"><title>'+e(ccpCode())+' '+e(d.no||'')+'</title><style>'+css+'</style></head><body><div id="pg"><div class="fr">'
    +'<div class="hd"><div class="lg">'+((typeof LOGO_RTK!=='undefined'&&LOGO_RTK)?'<div style="width:24.4mm;height:15mm;overflow:hidden" title="RTK"><img src="'+LOGO_RTK+'" style="height:15mm;width:auto;max-width:none;max-height:none;display:block"></div>':'<b style="font-size:22px;color:#16315f">RTK</b>')+'</div>'
-     +'<div class="tt"><b>ข้อร้องเรียนจากลูกค้า</b><i>Customer Complaint</i></div><div class="rr"><div><span>NO.</span><b>'+e(d.no||'')+'</b></div><div><span>วันที่<br>DATE</span><b>'+e(dmy(d.date))+'</b></div></div></div>'
-   +'<div class="sec">1. รับเรื่อง &nbsp;<i>RECEIVING</i></div>'
-   +'<div class="ckl"><b>ประเภท :</b> '+ck(CCP_KIND,d.kind)+'<br><b>ช่องทาง :</b> '+ck(CCP_CH,d.ch)+'<br><b>หัวข้อ :</b> '+ck(K.topics,d.topic)+(K.sev?'<br><b>ความรุนแรง :</b> '+ck(CCP_SEV.map(function(x){ return [x[0],x[1].split(' :')[0]]; }),d.sev):'')+'</div>'
-   +'<table class="kv">'+R('ลูกค้า / Customer','<b>'+e(d.customer)+'</b>',(K.prod==='full'?'Claim No.':'เลขที่อ้างอิง'),e(d.cRef||'-'))+R('ผู้แจ้ง / Reporter',e(d.contact||'-')+(d.cPos?' ('+e(d.cPos)+')':''),'ติดต่อ / Contact',e(d.cTel||'-'))
-     +(K.prod==='full'?(R('Part No.','<b>'+e(d.pn||'-')+'</b>','ชื่อชิ้นงาน',e(d.pname||'-'))+R('Lot / วันที่ผลิต',e(d.lot||'-'),'PO / Invoice',e(d.po||'-'))
-       +R('จำนวนที่พบปัญหา','<b style="color:#c0202e">'+e(d.qtyNg||'-')+'</b>','จำนวนในล็อต',e(d.qtyLot||'-'))):((d.pn||d.po)?R('Part No.','<b>'+e(d.pn||'-')+'</b>'+(d.pname?' '+e(d.pname):''),'PO / อ้างอิง',e(d.po||'-')):''))+'</table>'
-   +(function(){ var ps=(d.pics||[]).filter(function(p){ return p&&p.u; }); if(!ps.length)return tx(K.p2,rt('detail'),24);
-      return '<div class="sec">'+K.p2+'</div><div style="display:flex;gap:2mm;align-items:flex-start"><div class="tx" style="flex:1;min-height:24mm">'+rt('detail')+'</div><div style="display:flex;gap:2mm;padding:1.2mm 2mm;flex-wrap:wrap;justify-content:flex-end;max-width:'+(ps.length>2?'120mm':'100mm')+'">'
-        +ps.map(function(p){ return '<div style="width:'+(ps.length>2?'27mm':'45mm')+';text-align:center"><img src="'+e(fpResolve(p.u))+'" style="width:100%;max-height:'+(ps.length>2?'30mm':'36mm')+';object-fit:contain;border:1px solid #999">'+(p.c?'<div style="font-size:7.5px;font-weight:700">'+e(p.c)+'</div>':'')+'</div>'; }).join('')+'</div></div>'; })()
+     +'<div class="tt">'+(lg==='en'?'<b>Customer Complaint</b><i>Customer Feedback Record</i>':lg==='zh'?'<b>客户投诉记录</b><i>Customer Complaint</i>':'<b>ข้อร้องเรียนจากลูกค้า</b><i>Customer Complaint</i>')+'</div><div class="rr"><div><span>'+L('NO.','NO.','编号<br>NO.')+'</span><b>'+e(d.no||'')+'</b></div><div><span>'+L('วันที่<br>DATE','DATE','日期<br>DATE')+'</span><b>'+e(dmy(d.date))+'</b></div></div></div>'
+   +'<div class="sec">'+L('1. รับเรื่อง &nbsp;<i>RECEIVING</i>','1. Receiving','1. 受理 &nbsp;<i>RECEIVING</i>')+'</div>'
+   +'<div class="ckl">'+langSw+'<b>'+L('ประเภท','Type','类别')+' :</b> '+ck(ccpOpt('kind',CCP_KIND,lg),d.kind)+'<br><b>'+L('ช่องทาง','Channel','渠道')+' :</b> '+ck(ccpOpt('ch',CCP_CH,lg),d.ch)+'<br><b>'+L('หัวข้อ','Topic','主题')+' :</b> '+ck(K.topics,d.topic)+(K.sev?'<br><b>'+L('ความรุนแรง','Severity','严重度')+' :</b> '+ck(ccpOpt('sev',CCP_SEV,lg).map(function(x){ return [x[0],x[1].split(' :')[0]]; }),d.sev):'')+'</div>'
+   +'<table class="kv">'+R(L('ลูกค้า / Customer','Customer','客户 / Customer'),'<b>'+e(d.customer)+'</b>',(K.prod==='full'?L('Claim No.','Claim No.','索赔编号'):L('เลขที่อ้างอิง','Reference No.','参考编号')),e(d.cRef||'-'))+R(L('ผู้แจ้ง / Reporter','Reported by','报告人'),e(d.contact||'-')+(d.cPos?' ('+e(d.cPos)+')':''),L('ติดต่อ / Contact','Contact','联系方式'),e(d.cTel||'-'))
+     +(K.prod==='full'?(R(L('Part No.','Part No.','零件号'),'<b>'+e(d.pn||'-')+'</b>',L('ชื่อชิ้นงาน','Part name','品名'),e((lg?ccpEnGet(d,'pname',lg):d.pname)||'-'))+R(L('Lot / วันที่ผลิต','Lot / Prod. date','批号 / 生产日期'),e(d.lot||'-'),L('PO / Invoice','PO / Invoice','订单 / 发票'),e(d.po||'-'))
+       +R(L('จำนวนที่พบปัญหา','Defective qty','不良数量'),'<b style="color:#c0202e">'+e(d.qtyNg||'-')+'</b>',L('จำนวนในล็อต','Lot qty','批量'),e(d.qtyLot||'-'))):((d.pn||d.po)?R(L('Part No.','Part No.','零件号'),'<b>'+e(d.pn||'-')+'</b>'+(d.pname?' '+e(lg?ccpEnGet(d,'pname',lg):d.pname):''),L('PO / อ้างอิง','PO / Reference','订单 / 参考'),e(d.po||'-')):''))+'</table>'
+   +(function(){ var M=(d.more||[]).filter(function(m){ return m&&(String(m.detail||'').trim()||(m.pics||[]).some(function(p){ return p&&p.u; })); }), multi=M.length>0, TL=L('เรื่องที่ ','Topic ','事项 ');   /* ★ 28/10a หลายเรื่อง + รูปสูงตามข้อความ */
+      return '<div class="sec">'+K.p2+'</div>'+ccpTopicPrint(rt('detail'),picsL(d.pics),multi?TL+'1':'',true)+M.map(function(m,j){ return ccpTopicPrint(lg?ccpEnOut(m,'detail',lg):ccpRtOut(m,'detail'),picsL(m.pics),TL+(j+2),false); }).join(''); })()
    +'<div class="sec">'+K.p3+'</div>'
-   +'<table class="kv">'+R(K.kind==='complaint'||!d.kind||d.kind==='complaint'?'ควบคุมเบื้องต้น<br><span style="font-weight:400;font-size:7.5px">Containment ≤ 24 ชม.</span>':esc(K.cont),'<div style="white-space:pre-wrap;min-height:9mm">'+rt('cont')+'</div>','วันที่',e(dmy(d.contDate)))
-     +'<tr><td class="k">'+esc(K.actL)+'</td><td colspan="3">'+ck(K.acts.map(function(x){ return [x[0],x[1].split(' (')[0]]; }),d.act)+(d.actRef?' &nbsp;เลขที่ <b>'+e(d.actRef)+'</b>':'')+'</td></tr>'
+   +'<table class="kv">'+R(!d.kind||d.kind==='complaint'?L('ควบคุมเบื้องต้น<br><span style="font-weight:400;font-size:7.5px">Containment ≤ 24 ชม.</span>','Containment<br><span style="font-weight:400;font-size:7.5px">within 24 hrs</span>','围堵措施<br><span style="font-weight:400;font-size:7.5px">24小时内 Containment</span>'):esc(K.cont),'<div style="white-space:pre-wrap;min-height:9mm">'+rt('cont')+'</div>',L('วันที่','Date','日期'),e(dmy(d.contDate)))
+     +'<tr><td class="k">'+esc(K.actL)+'</td><td colspan="3">'+ck(K.acts.map(function(x){ return [x[0],x[1].split(' (')[0]]; }),d.act)+(d.actRef?' &nbsp;'+L('เลขที่','No.','编号')+' <b>'+e(d.actRef)+'</b>':'')+'</td></tr>'
      +(K.cause?R(esc(K.cause),'<div style="white-space:pre-wrap;min-height:9mm">'+rt('cause')+'</div>'):'')+(K.corr?R(esc(K.corr),'<div style="white-space:pre-wrap;min-height:9mm">'+rt('corr')+'</div>'):'')+'</table>'
    +'<div class="sec">'+K.p4+'</div>'
    +'<table class="kv">'+(K.due?R(esc(K.due),e(dmy(d.due)||'-'),esc(K.replyD),e(dmy(d.replyDate)||'-')):R(esc(K.replyD),e(dmy(d.replyDate)||'-')))+R(esc(K.reply),'<div style="white-space:pre-wrap;min-height:8mm">'+rt('reply')+'</div>')
-     +(K.res&&K.res.length?R(esc(K.resL),ck(K.res,d.result),'วันที่ปิดเรื่อง',e(dmy(d.closeDate)||'-')):R('วันที่ปิดเรื่อง',e(dmy(d.closeDate)||'-')))+(K.verify?R(esc(K.verify),'<div style="white-space:pre-wrap;min-height:8mm">'+rt('verify')+'</div>'):'')
-     +(d.remark?R('หมายเหตุ','<div style="white-space:pre-wrap">'+rt('remark')+'</div>'):'')+'</table>'
-   +'<table class="sg"><tr>'+box('ผู้แจ้ง (ลูกค้า)','Reported by (Customer)',sg.cus||d.contact,sg.cusD||d.date)+box('ผู้รับเรื่อง (RTK)','Received by',sg.rcv,sg.rcvD||d.date)+box(esc(K.app),K.appEn,sg.app,sg.appD)+'</tr></table>'
-   +'</div><div class="ft"><span>'+(d.status==='cancelled'?'<span style="color:#c0202e">ยกเลิก '+e(d.cancelWhy||'')+'</span>':'')+'</span><span>'+e(ccpCode())+' REV.00</span></div></div>'
-   +'<div class="noprint" style="text-align:center;padding:8px"><button onclick="window.print()" style="padding:8px 22px;cursor:pointer">🖨️ พิมพ์ / บันทึก PDF</button></div>'
+     +(K.res&&K.res.length?R(esc(K.resL),ck(K.res,d.result),L('วันที่ปิดเรื่อง','Closing date','结案日期'),e(dmy(d.closeDate)||'-')):R(L('วันที่ปิดเรื่อง','Closing date','结案日期'),e(dmy(d.closeDate)||'-')))+(K.verify?R(esc(K.verify),'<div style="white-space:pre-wrap;min-height:8mm">'+rt('verify')+'</div>'):'')
+     +(d.remark?R(L('หมายเหตุ','Remarks','备注'),'<div style="white-space:pre-wrap">'+rt('remark')+'</div>'):'')+'</table>'
+   +'<table class="sg"><tr>'+box('ผู้แจ้ง (ลูกค้า)','Reported by (Customer)','报告人（客户）',sg.cus||d.contact,sg.cusD||d.date)+box('ผู้รับเรื่อง (RTK)','Received by','受理人（RTK）',sg.rcv,sg.rcvD||d.date)+box(esc(ccpK(d.kind).app),K.appEn,esc(CCP_K_ZH[CCP_K[d.kind]?d.kind:'complaint'].app),sg.app,sg.appD)+'</tr></table>'
+   +'</div><div class="ft"><span>'+(d.status==='cancelled'?'<span style="color:#c0202e">'+L('ยกเลิก ','Cancelled ','已作废 ')+e(d.cancelWhy||'')+'</span>':'')+'</span><span>'+e(ccpCode())+' REV.00</span></div></div>'
+   +'<div class="noprint" style="text-align:center;padding:8px"><button onclick="window.print()" style="padding:8px 22px;cursor:pointer">🖨️ '+L('พิมพ์ / บันทึก PDF','Print / Save PDF','打印 / 保存 PDF')+'</button></div>'
    +'<scr'+'ipt>(function(){ var pg=document.getElementById("pg"), H=(297-16-2)*96/25.4; function fit(){ pg.style.zoom=1; var h=pg.getBoundingClientRect().height; if(h>H)pg.style.zoom=Math.max(.6,H/h); } window.addEventListener("load",function(){ fit(); setTimeout(fit,300); __AUTO__ }); })();</scr'+'ipt></body></html>';
-  if(mode==='html')return html.replace('__AUTO__','').replace(/<div class="noprint"[\s\S]*?<\/div>/i,'').replace(/window\.print\(\)/g,'void 0');
+  if(mode==='html')return html.replace('__AUTO__','').replace(/<!--LG-->[\s\S]*?<!--\/LG-->/,'').replace(/<div class="noprint"[\s\S]*?<\/div>/i,'').replace(/window\.print\(\)/g,'void 0');
+  if(mode==='page')return html.replace('__AUTO__','');   /* ★ 28/10b วาดหน้าดูใบเดิมใหม่หลังติ๊กภาษา */
   html=html.replace('__AUTO__',mode==='preview'?'':'setTimeout(function(){ window.print(); },600);');
   var w=window.open('','_blank'); if(!w){ toast('เบราว์เซอร์บล็อก popup','err'); return; }
   w.document.write(html); w.document.close();
@@ -37426,9 +37926,10 @@ function openPlanForm(type,edit){
   if(type==='PL')extra=`<div class="field"><label>วันที่ส่ง</label><input type="date" id="pl_ship" value="${edit?(edit.shipDate||todayISO()):todayISO()}"></div>`;
   window.__planType=type;
   modal({title:PLAN[type].icon+' '+(edit?'แก้ไข':'สร้าง')+PLAN[type].label,size:'full',body:`
-    <div class="row c2">
+    <div class="row ${type==='FC'?'c3':'c2'}">
       <div class="field"><label>เลขที่</label><input id="pl_no" value="${edit?esc(edit.no):esc(peekPlan(type))}"></div>
       <div class="field"><label>ลูกค้า <span class="req">*</span> <span class="muted" style="font-weight:400;font-size:11px">— ดึงอัตโนมัติจาก PART ในสินค้าคงคลัง</span></label><input id="pl_cust" value="${edit?esc(edit.customer||''):''}" placeholder="พิมพ์ PART ด้านล่าง แล้วชื่อย่อลูกค้าจะขึ้นเอง" oninput="this.dataset.auto='0';if(window.__planType==='FC'){try{renderPlanLines('FC');}catch(e){}}" autocomplete="off"><div id="pl_custHint" class="muted" style="font-size:11px;margin-top:2px"></div></div>
+      ${type==='FC'?`<div class="field"><label>วันที่ออก Forecast <span class="muted" style="font-weight:400;font-size:11px">— สแกนไฟล์แล้วเติมจาก Issued Date ให้เอง</span></label><input type="date" id="pl_fcdate" value="${edit?esc(String(edit.date||'').slice(0,10)):''}" oninput="this.dataset.auto='0'"><div id="pl_fcdateHint" class="muted" style="font-size:11px;margin-top:2px">${edit&&edit.date?'':'ไม่กรอก = วันที่บันทึก'}</div></div>`:''}
     </div>${extra}
     ${type==='FC'?`<div class="hint" style="margin:4px 0"><span class="i">📅</span><div>จำนวนเดือน = ตาม Forecast ลูกค้า (แนบไฟล์แล้วปรับช่องเอง · ➕/➖ เดือน ที่หัวตาราง) · ระบบคำนวณ 4 เดือน : ${ml[0]} / ${ml[1]} / ${ml[2]} / ${ml[3]}</div></div>`:''}
     <details style="margin:6px 0" open><summary style="cursor:pointer;font-size:12.5px;color:var(--brand);font-weight:600">📎 แนบไฟล์ PDF / Excel / รูปภาพ → อ่านอัตโนมัติ  หรือ  วางข้อความ (Copy-Paste)</summary>
@@ -37773,14 +38274,17 @@ function calSnap(v,lines,sp){ if(!lines||!lines.length||!(sp>0))return null; var
   if(L===null||R===null)return null; var w=R-L; if(w<sp*0.5||w>sp*1.7)return null; return {c:(L+R)/2,l:L,r:R}; }
 /* ★ คอลัมน์เดือนจาก "เส้นตารางจริง" : ช่องกว้างเท่า ๆ กันเรียงติดกัน = คอลัมน์เดือน · หัวเดือนที่ OCR อ่านได้ใช้โหวตว่าช่องไหนคือเดือนอะไร
    (ตำแหน่งตัวหนังสือหัวตารางจาก OCR คลาดได้ — โหวตเสียงข้างมากกันพลาด) */
-function calGridCols(rec,vl){
-  try{ var L=vl.slice().sort(function(a,b){return a-b;}), iv=[]; for(var i=0;i+1<L.length;i++){ if(L[i+1]-L[i]>8)iv.push({l:L[i],r:L[i+1],w:L[i+1]-L[i]}); }
+function calGridCols(rec,vl,ex){
+  try{ var L0=vl.slice().sort(function(a,b){return a-b;}), _g=[]; for(var g=0;g+1<L0.length;g++){ var d=L0[g+1]-L0[g]; if(d>8)_g.push(d); } _g.sort(function(a,b){return a-b;});
+    var _thr=Math.max(8,(_g.length?_g[Math.floor(_g.length/2)]:0)*0.15), L=[];   /* ★ 29/10d เส้นตารางหนาถูกตรวจเป็น 2 เส้นชิดกัน (A.A.A. 2786/2798) → รวมเป็นเส้นเดียว ไม่งั้นเกิดช่องปลอมคั่นเดือน */
+    L0.forEach(function(v){ if(L.length&&v-L[L.length-1]<_thr)L[L.length-1]=(L[L.length-1]+v)/2; else L.push(v); });
+    var iv=[]; for(var i=0;i+1<L.length;i++){ if(L[i+1]-L[i]>8)iv.push({l:L[i],r:L[i+1],w:L[i+1]-L[i]}); }
     if(iv.length<4)return null;
     var vote={}, hit=[]; rec.forEach(function(c){ var k=iv.findIndex(function(t){ return c.xc>t.l&&c.xc<t.r; }); if(k<0)return; var off=(c.y*12+c.mo-1)-k; vote[off]=(vote[off]||0)+1; hit.push(k); });
     var best=null,bv=0; Object.keys(vote).forEach(function(o){ if(vote[o]>bv){ bv=vote[o]; best=Number(o); } });
     if(best===null||bv<2||bv<rec.length*0.35)return null;
     var ks=hit.filter(function(k){ return (k+best)>=0; }), ws=ks.map(function(k){ return iv[k].w; }).sort(function(a,b){return a-b;}), mw=ws[Math.floor(ws.length/2)];
-    var ok=function(k){ return k>=0&&k<iv.length&&iv[k].w>mw*0.8&&iv[k].w<mw*1.25; };
+    var ok=function(k){ return k>=0&&k<iv.length&&iv[k].w>mw*0.8&&iv[k].w<mw*1.25&&!(ex||[]).some(function(x){ return x>iv[k].l&&x<iv[k].r; }); };   /* ★ 29/10d ช่อง Packing / Diff / Total ไม่ใช่เดือน */
     var seed=ks.filter(ok); if(!seed.length)return null;
     var lo=Math.min.apply(null,seed), hi=Math.max.apply(null,seed);
     while(ok(lo-1))lo--; while(ok(hi+1))hi++;
@@ -37792,14 +38296,32 @@ function calGridCols(rec,vl){
 function calMergeTh(cells){ var out=[]; (cells||[]).forEach(function(c){ var t=String(c.s||''); if(!t.trim())return; var p=out[out.length-1];
     if(p&&/^[\u0E00-\u0E7F.]/.test(t)&&/[\u0E00-\u0E7F.]$/.test(p.s)&&/[\u0E00-\u0E7F]/.test(p.s+t)&&(c.x0-(p.x1!=null?p.x1:p.x0))<4&&!/\d$/.test(p.s)){ out[out.length-1]={x0:p.x0,x1:(c.x1!=null?c.x1:c.x0),s:p.s+t}; return; }
     out.push(c); }); return out; }
+/* ★ 29/10e วันที่ออก Forecast จากไฟล์ : Issued Date / Issue Date / วันที่ออก (21-Oct-26 · 21/10/2026 · ปี พ.ศ.) */
+var FC_MON3={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+function fcIssueFromText(t){ t=String(t||''); var re=/(?:issue[d]?(?:\s*date)?|date\s*of\s*issue|วันที่ออก(?:เอกสาร)?)\s*[:：]?\s*([^\n]{0,28})/ig, m;
+  while((m=re.exec(t))){ var v=m[1].replace(/[|\[\]]/g,' ').trim(), y=0,mo=0,da=0, a=/(\d{1,2})\s*[-\/. ]\s*([A-Za-z]{3})[a-z]*\.?\s*[-\/. ']?\s*(\d{2,4})/.exec(v), b;
+    if(a&&FC_MON3[a[2].toLowerCase()]){ da=+a[1]; mo=FC_MON3[a[2].toLowerCase()]; y=+a[3]; }
+    else if((b=/([A-Za-z]{3})[a-z]*\.?\s+(\d{1,2})\s*,?\s+(\d{2,4})/.exec(v))&&FC_MON3[b[1].toLowerCase()]){ mo=FC_MON3[b[1].toLowerCase()]; da=+b[2]; y=+b[3]; }   /* October 26, 2026 */
+    else if((b=/(\d{1,2})\s*[-\/.]\s*(\d{1,2})\s*[-\/.]\s*(\d{2,4})/.exec(v))){ da=+b[1]; mo=+b[2]; y=+b[3]; }
+    if(!y)continue; if(y<100)y+=y>=50?2500:2000; if(y>2400)y-=543; var dt=new Date(y,mo-1,da); if(isNaN(dt)||dt.getMonth()!==mo-1||dt.getDate()!==da||y<2015||y>2100)continue;
+    return y+'-'+('0'+mo).slice(-2)+'-'+('0'+da).slice(-2); }
+  return ''; }
+function fcIssueAuto(t){ try{ var el=document.getElementById('pl_fcdate'); if(!el||(el.value&&el.dataset.auto!=='1'))return; var v=fcIssueFromText(t); if(!v)return; el.value=v; el.dataset.auto='1'; var h=document.getElementById('pl_fcdateHint'); if(h)h.textContent='✅ อ่านจาก Issued Date ในไฟล์ (แก้เองได้)'; }catch(e){} }
+/* ★ 29/10f หัวเดือนที่ OCR อ่านเพี้ยน : Dec2s → ธ.ค. (ปีเดาจากช่องข้างเคียง) · Jan-z7 → ม.ค. 27 · ov-27 → พ.ย. 27 · Mayr → พ.ค. */
+var CAL_MF={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12}, CAL_MF2={ov:11,ec:12,eb:2,pr:4,ug:8,ep:9,ct:10,ul:7,un:6};
+function calMonFuzzy(s){ s=String(s||'').trim(); var m=/^([A-Za-z]{2,4})[-'’.]?([0-9zZsSoOlIB]{2,4})?$/.exec(s); if(!m)return null; var w=m[1].toLowerCase(), mo=CAL_MF[w.slice(0,3)];
+  if(!mo&&m[2]&&w.length===2)mo=CAL_MF2[w]; if(!mo)return null;
+  var y=0, yd=m[2]?m[2].replace(/[zZ]/g,'2').replace(/[oO]/g,'0').replace(/[lI]/g,'1'):''; if(/^\d{2}$/.test(yd)){ y=2000+Number(yd); } else if(/^\d{4}$/.test(yd)){ y=Number(yd); if(y>2400)y-=543; } if(y&&(y<2015||y>2100))y=0;
+  return {mo:mo,y:y}; }
 function calParseRows(type,rows,vl,minMon,yMax){
   if(type!=='FC'||!rows||!rows.length)return null;
+  try{ fcIssueAuto(rows.map(function(r){ return (r.cells||[]).map(function(c){ return c.s; }).join(' '); }).join('\n')); }catch(e){}
   var hi=-1, cols=null;
-  for(var i=0;i<rows.length&&hi<0;i++){
+  for(var _fz=0;_fz<2&&hi<0;_fz++)for(var i=0;i<rows.length&&hi<0;i++){   /* ★ 29/10f รอบ 2 = หัวเดือนที่ OCR อ่านเพี้ยน (calMonFuzzy) เฉพาะเมื่อรอบปกติหาไม่เจอ */
     var cs=calMergeTh(rows[i].cells), mc=[];
     /* รวมโทเคนที่ถูกแยก เช่น "Jan" "-26" */
     var cl=function(x){ return String(x||'').replace(/[\[\]|{}()]/g,''); };
-    for(var j=0;j<cs.length;j++){ var a=calMonOf(cl(cs[j].s)), x0=cs[j].x0, x1=cs[j].x1;
+    for(var j=0;j<cs.length;j++){ var a=calMonOf(cl(cs[j].s))||(_fz?calMonFuzzy(cl(cs[j].s)):null), x0=cs[j].x0, x1=cs[j].x1;
       if(!a&&j+1<cs.length){ var nx=cl(cs[j+1].s); var b=calMonOf(cl(cs[j].s)+'-'+nx.replace(/^[\-\/.]/,'')); if(b&&/^[\-\/.]?\d{2,4}$/.test(nx)){ a=b; x1=cs[j+1].x1; j++; } }
       if(a)mc.push({mo:a.mo,y:a.y,x0:x0,x1:x1,xc:(x0+x1)/2}); }
     if(mc.length>=(minMon||5)){ hi=i; cols=mc; }   /* ★ เฉพาะตารางแบบปฏิทิน (หัวเดือน ≥ 5 · OCR อาจอ่านหัวเดือนหลุดบางช่อง) — ไฟล์รูปแบบ 3-4 เดือนเดิมยังอ่านแบบเดิม */
@@ -37812,6 +38334,8 @@ function calParseRows(type,rows,vl,minMon,yMax){
   var lastMo=0, curY=cols[0].y||yr; cols.forEach(function(c){ if(c.y){ curY=c.y; } else { if(lastMo&&c.mo<lastMo)curY++; c.y=curY; } lastMo=c.mo; });
   /* คอลัมน์อื่นในหัวตาราง (Total / Price / Amount) — ใช้กันเลขหลุดไปลงเดือน */
   var extra=[]; rows[hi].cells.forEach(function(c){ if(/total|tota|price|pcs|amount|รวม|ราคา|qty|sum|diff|packing|pack/i.test(c.s))extra.push((c.x0+c.x1)/2); });
+  /* ★ 29/10d หัวช่องที่คร่อม 2 แถว (Packing / Diff. ของ A.A.A. Forecast Information) อยู่แถวเหนือหัวเดือน */
+  var extraG=extra.slice(); for(var hx=Math.max(0,hi-3);hx<hi;hx++)(rows[hx].cells||[]).forEach(function(c){ if(/packing|^pack|diff|total/i.test(String(c.s||'').replace(/[^A-Za-z]/g,'')))extraG.push((c.x0+c.x1)/2); });
   var recCols=cols.slice();
   /* ★ หัวเดือนที่ OCR อ่านเพี้ยน (เช่น "uan26" "Novze") → เติมจากระยะห่างคอลัมน์ (เส้นตรง x = a + b·เดือน) */
   try{
@@ -37824,12 +38348,12 @@ function calParseRows(type,rows,vl,minMon,yMax){
       var hd=rows[hi].cells.filter(function(c){ return /\d/.test(c.s); }).map(function(c){ return (c.x0+c.x1)/2; });
       var lo=Math.min.apply(null,hd.concat([cols[0].xc])), hiX=Math.max.apply(null,hd.concat([cols[n-1].xc]));
       var full=[]; for(var k2=ix[0]-11;k2<=ix[n-1]+11;k2++){ var xx=aa+bb*k2; if(xx<lo-bb*0.4||xx>hiX+bb*0.4)continue;
-        if(extra.some(function(ex){ return Math.abs(ex-xx)<bb*0.45; }))continue;
+        if(extraG.some(function(ex){ return Math.abs(ex-xx)<bb*0.45; }))continue;
         full.push({y:Math.floor(k2/12),mo:(k2%12)+1,xc:xx,x0:xx-bb*0.4,x1:xx+bb*0.4}); }
       if(full.length>=cols.length)cols=full;
     }
   }catch(e){}
-  if(vl&&vl.length>=4){ var gc=calGridCols(recCols,vl); if(gc)cols=gc; }   /* ★ มีเส้นตาราง → ใช้ช่องจริง (แม่นกว่าตำแหน่งตัวหนังสือหัวตาราง) */
+  if(vl&&vl.length>=4){ var gc=calGridCols(recCols,vl,extraG); if(gc)cols=gc; }   /* ★ มีเส้นตาราง → ใช้ช่องจริง (แม่นกว่าตำแหน่งตัวหนังสือหัวตาราง) */
   var sp=cols.length>1?(cols[cols.length-1].xc-cols[0].xc)/(cols.length-1):((cols[0].x1-cols[0].x0)*1.5||50);
   var leftLim=cols[0].xc-sp*0.6, monR=Math.max.apply(null,cols.map(function(c){ return c.x1||c.xc; })), xTot=null;
   rows[hi].cells.forEach(function(c){ if(/tota/i.test(c.s))xTot=(c.x0+c.x1)/2; });
@@ -38045,7 +38569,9 @@ async function calOcrOrient(base,onProg){
   for(var _i=0,degs=[0,90,270];_i<degs.length;_i++){ var deg=degs[_i]; var c=calRot(base,deg); calCleanGrid(c);
     var d=await calOcrSparse(c,function(p){ if(onProg)onProg((deg?('หมุน '+deg+'° · '):'')+p); });
     var ok=false; try{ ok=!!calParseRows('FC',calRowsFromOcr(d),c._vl,3); }catch(e){}
-    if(ok)return {cv:c,d:d,deg:deg}; if(!first)first={cv:c,d:d,deg:0}; }
+    if(ok)return {cv:c,d:d,deg:deg};
+    var sc=(d.words||[]).filter(function(w){ return (w.confidence||0)>=70&&/[A-Za-z0-9]{3,}/.test(w.text||''); }).length;   /* ★ 29/10f ไม่มีมุมไหนอ่านตารางได้ = เลือกมุมที่อ่านคำได้ชัดที่สุด (เดิมคืนมุม 0° = หน้าตะแคง) */
+    if(!first||sc>first.sc)first={cv:c,d:d,deg:deg,sc:sc}; }
   return first;
 }
 function calImgCanvas(f){ return new Promise(function(res,rej){ var img=new Image(), url=URL.createObjectURL(f); img.onload=function(){ try{ URL.revokeObjectURL(url); }catch(e){} var w=img.width||1,h=img.height||1, sc=Math.min(5,Math.max(1,4200/w)); var cv=document.createElement('canvas'); cv.width=Math.round(w*sc); cv.height=Math.round(h*sc); var cx=cv.getContext('2d'); cx.fillStyle='#fff'; cx.fillRect(0,0,cv.width,cv.height); cx.imageSmoothingQuality='high'; cx.drawImage(img,0,0,cv.width,cv.height); res(cv); }; img.onerror=function(){ rej(new Error('เปิดรูปไม่ได้')); }; img.src=url; }); }
@@ -38077,12 +38603,17 @@ async function handleFileExtract(input,type){
         set('⏳ PDF สแกน — กำลัง OCR (โหลดครั้งแรกอาจนาน)...');
         await loadScript('https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js');
         /* ★ Forecast แบบตาราง : รอบอ่านละเอียด (ลบเส้นตาราง + OCR แบบ sparse) */
-        if(type==='FC'){ try{ const cw=[]; for(let i=1;i<=pdf.numPages;i++){const page=await pdf.getPage(i);const _b=await calPdfPageCanvas(page,4200);const _o=await calOcrOrient(_b,p=>set('อ่านตาราง Forecast หน้า '+i+'/'+pdf.numPages+' '+p+'%'));const cv=_o.cv;if(i===1)window.__calCv=cv;const d=_o.d;(d.words||[]).forEach(w=>{const b=w.bbox||{};cw.push({x0:b.x0,x1:b.x1,yc:i*1e6+(b.y0+b.y1)/2,h:b.y1-b.y0,s:w.text});});}
-          if(await calApplyCv(type,calRowsFromItems(cw),pdf.numPages===1?window.__calCv:null,1e6,p=>set('ตรวจตัวเลขทีละช่อง '+p+'%'))){window.__calCv=null;set('✅ อ่านเสร็จ (Forecast แบบปฏิทิน · OCR) — ตรวจทานตัวเลขกับไฟล์จริงก่อนบันทึก');return;} }catch(e){} }
+        if(type==='FC'){ window.__fcRotTxt=''; window.__fcDbg={stage:'start'}; const cw=[]; try{ for(let i=1;i<=pdf.numPages;i++){const page=await pdf.getPage(i);window.__fcDbg.stage='render';const _b=await calPdfPageCanvas(page,4200);window.__fcDbg.stage='ocr';const _o=await calOcrOrient(_b,p=>set('อ่านตาราง Forecast หน้า '+i+'/'+pdf.numPages+' '+p+'%'));const cv=_o.cv;if(i===1)window.__calCv=cv;const d=_o.d;window.__fcDbg.deg=_o.deg;window.__fcDbg.words=(d.words||[]).length;window.__fcRotTxt+=(d.text||'')+'\n';(d.words||[]).forEach(w=>{const b=w.bbox||{};cw.push({x0:b.x0,x1:b.x1,yc:i*1e6+(b.y0+b.y1)/2,h:b.y1-b.y0,s:w.text});});}
+          window.__fcDbg.stage='cells';
+          if(await calApplyCv(type,calRowsFromItems(cw),pdf.numPages===1?window.__calCv:null,1e6,p=>set('ตรวจตัวเลขทีละช่อง '+p+'%'))){window.__calCv=null;set('✅ อ่านเสร็จ (Forecast แบบปฏิทิน · OCR) — ตรวจทานตัวเลขกับไฟล์จริงก่อนบันทึก');return;}
+          window.__fcDbg.stage='cellsNo'; }catch(e){ window.__fcDbg.err=String((e&&e.message)||e).slice(0,80); }
+          /* ★ 29/10f รอบสำรอง : ตารางจากผล OCR ที่หมุนถูกด้าน (ไม่ตรวจทีละช่อง) */
+          try{ if(cw.length&&calApply(type,calRowsFromItems(cw))){window.__calCv=null;set('✅ อ่านเสร็จ (Forecast แบบปฏิทิน · OCR รอบสำรอง) — ตรวจทานตัวเลขกับไฟล์จริงก่อนบันทึก');return;} if(cw.length)window.__fcDbg.stage+='/plainNo'; }catch(e){ window.__fcDbg.err2=String((e&&e.message)||e).slice(0,80); } }
         let ot='';const ocrW=[];
         for(let i=1;i<=pdf.numPages;i++){const page=await pdf.getPage(i);const vp0=page.getViewport({scale:1});const sc=Math.min(5,Math.max(3,2600/(vp0.width||800)));const vp=page.getViewport({scale:sc});const cv=document.createElement('canvas');cv.width=vp.width;cv.height=vp.height;const cx=cv.getContext('2d');cx.fillStyle='#fff';cx.fillRect(0,0,cv.width,cv.height);await page.render({canvasContext:cx,viewport:vp}).promise;if(type==='CPO'){try{calCleanGrid(cv);}catch(e){}}ocrPreprocess(cv);const r=await window.Tesseract.recognize(cv,'eng',{tessedit_pageseg_mode:(type==='CPO'?'6':'4'),logger:m=>{if(m.status==='recognizing text')set('OCR หน้า '+i+'/'+pdf.numPages+' '+Math.round(m.progress*100)+'%');}});ot+=r.data.text+'\n';(r.data.words||[]).forEach(w=>{const b=w.bbox||{};ocrW.push({x0:b.x0,x1:b.x1,yc:i*1e6+(b.y0+b.y1)/2,h:b.y1-b.y0,s:w.text});});}
         text=ot;
         if(type==='FC'&&calApply(type,calRowsFromItems(ocrW))){set('✅ อ่านเสร็จ (Forecast แบบปฏิทิน · OCR) — ตรวจทานตัวเลขกับไฟล์จริงก่อนบันทึก');return;}
+        if(type==='FC'&&window.__fcRotTxt&&String(window.__fcRotTxt).replace(/\s/g,'').length>String(text||'').replace(/[^A-Za-z0-9]/g,'').length)text=window.__fcRotTxt;   /* ★ 29/10f ใช้ข้อความจากภาพที่หมุนถูกด้าน (ไม่ใช่หน้าตะแคง) */
       }
     } else if(/\.(xlsx|xls|csv)$/i.test(f.name)||/spreadsheet|excel|csv/.test(f.type)){
       set('⏳ กำลังอ่าน Excel...');
@@ -38099,10 +38630,12 @@ async function handleFileExtract(input,type){
       const r=await window.Tesseract.recognize(f,'eng',{logger:m=>{if(m.status==='recognizing text')set('OCR '+Math.round(m.progress*100)+'%')}});
       text=r.data.text;
     } else { toast('รองรับ PDF / Excel / รูปภาพ เท่านั้น','err');set('');return; }
+    if(type==='FC')fcIssueAuto(text);
     const okk=fillPlanFromText(type,text);
     const hasImg=window.__planAttach&&window.__planAttach.data;
     if(!okk&&text&&text.trim()){const pb=document.getElementById('pl_paste');if(pb)pb.value=text.trim();}
     set(okk?'✅ อ่านเสร็จ — ตรวจทาน/แก้ไขในตารางด้านล่างได้'+(hasImg?' (แนบไฟล์แล้ว)':''):(hasImg?'📎 แนบไฟล์แล้ว · ใส่ข้อความ OCR ในช่องด้านล่างให้แล้ว — แก้/กด "แปลงข้อความลงตาราง" ได้':'⚠️ ไม่พบ Part — ใส่ข้อความ OCR ในช่องด้านล่างให้แล้ว แก้แล้วกด "แปลงข้อความลงตาราง"'));
+    if(!okk&&type==='FC'&&window.__fcDbg&&st){ const g=window.__fcDbg; st.textContent+=' · [สแกน : '+g.stage+(g.deg!=null?' หมุน '+g.deg+'°':'')+(g.words!=null?' คำ '+g.words:'')+(g.err?' ผิดพลาด '+g.err:'')+(g.err2?' / '+g.err2:'')+']'; }
   }catch(e){ const hasImg=window.__planAttach&&window.__planAttach.data; set(hasImg?'📎 แนบไฟล์แล้ว (อ่านตัวหนังสือไม่ได้ — กรอกรายการเองได้)':('❌ '+e.message)); if(!hasImg)toast('อ่านไฟล์ไม่สำเร็จ: '+e.message,'err'); }
 }
 function rmPlanLine(i){planLines.splice(i,1);renderPlanLines(window.__planType)}
@@ -38150,28 +38683,32 @@ function renderPlanLines(type){
   if(type==='CPO'&&!document.getElementById('planRoot')&&document.getElementById('cpoRoot')){ cpoFromPlan(); return; }   /* ★ สแกนจากฟอร์ม Customer PO */
   const root=document.getElementById('planRoot');if(!root)return;const ml=monthLabelsN(6);const h6=type==='FC'&&planLines.some(fc6Is);
   if(type==='FC'){ renderFcLines(root); return; }
-  root.innerHTML=`<div style="overflow-x:auto"><table style="font-size:12.5px"><thead><tr>
+  root.innerHTML=PL_NUM_CSS+`<div style="overflow-x:auto"><table style="font-size:12.5px"><thead><tr>
     <th style="min-width:190px">Part Number</th>
-    ${type==='FC'?`<th style="width:72px">${ml[0]}</th><th style="width:72px">${ml[1]}</th><th style="width:72px">${ml[2]}</th><th style="width:72px">${ml[3]}</th>`+(h6?`<th style="width:72px;background:#fff7e6" title="Forecast 6 เดือน — เฉพาะชิ้นงานที่กำหนด">${ml[4]}</th><th style="width:72px;background:#fff7e6" title="Forecast 6 เดือน — เฉพาะชิ้นงานที่กำหนด">${ml[5]}</th>`:''):`<th style="width:90px">จำนวน</th>`}
-    ${type==='CPO'?'<th style="width:140px">กำหนดส่ง</th><th style="width:80px">ราคา</th>':''}
+    ${type==='FC'?`<th style="width:72px">${ml[0]}</th><th style="width:72px">${ml[1]}</th><th style="width:72px">${ml[2]}</th><th style="width:72px">${ml[3]}</th>`+(h6?`<th style="width:72px;background:#fff7e6" title="Forecast 6 เดือน — เฉพาะชิ้นงานที่กำหนด">${ml[4]}</th><th style="width:72px;background:#fff7e6" title="Forecast 6 เดือน — เฉพาะชิ้นงานที่กำหนด">${ml[5]}</th>`:''):`<th style="min-width:120px;text-align:right">จำนวน</th>`}
+    ${type==='CPO'?'<th style="width:150px">กำหนดส่ง</th><th style="min-width:110px;text-align:right">ราคา</th>':''}
     <th></th></tr></thead><tbody>
   ${planLines.map((l,i)=>`<tr>
     <td><input list="dl_fg2" value="${esc(l.name||'')}" placeholder="พิมพ์/เลือก Part" oninput="planPick(${i},this.value)" style="padding:6px 8px"></td>
-    ${type==='FC'?[1,2,3,4].map(k=>`<td><input type="number" value="${l['m'+k]||''}" oninput="planLines[${i}].m${k}=this.value;this.style.background=''" style="padding:6px 8px${(l._uns&&l._uns.indexOf(k-1)>=0)?';background:#fff3bf;border-color:#f59f00':''}" ${(l._uns&&l._uns.indexOf(k-1)>=0)?'title="OCR อ่านตัวเลขช่องนี้ไม่ชัด — ตรวจกับไฟล์จริง"':''}></td>`).join('')+(h6?(fc6Is(l)?[5,6].map(k=>`<td><input type="number" value="${l['m'+k]||''}" oninput="planLines[${i}].m${k}=this.value" style="padding:6px 8px;background:#fffbf0"></td>`).join(''):'<td class="muted c">-</td><td class="muted c">-</td>'):''):`<td><input type="number" value="${l.qty||''}" oninput="planLines[${i}].qty=this.value" style="padding:6px 8px"></td>`}
-    ${type==='CPO'?`<td><input type="date" value="${l.due||''}" oninput="planLines[${i}].due=this.value" style="padding:6px 8px"></td><td><input type="number" step="0.01" value="${l.price||''}" oninput="planLines[${i}].price=this.value" style="padding:6px 8px"></td>`:''}
+    ${type==='FC'?[1,2,3,4].map(k=>`<td><input type="number" value="${l['m'+k]||''}" oninput="planLines[${i}].m${k}=this.value;this.style.background=''" style="padding:6px 8px${(l._uns&&l._uns.indexOf(k-1)>=0)?';background:#fff3bf;border-color:#f59f00':''}" ${(l._uns&&l._uns.indexOf(k-1)>=0)?'title="OCR อ่านตัวเลขช่องนี้ไม่ชัด — ตรวจกับไฟล์จริง"':''}></td>`).join('')+(h6?(fc6Is(l)?[5,6].map(k=>`<td><input type="number" value="${l['m'+k]||''}" oninput="planLines[${i}].m${k}=this.value" style="padding:6px 8px;background:#fffbf0"></td>`).join(''):'<td class="muted c">-</td><td class="muted c">-</td>'):''):`<td><input type="number" class="pl-num" value="${l.qty||''}" oninput="planLines[${i}].qty=this.value;plNumIn(this)"><div class="pl-nf">${plNf(l.qty)}</div></td>`}
+    ${type==='CPO'?`<td><input type="date" value="${l.due||''}" oninput="planLines[${i}].due=this.value" style="padding:6px 8px"></td><td><input type="number" step="0.01" class="pl-num" value="${l.price||''}" oninput="planLines[${i}].price=this.value;plNumIn(this)"><div class="pl-nf">${plNf(l.price)}</div></td>`:''}
     <td><div class="rm-x" style="height:32px" onclick="rmPlanLine(${i})">✕</div></td>
   </tr>`).join('')}
   </tbody></table></div>
   <datalist id="dl_fg2">${DB.products.filter(p=>p.type==='FG').slice(0,1600).map(p=>`<option value="${esc(p.pn+(p.name&&p.name!=='-'?' '+p.name:''))}">`).join('')}</datalist>`;
 }
 /* ★ 26/10d ตารางกรอก Forecast : ช่องเดือนตาม window.__fcK */
+/* ★ 29/10c ช่องตัวเลขในฟอร์มแผน : กว้าง ชิดขวา ไม่มีลูกศร + จุลภาคใต้ช่อง */
+var PL_NUM_CSS='<style>.pl-num{min-width:104px;width:100%;text-align:right;padding:6px 8px;font-variant-numeric:tabular-nums;-moz-appearance:textfield}.pl-num::-webkit-outer-spin-button,.pl-num::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}.pl-nf{font-size:10px;color:#868e96;text-align:right;min-height:12px;line-height:12px;padding-right:3px}</style>';
+function plNf(v){ var n=Number(String(v==null?'':v).replace(/,/g,'')); return (v===''||v==null||!isFinite(n)||Math.abs(n)<1000)?'':n.toLocaleString('en-US',{maximumFractionDigits:2}); }
+function plNumIn(el){ var f=el.nextElementSibling; if(f&&f.classList.contains('pl-nf'))f.textContent=plNf(el.value); }
 function renderFcLines(root){ var K=fcFormK(), cK=fcCurK();
   planLines.forEach(function(l){ if(!l.mv||typeof l.mv!=='object')l.mv=fcMvOf(l); });
-  var th=K.map(function(k){ var calc=k>=cK&&k<cK+4; return '<th style="width:72px;'+(calc?'':'background:#f8f9fa;color:#868e96')+'" title="'+(calc?'ใช้คำนวณ (4 เดือนจากเดือนนี้)':(k<cK?'เดือนที่ผ่านมาแล้ว — เก็บไว้ตามไฟล์ลูกค้า':'เก็บไว้ตามไฟล์ลูกค้า (ตาราง Forecast แสดงถึงเดือนที่ 6)'))+'">'+fcKLbl(k)+'</th>'; }).join('');
-  var rows=planLines.map(function(l,i){ return '<tr><td><input list="dl_fg2" value="'+esc(l.name||'')+'" placeholder="พิมพ์/เลือก Part" oninput="planPick('+i+',this.value)" style="padding:6px 8px"></td>'
-    +K.map(function(k){ var j=k-cK, un=l._uns&&j>=0&&j<4&&l._uns.indexOf(j)>=0, v=l.mv[k]; return '<td><input type="number" value="'+(v?v:'')+'" oninput="planLines['+i+'].mv['+k+']=this.value;this.style.background=\'\'" style="padding:6px 8px'+(un?';background:#fff3bf;border-color:#f59f00':'')+'"'+(un?' title="OCR อ่านตัวเลขช่องนี้ไม่ชัด — ตรวจกับไฟล์จริง"':'')+'></td>'; }).join('')
-    +'<td class="num" style="font-size:11.5px;color:#495057">'+fmt(K.reduce(function(a,k){ return a+(Number(l.mv[k])||0); },0))+'</td><td><div class="rm-x" style="height:32px" onclick="rmPlanLine('+i+')">✕</div></td></tr>'; }).join('');
-  root.innerHTML='<div style="display:flex;gap:6px;align-items:center;margin-bottom:4px;flex-wrap:wrap"><span class="muted" style="font-size:11.5px">📅 '+K.length+' เดือน : '+fcKLbl(K[0])+' – '+fcKLbl(K[K.length-1])+'</span><button class="btn sm" onclick="fcMonAdd(-2)" title="เพิ่มเดือนก่อนหน้า">◀ ➕</button><button class="btn sm" onclick="fcMonAdd(1)" title="เพิ่มเดือนถัดไป">➕ เดือน</button><button class="btn sm" onclick="fcMonAdd(-1)" title="ลบเดือนสุดท้าย"'+(K.length<=1?' disabled':'')+'>➖ เดือน</button></div>'
+  var th=K.map(function(k){ var calc=k>=cK&&k<cK+4; return '<th style="min-width:110px;text-align:right;'+(calc?'':'background:#f8f9fa;color:#868e96')+'" title="'+(calc?'ใช้คำนวณ (4 เดือนจากเดือนนี้)':(k<cK?'เดือนที่ผ่านมาแล้ว — เก็บไว้ตามไฟล์ลูกค้า':'เก็บไว้ตามไฟล์ลูกค้า (ตาราง Forecast แสดงถึงเดือนที่ 6)'))+'">'+fcKLbl(k)+'</th>'; }).join('');
+  var rows=planLines.map(function(l,i){ return '<tr><td><input list="dl_fg2" value="'+esc(l.name||'')+'" placeholder="พิมพ์/เลือก Part" oninput="planPick('+i+',this.value)" style="padding:6px 8px;min-width:240px"></td>'
+    +K.map(function(k){ var j=k-cK, un=l._uns&&j>=0&&j<4&&l._uns.indexOf(j)>=0, v=l.mv[k]; return '<td><input type="number" class="pl-num" value="'+(v?v:'')+'" oninput="planLines['+i+'].mv['+k+']=this.value;this.style.background=\'\';plNumIn(this)" style="'+(un?'background:#fff3bf;border-color:#f59f00':'')+'"'+(un?' title="OCR อ่านตัวเลขช่องนี้ไม่ชัด — ตรวจกับไฟล์จริง"':'')+'><div class="pl-nf">'+plNf(v)+'</div></td>'; }).join('')
+    +'<td class="num" style="font-size:11.5px;color:#495057;min-width:80px">'+fmt(K.reduce(function(a,k){ return a+(Number(l.mv[k])||0); },0))+'</td><td><div class="rm-x" style="height:32px" onclick="rmPlanLine('+i+')">✕</div></td></tr>'; }).join('');
+  root.innerHTML=PL_NUM_CSS+'<div style="display:flex;gap:6px;align-items:center;margin-bottom:4px;flex-wrap:wrap"><span class="muted" style="font-size:11.5px">📅 '+K.length+' เดือน : '+fcKLbl(K[0])+' – '+fcKLbl(K[K.length-1])+'</span><button class="btn sm" onclick="fcMonAdd(-2)" title="เพิ่มเดือนก่อนหน้า">◀ ➕</button><button class="btn sm" onclick="fcMonAdd(1)" title="เพิ่มเดือนถัดไป">➕ เดือน</button><button class="btn sm" onclick="fcMonAdd(-1)" title="ลบเดือนสุดท้าย"'+(K.length<=1?' disabled':'')+'>➖ เดือน</button></div>'
     +'<div style="overflow-x:auto"><table style="font-size:12.5px"><thead><tr><th style="min-width:190px">Part Number</th>'+th+'<th style="width:70px">รวม</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>'
     +'<datalist id="dl_fg2">'+DB.products.filter(function(p){ return p.type==='FG'; }).slice(0,1600).map(function(p){ return '<option value="'+esc(p.pn+(p.name&&p.name!=='-'?' '+p.name:''))+'">'; }).join('')+'</datalist>'; }
 function planPick(i,val){
@@ -38198,7 +38735,7 @@ function submitPlan(type,editId){
   let d;
   if(editId){d=DB.docs.find(x=>x.id===editId);if(!d)return;}
   else{d={id:uid(),type,ts:Date.now(),status:'active'};DB.docs.push(d);DB.counters['PLAN_'+type]=(DB.counters['PLAN_'+type]||0)+1;}
-  d.no=(v('pl_no')||'').trim()||d.no;d.customer=cust;d.lines=lines; if(type==='FC'&&_fcK)d.fcK=_fcK;
+  d.no=(v('pl_no')||'').trim()||d.no;d.customer=cust;d.lines=lines; if(type==='FC'&&_fcK)d.fcK=_fcK; if(type==='FC'){ const _fd=String(v('pl_fcdate')||'').slice(0,10); d.date=_fd||d.date||todayISO(); }   /* ★ 29/10e วันที่ออก Forecast */
   d.attach=window.__planAttach||d.attach||null;
   if(type==='CPO')d.custPo=(v('pl_custpo')||'').trim();
   if(type==='PL')d.shipDate=v('pl_ship')||todayISO();
@@ -39850,6 +40387,11 @@ function fgiSetPO(id,v){ var d=(DB.docs||[]).find(function(x){ return x&&x.id===
   var old=fgiProdPO(d)||''; if(v===old&&(v||d.prodPO==null))return;
   if(v)d.prodPO=v; else delete d.prodPO; fgiChgLog(d,'เลขที่ PO',old,v||'(อัตโนมัติ)'); d.ts=Date.now();
   try{ memoClear&&memoClear(); }catch(e){} try{ memoBust(); }catch(e){} try{ saveDB(); }catch(e){} render(); toast(v?('เลขที่ PO '+(d.no||'')+' = '+v):('เลขที่ PO '+(d.no||'')+' กลับไปใช้ค่าอัตโนมัติ'),'ok'); }
+/* ★ 29/10b ช่องกำหนดส่งแบบข้อความ yyyy-mm-dd (รูปแบบเดียวกับแถวที่ล็อก) · รับ dd/mm/yyyy และปี พ.ศ. */
+function fgiDueParse(v){ v=String(v||'').trim(); if(!v)return ''; var m=/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})$/.exec(v), y,mo,da; if(m){ y=+m[1]; mo=+m[2]; da=+m[3]; } else { m=/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{2,4})$/.exec(v); if(!m)return null; da=+m[1]; mo=+m[2]; y=+m[3]; if(y<100)y+=y>=50?2500:2000; }
+  if(y>2400)y-=543; var dt=new Date(y,mo-1,da); if(isNaN(dt)||dt.getFullYear()!==y||dt.getMonth()!==mo-1||dt.getDate()!==da)return null; return y+'-'+('0'+mo).slice(-2)+'-'+('0'+da).slice(-2); }
+function fgiDueTxt(id,el){ var v=fgiDueParse(el.value); if(v===null){ toast('รูปแบบวันที่ไม่ถูกต้อง — พิมพ์ 2026-10-28 หรือ 28/10/2026','err'); var d=(DB.docs||[]).find(function(x){ return x&&x.id===id; }); el.value=d?(fgiDueOf(d)||''):''; return; } el.value=v; fgiSetDue(id,v); }
+function fgiDuePick(btn){ var dp=btn.previousElementSibling; if(!dp)return; try{ if(dp.showPicker){ dp.showPicker(); return; } }catch(e){} try{ dp.style.pointerEvents='auto'; dp.focus(); dp.click(); }catch(e){} }
 function fgiSetDue(id,v){ var d=(DB.docs||[]).find(function(x){ return x&&x.id===id; }); if(!d)return; v=String(v||'').slice(0,10); var old=fgiDueOf(d)||'';
   if(fgiInvoiceNo(d)){ toast('ใบนี้ออก Invoice '+fgiInvoiceNo(d)+' แล้ว — แก้ย้อนหลังไม่ได้','err'); render(); return; } if(v===old)return;
   (d.lines||[]).forEach(function(l){ l.due=v; }); fgiChgLog(d,'กำหนดส่ง',old,v); d.ts=Date.now(); try{ memoClear&&memoClear(); }catch(e){} try{ saveDB(); }catch(e){} render(); toast('เปลี่ยนกำหนดส่ง '+(d.no||'')+' เป็น '+(v||'-')+' แล้ว','ok'); }
@@ -39877,7 +40419,7 @@ function fgiRowHtml(d){
     <td>${esc(d.customer||'-')}</td>${fgiC('custpo')?`<td><span class="tag violet">${esc(d.custPo||'-')}</span></td>`:''}${fgiC('maker')?(()=>{const _m=fgiMakerOf(d);return _m.t?`<td><span class="tag amber"${_m.est?' style="opacity:.65" title="ไม่พบจากเลขที่ PO — ผู้ผลิตล่าสุดของชิ้นงาน"':''}>${esc(_m.t)}</span></td>`:'<td class="muted">-</td>';})():''}
     ${fgiC('inv')?`<td>${invNo?`<span class="tag green">${esc(invNo)}</span>`:'<span class="muted">-</span>'}</td>`:''}
     ${fgiC('prodpo')?`<td>${fgiInvoiceNo(d)?(prodPO?`<span class="tag cyan" title="ออก Invoice แล้ว — ล็อก">${esc(poDisp(prodPO))}</span>`:'<span class="muted">-</span>'):`<input value="${esc(prodPO||'')}" placeholder="เลขที่ PO" title="พิมพ์/แก้เลขที่ PO (ใบสั่งผลิต) · ลบให้ว่าง = ใช้ค่าอัตโนมัติ" onchange="fgiSetPO('${d.id}',this.value)" style="width:96px;padding:4px 6px;font-size:12px;border-radius:7px;${d.prodPO?'border-color:#0891b2;background:#ecfeff;font-weight:700':''}">`}</td>`:''}
-    <td class="muted">${esc(head)}</td><td class="c">${fgiInvoiceNo(d)?esc(_due):`<input type="date" value="${esc(_due)}" onchange="fgiSetDue('${d.id}',this.value)" title="แก้กำหนดส่ง (ทุกรายการในใบ)" style="padding:2px 4px;font-size:11.5px;width:122px">`}</td><td style="text-align:center">${irLinkBtn(d.id)}</td><td style="text-align:center">${millLinkBtn(d.id)}</td><td style="text-align:center">${xLinkBtn(d.id,'st17',fmCode('st.fm17','FM-ST-17'))}</td><td class="num">${fgiInvoiceNo(d)?`<b>${fmt(tot)}</b>`:((d.lines||[]).length>1?`<b class="linkish" onclick="openFGIForm('${d.id}')" title="หลายรายการ — กดเพื่อแก้จำนวนทีละรายการ">${fmt(tot)}</b>`:`<input type="number" min="1" value="${tot}" onchange="fgiSetQty('${d.id}',this.value)" title="แก้จำนวน${d.status==='approved'?' (อนุมัติแล้ว → คืนยอดเดิมแล้วตัดใหม่)':''}" style="padding:2px 4px;font-size:12px;font-weight:700;width:86px;text-align:right">`)}</td>
+    <td class="muted">${esc(head)}</td><td class="c">${fgiInvoiceNo(d)?esc(_due):`<span style="display:inline-flex;align-items:center;gap:2px;position:relative"><input value="${esc(_due)}" placeholder="yyyy-mm-dd" maxlength="10" onchange="fgiDueTxt('${d.id}',this)" title="แก้กำหนดส่ง (ทุกรายการในใบ) · พิมพ์ 2026-10-28 หรือ 28/10/2026 · 📅 = เลือกจากปฏิทิน" style="padding:2px 5px;font-size:11.5px;width:86px;text-align:center"><input type="date" tabindex="-1" value="${esc(_due)}" onchange="fgiSetDue('${d.id}',this.value)" style="position:absolute;left:0;bottom:0;width:1px;height:1px;opacity:0;pointer-events:none;border:0;padding:0"><button type="button" class="btn sm" style="padding:0 4px;font-size:11px;line-height:18px" title="เลือกจากปฏิทิน" onclick="fgiDuePick(this)">📅</button></span>`}</td><td style="text-align:center">${irLinkBtn(d.id)}</td><td style="text-align:center">${millLinkBtn(d.id)}</td><td style="text-align:center">${xLinkBtn(d.id,'st17',fmCode('st.fm17','FM-ST-17'))}</td><td class="num">${fgiInvoiceNo(d)?`<b>${fmt(tot)}</b>`:((d.lines||[]).length>1?`<b class="linkish" onclick="openFGIForm('${d.id}')" title="หลายรายการ — กดเพื่อแก้จำนวนทีละรายการ">${fmt(tot)}</b>`:`<input type="number" min="1" value="${tot}" onchange="fgiSetQty('${d.id}',this.value)" title="แก้จำนวน${d.status==='approved'?' (อนุมัติแล้ว → คืนยอดเดิมแล้วตัดใหม่)':''}" style="padding:2px 4px;font-size:12px;font-weight:700;width:86px;text-align:right">`)}</td>
     <td style="text-align:center;white-space:nowrap">${fgiHasAaaPart(d)?`<button class="btn sm" style="background:#e8f0fb;color:#1B3A5C;font-weight:700" onclick="openAAATagDialog('${d.id}')" title="TAG 1 — ใบกำกับสินค้า A.A.A. (FM-PC-012)">🏷️ TAG</button>`:`<button class="btn sm" onclick="openDlvTagDialog('${d.id}')" title="พิมพ์ TAG จัดส่ง (FM-ST-15) ขนาด 5.5×8.8 ซม. · A4 = 10 ดวง">🏷️ TAG</button>`}</td>
     <td style="text-align:center;white-space:nowrap">${fgiHasVcsPart(d)?`<button class="btn sm" style="background:#e8ecfb;color:#0d0e93;font-weight:700" onclick="openVCSTagDialog('${d.id}')" title="TAG 2 — ใบกำกับชิ้นงานประจำคลังสินค้า VCS · 8.8×6.0 ซม. · A4 = 8 ใบ (แม็คติดคู่กับ TAG 1)">🏷️ TAG</button>`:`<span class="muted">-</span>`}</td>
     <td style="text-align:center;white-space:nowrap"><button class="btn sm" style="background:#fff4e6;color:#b45309;font-weight:700" onclick="openExcTagDialog('${d.id}')" title="TAG แลกเปลี่ยน (FM-ST-18 Rev.00) — พบชิ้นงานมีปัญหา ต้องนำของดีไปเปลี่ยน">🔁 แลกเปลี่ยน</button></td>
@@ -40203,11 +40745,11 @@ function cpoTypeName(i,val){
 
 function renderCpoLines(){
   const root=document.getElementById('cpoRoot');if(!root)return;const bd='1px solid var(--line)';
-  root.innerHTML=`<table style="width:100%;border-collapse:collapse;font-size:12.5px"><thead><tr><th style="border:${bd};padding:4px;text-align:left">Part / รายการ</th><th style="border:${bd};padding:4px;width:110px">จำนวนสั่ง</th><th style="border:${bd};padding:4px;width:150px">กำหนดส่ง</th><th style="border:${bd};padding:4px;width:34px"></th></tr></thead><tbody>${cpoLines.map((l,i)=>`<tr>
+  root.innerHTML=PL_NUM_CSS+`<table style="width:100%;border-collapse:collapse;font-size:12.5px"><thead><tr><th style="border:${bd};padding:4px;text-align:left">Part / รายการ</th><th style="border:${bd};padding:4px;width:130px;text-align:right">จำนวนสั่ง</th><th style="border:${bd};padding:4px;width:150px">กำหนดส่ง</th><th style="border:${bd};padding:4px;width:34px"></th></tr></thead><tbody>${cpoLines.map((l,i)=>`<tr>
     <td style="border:${bd};padding:2px">${(function(){var _p=l.fgId?P(l.fgId):null;return `<input list="dl_cpofg" value="${esc(l.name||'')}" placeholder="เลือกจากชื่อขาย / PART" onchange="cpoSetName(${i},this.value)" oninput="cpoTypeName(${i},this.value)" style="padding:4px;width:100%;${(l.name&&!_p)?'border:1px solid var(--red);background:#fff5f5':''}">`
       +(_p?`<div class="muted" style="font-size:10.5px;padding:1px 3px">🔗 ${esc(_p.pn)}${_p.name&&_p.name!=='-'?' · '+esc(_p.name):''}${_p.customer?' · '+esc(custDisp(_p.customer)):''}</div>`
           :(l.name?`<div style="font-size:10.5px;padding:1px 3px;color:var(--red)">⚠ ไม่พบชื่อนี้ในสินค้าคงคลัง — การไหลจะติด</div>`:''));})()}</td>
-    <td style="border:${bd};padding:2px"><input type="number" value="${(l.qty!==''&&l.qty!=null)?l.qty:''}" oninput="cpoLines[${i}].qty=this.value" style="padding:4px;width:100%;text-align:right"></td>
+    <td style="border:${bd};padding:2px"><input type="number" class="pl-num" value="${(l.qty!==''&&l.qty!=null)?l.qty:''}" oninput="cpoLines[${i}].qty=this.value;plNumIn(this)" style="padding:4px 6px"><div class="pl-nf">${plNf(l.qty)}</div></td>
     <td style="border:${bd};padding:2px"><input type="date" value="${esc(l.due||'')}" oninput="cpoLines[${i}].due=this.value" style="padding:4px;width:100%"></td>
     <td style="border:${bd};padding:2px;text-align:center"><span style="cursor:pointer;color:var(--red)" onclick="cpoDelLine(${i})">🗑️</span></td></tr>`).join('')}</tbody></table><datalist id="dl_cpofg">${(function(){var seen={};return fgiSellList().map(function(p){var v=fgiOptName(p);if(!v||seen[v])return '';seen[v]=1;return '<option value="'+esc(v)+'">';}).join('');})()}</datalist>`;
 }
