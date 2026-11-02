@@ -1084,9 +1084,14 @@ const SEED={
 
 /* ---------- State ---------- */
 let DB=null;
-const APP_BUILD='MVFIX-2026.10.31b';
+const APP_BUILD='NC8D-2026.11.02a';
 /* บันทึกการแก้ไขล่าสุด (แสดงเมื่อเอาเมาส์ชี้ที่ build — ไม่เอาไปต่อท้าย APP_BUILD เพราะทำให้แถบบนล้นจอ) */
 const APP_NOTE=[
+  '🛠️ งานไม่ตรงข้อกำหนด (NC) : เพิ่มปุ่ม 8D ในแถวรายการ (ต่อจาก SPECIAL) · มีแผนแล้ว = ปุ่มสีตามสถานะ (กำลังทำ/เกินกำหนด/รอปิด/ปิดแล้ว + %) คลิกแล้วไปหน้า CORRECTIVE ACTION PLAN (8D) แสดงเฉพาะแผนของใบ NC นั้น (แถบ ✕ แสดงทั้งหมด) · ยังไม่มีแผน = ปุ่ม + 8D ไปหน้า 8D แล้วเปิดฟอร์มสร้างแผนให้ทันที',
+  '📑 รายงาน (Timeline) ตารางสรุปภาพรวมตามชิ้นงาน (ราย PO) : เพิ่มตัวกรอง วันสั่งผลิต (1–31) · เดือนสั่งผลิต (ม.ค.–ธ.ค.) · ปีสั่งผลิต (ปีที่มีใบสั่งผลิต) จากช่องวันที่สั่ง/ผลิต · ใช้รวมกันได้ (เช่น วัน 30 + เดือน ต.ค. + ปี 2026 = วันเดียว · เดือนอย่างเดียว = เดือนนั้นทุกปี) · แถว SUBTOTAL รวมตามตัวกรอง · ปุ่ม ✕ ล้างวันที่',
+  '🏷️ TAG จัดส่ง (FM-ST-15) ลูกค้า Thai FC : ช่อง ล๊อตผลิต / LOT = เลขที่สั่งผลิต (ตามที่ลูกค้าขอ · เช่น PO6900490 → 6900490) แทนวันที่ · ดึงจากเลขที่ PO ผลิตของใบเบิกจ่าย (ช่องเลขที่ PO ในตาราง · หลายใบ = ใบสั่งผลิตล่าสุดของรายการที่เลือก) แก้ได้ · ป้ายบน TAG เป็น ล๊อตผลิต / LOT · ลูกค้าอื่นยังเป็น ล๊อตวันที่ผลิต / LOT DATE ตามเดิม · พิมพ์ชื่อลูกค้าเป็น Thai FC ในหน้าต่างแล้วช่องเปลี่ยนเอง · TAG ที่บันทึกไว้เปิดคืนค่าได้ถูกต้อง',
+  '🗑️ โมดูลใหม่ ขออนุมัติทิ้งงานเสีย (SCRAP DISPOSAL APPROVAL REQUEST) FM-QC-64 Rev.00 : เมนูต่อจาก แก้ไข-ซ่อม + ปุ่ม SCRAP ท้ายแถว NC · สำหรับงาน NG ที่แก้ไข / ซ่อม / ยอมรับพิเศษไม่ได้ (ISO 9001 ข้อ 8.7 · IATF 16949 ข้อ 8.7.1.7 ต้องทำให้ใช้งานไม่ได้ก่อนทิ้ง) · ผู้ลงนาม ผู้ขอ / ผู้ตรวจสอบ / ผู้อนุมัติ · เหตุผล · สิ่งที่ทำมาก่อน (คัดแยก/แก้ไข/ยอมรับพิเศษ/Claim) · ผู้รับผิดชอบค่าเสียหาย · วิธีทำลาย · ผลการพิจารณา · บันทึกการทิ้งจริง (จำนวน · กก. · ผู้ทำลาย · พยาน) · ตั้งต้นจำนวน = แก้ไม่ได้จากใบแก้ไข-ซ่อม (ไม่มี = NG ของใบ NC) · มูลค่า = จำนวน × ราคาผลิต · แก้ไข / พิมพ์ / ยกเลิก (ไม่ลบ · คืนค่าได้) · เลขที่ SCP-ปปดดลลลล · PDF เก็บเข้าแฟ้มอัตโนมัติ 17:00 (ตั้งโฟลเดอร์ใน 📄 PDF เก็บเข้าแฟ้ม) + ลิงก์ช่อง FM-QC-64 · แปล English / 中文 ได้ · เป็นเอกสารขออนุมัติ ไม่ตัดยอดสต๊อค',
+  '🌐 แปลเอกสารงาน NC เป็นภาษาอังกฤษ / จีน : CLAIM SHEET · NCR · CORRECTIVE ACTION PLAN (8D) · SPECIAL REQUEST · คัดแยก · แก้ไข-ซ่อม · ECR · ติ๊ก English / 中文 ที่ด้านบนของฟอร์ม (หรือมุมขวาล่างของหน้าใบพิมพ์) → ฟอร์มแปลป้าย/หัวข้อ · ใบพิมพ์แปลทั้งหน้า (ป้าย + ข้อมูลที่กรอก) · ป้ายสองภาษา "Problem (ปัญหาที่พบ)" อังกฤษ = Problem · ข้อมูลภาษาไทยไม่ถูกแตะ · แก้คำแปลได้ (✏️ แก้คำแปล บนหน้าใบพิมพ์ → คลิกข้อความ · จำต่อใบและซิงก์) · คลังคำแปลในเครื่อง (ใบถัดไปเร็วขึ้น) · ต้องมีอินเทอร์เน็ต (Google แปล ชุดเดียวกับข้อร้องเรียนลูกค้า) · PDF ที่เก็บเข้าแฟ้มอัตโนมัติยังเป็นภาษาไทย',
   '🧹 ล้างความเคลื่อนไหวซ้ำ 94063-10000 : แถว "อัปเดตยอดให้ตรงบัญชีคุม" (ADJ SYNC) 22 แถว (13/10–31/10 · คงเหลือ +269,706 ×6 · +253,706 ×14 · WIP +136,406/−415,906) ที่ด่านแม่ข่ายไม่ให้ยอดเปลี่ยน (คงเหลือ/WIP ยังเป็น 0) = ประวัติค้างที่ไม่มีผล · ลบตามรหัสแถวที่ระบุเท่านั้น (mvFix1031 ครั้งเดียว · settings.__mvFix1031 · จดทะเบียนลบ mvTombAdd กันฟื้น) · ไม่แตะยอดสต๊อค · ทำหลังเชื่อมแม่ข่ายแล้ว',
   '🐞 สินค้าคงคลัง ยอดคงเหลือไม่ตรงบัญชีคุม (94063-10000 = 0 แต่บัญชีคุม 253,706 · กดอัปเดตยอดให้ตรงไปแล้ว 20 ครั้งตั้งแต่ 13/10 ยอดกลับเป็น 0 ทุกครั้ง) : ต้นเหตุ = ด่านแม่ข่าย (server.js) ตียอดที่โตจาก 0 เกิน 20 เท่าว่า "ผิดปกติ" แล้วคืนค่าเดิม · แก้ server.js : ยอดที่อธิบายได้ด้วยความเคลื่อนไหว (ส่วนต่าง = ความเคลื่อนไหวที่เพิ่มในช่องเดียวกัน) รับเสมอ · ปุ่ม อัปเดตยอดให้ตรงทั้งหมด เดิมเปลี่ยนคงเหลือโดยไม่บันทึกความเคลื่อนไหว (ด่านแม่ข่ายคืนค่าเดิม) → ใช้ stkSetTo บันทึกความเคลื่อนไหว SYNC',
   '➕ สินค้าคงคลัง : เพิ่มคอลัมน์ "นับสต๊อควันที่" + "ดำเนินการ" ต่อจากรอชั่ง (ซ่อน/แสดงได้ที่ 👁 คอลัมน์ หรือ 🙈 หัวคอลัมน์) ไว้ติดตามว่ายอดในระบบตรงกับของจริงไหม · วันที่พิมพ์ 2026-10-30 หรือ 30/10/2026 หรือกด 📅 · แสดงอายุ (กี่วันแล้ว · เกิน 90 วันสีส้ม) · ดำเนินการ เลือก ✅ ตรง / ⚠️ ไม่ตรง ปรับยอดแล้ว / ⚠️ ไม่ตรง รอปรับยอด / 🔍 รอตรวจสอบ หรือพิมพ์เอง · ใส่ดำเนินการโดยยังไม่มีวันที่ = เติมวันนี้ให้ · รายการที่ใช้สต๊อกร่วมบันทึกที่รายการหลัก · ซิงก์ทุกเครื่อง (p.cntDate / p.cntAct)',
@@ -5278,6 +5283,7 @@ const NAV=[
   {id:'sar',ico:'🟢',label:'SPECIAL REQUEST'},
   {id:'ncsrt',ico:'🔍',label:'คัดแยก'},
   {id:'ncrwk',ico:'🔧',label:'แก้ไข-ซ่อม'},
+  {id:'ncscr',ico:'🗑️',label:'ขออนุมัติทิ้งงานเสีย'},
   {id:'ecr',ico:'📐',label:'ECR'},
   {id:'risk',ico:'⚠️',label:'RISK'},
   {id:'kpireg',ico:'📊',label:'KPI'},
@@ -5433,7 +5439,7 @@ function render(){
   const map={dashboard:viewDashboard,inventory:viewInventory,track:viewJobTrack,approvals:viewApprovals,monitor:viewMonitor,
     po:()=>viewDocs('PO'),ip:()=>viewDocs('IP'),sp:()=>viewDocs('SP'),gr:()=>viewDocs('GR'),prd:()=>viewDocs('PRD'),wd:()=>viewDocs('WD'),
     dp:()=>{window.__dpMaker='RTK-K';viewDocs('DP')},vs4:viewVS4,rw:()=>viewDocs('RW'),plate:()=>viewDocs('PL'),qc:()=>viewDocs('QC'),si:()=>viewDocs('SI'),rmc:viewRMC,fgi:viewFGI,sup:viewSUP,ws:viewWS,recvip:()=>viewRcv('GI'),recvsp:()=>viewRcv('GS'),qcip:()=>viewQck('QI'),qcsp:()=>viewQck('QS'),qcsemi:()=>viewQck('QSE'),stkip:()=>viewStk('SII'),stksp:()=>viewStk('SIS'),stksemi:()=>viewStk('SSE'),
-    inv:()=>viewDocs('INV'),iv2:()=>viewDocs('IV2'),bill:viewBill,billc:viewBillC,adj:()=>viewDocs('ADJ'),moves:viewMoves,report:viewReport,tax:viewTax,taxsale:viewTaxSale,wht:viewWHT,nc:viewNC,ncsrt:viewNCSRT,ncrwk:viewNCRWK,claim:viewClaims,ncr:viewNCR,cap:viewCAP,sar:viewSAR,ecr:viewECR,risk:viewRisk,kpireg:viewKpiReg,iaudit:viewIAudit,mreview:viewMReview,ccp:viewCCP,comm:viewComm,safety:viewSafety,context:viewContext,topmgmt:viewTopMgmt,planning:viewPlanning,support:viewSupport,operation:viewOperation,performance:viewPerformance,improvement:viewImprovement,settings:viewSettings,
+    inv:()=>viewDocs('INV'),iv2:()=>viewDocs('IV2'),bill:viewBill,billc:viewBillC,adj:()=>viewDocs('ADJ'),moves:viewMoves,report:viewReport,tax:viewTax,taxsale:viewTaxSale,wht:viewWHT,nc:viewNC,ncsrt:viewNCSRT,ncrwk:viewNCRWK,ncscr:viewNCSCR,claim:viewClaims,ncr:viewNCR,cap:viewCAP,sar:viewSAR,ecr:viewECR,risk:viewRisk,kpireg:viewKpiReg,iaudit:viewIAudit,mreview:viewMReview,ccp:viewCCP,comm:viewComm,safety:viewSafety,context:viewContext,topmgmt:viewTopMgmt,planning:viewPlanning,support:viewSupport,operation:viewOperation,performance:viewPerformance,improvement:viewImprovement,settings:viewSettings,
     demand:viewDemand,mrp:viewMRP,pdn:viewPDN,prq:viewPRQ,mrq:viewMRQ,tdb:viewTDB,crx:viewCRXList};
   try{PROD_MK.forEach(function(m){if(!map[m[0]])map[m[0]]=function(){viewProdMk(m[1]);};});}catch(e){}
   (map[route]||viewDashboard)(el);
@@ -11719,6 +11725,17 @@ function capNoFix(d){ var a=d.ap; if(!a)return; if(!a.no)a.no='AP-'+String(d.no|
   var base=a.no, n=1, used=function(v){ return (DB.docs||[]).some(function(x){ return x&&x!==d&&x.type==='NC'&&x.ap&&!x.ap.cancelled&&String(x.ap.no||'').toUpperCase()===v.toUpperCase(); }); };
   while(used(a.no)){ n++; a.no=base+'-'+n; } }
 function capStatTxt(d){ var s=apStat(d); return s; }
+/* ★ 2/11a ปุ่ม 8D ในแถว NC → หน้า CORRECTIVE ACTION PLAN (8D) */
+function nc8dBtn(d){ var has=capHas(d)&&!(d.ap&&d.ap.cancelled);
+  if(!has)return '<button class="btn sm" onclick="nc8dGo(\''+d.id+'\')" title="ยังไม่มีแผน 8D — คลิกเพื่อสร้าง CORRECTIVE ACTION PLAN" style="font-weight:800;font-size:11px;color:#64748b">+ 8D</button>';
+  var st=apStat(d); if(st.code==='none')st={code:'draft',th:'ร่าง (ยังไม่มีรายการแก้ไข)',bg:'#6366f1',pct:0};
+  var no=(d.ap&&d.ap.no)||('AP-'+String(d.no||'').replace(/^NC-?/i,''));
+  return '<button class="btn sm" onclick="nc8dGo(\''+d.id+'\')" title="'+esc(no+' · '+st.th+((st.code==='open'||st.code==='late')?' '+st.pct+'%':''))+' — คลิกไปหน้า CORRECTIVE ACTION PLAN (8D)" style="font-weight:800;font-size:11px;background:'+st.bg+';color:#fff;border-color:'+st.bg+'">8D'+((st.code==='open'||st.code==='late')?' <span style="font-weight:600;font-size:9.5px">'+st.pct+'%</span>':st.code==='closed'?' ✓':'')+'</button>'; }
+function capOnlyClear(){ _capF.id=''; render(); }
+function nc8dGo(id){ var d=(DB.docs||[]).find(function(x){ return x.id===id; }); if(!d)return;
+  _capF.id=id; _capF.q=''; _capF.st=''; _capF.mon=''; go('cap');
+  if(!(capHas(d)&&!(d.ap&&d.ap.cancelled)))setTimeout(function(){ try{ apOpen(id); }catch(e){} },60); }
+
 function viewCAP(el){
   setTitle('🛠️ CORRECTIVE ACTION PLAN (8D)','แผนปฏิบัติการแก้ไขปัญหา '+AP_CODE+' · รายการจาก ACTION PLAN ของงานไม่ตรงข้อกำหนด (NC) อัตโนมัติ');
   var F=_capF, so=F.sort||'date_desc', q=String(F.q||'').toLowerCase();
@@ -11729,13 +11746,14 @@ function viewCAP(el){
   var mons=[...new Set(all.map(function(d){ return dOf(d).slice(0,7); }).filter(Boolean))].sort().reverse();
   var _dup={}; all.forEach(function(d){ var k=String(d.ap.no||'').toUpperCase(); _dup[k]=(_dup[k]||0)+1; });
   var cnt=function(c){ return all.filter(function(d){ return apStat(d).code===c; }).length; };
-  var rows=all.filter(function(d){ if(F.mon&&dOf(d).slice(0,7)!==F.mon)return false; if(F.st&&apStat(d).code!==F.st)return false;
+  var rows=all.filter(function(d){ if(F.id&&d.id!==F.id)return false; if(F.mon&&dOf(d).slice(0,7)!==F.mon)return false; if(F.st&&apStat(d).code!==F.st)return false;
     if(q){ var a=d.ap, t=[a.no,d.no,d.part,d.customer,d.maker,d.defect,a.what,a.rc1,a.rc2,a.by].join(' ').toLowerCase(); if(t.indexOf(q)<0)return false; } return true; });
   var nLink=all.filter(function(d){ try{ return !!xLinkGet(d.id,'qmr19'); }catch(e){ return false; } }).length;
   var card=function(ic,lbl,v,c){ return '<div class="card"><div class="lbl"><span class="dot d-'+c+'">'+ic+'</span>'+lbl+'</div><div class="val">'+v+'</div></div>'; };
   var stOpt=[['','ทุกสถานะ'],['open','⏳ กำลังดำเนินการ'],['late','🔴 เกินกำหนด'],['done','🔵 รอปิดเรื่อง'],['closed','✅ ปิดแล้ว']];
   el.innerHTML='<div class="cards">'+card('🛠️','แผนทั้งหมด',fmt(all.length),'brand')+card('⏳','กำลังดำเนินการ',fmt(cnt('open')),'amber')+card('🔴','เกินกำหนด',fmt(cnt('late')),'red')+card('✅','ปิดแล้ว',fmt(cnt('closed')),'green')+card('🔗','แนบไฟล์ '+esc(capCode())+' แล้ว',fmt(nLink)+' / '+fmt(all.length),'teal')+'</div>'
    +'<div class="panel"><div class="panel-h" style="flex-wrap:wrap;gap:8px"><h2>รายการ CORRECTIVE ACTION PLAN (8D)</h2><div class="desc">'+fmt(rows.length)+' / '+fmt(all.length)+' แผน</div>'
+     +(F.id?(function(){ var x=(DB.docs||[]).find(function(y){ return y.id===F.id; }); return '<span class="tag amber" style="font-size:12px">🔎 เฉพาะ '+esc(x?(x.no||''):'ใบที่เลือก')+(x&&x.part?' · '+esc(x.part):'')+' <a href="javascript:void 0" onclick="capOnlyClear()" style="margin-left:6px;font-weight:700" title="แสดงทุกแผน">✕ แสดงทั้งหมด</a></span>'; })():'')
      +'<div class="right" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">'
        +'<div class="searchbox"><input placeholder="ค้นหา เลขที่ / NC / Part / ลูกค้า / ปัญหา / สาเหตุ" value="'+esc(F.q||'')+'" onchange="_capF.q=this.value;render()"></div>'
        +'<select onchange="_capF.st=this.value;render()" style="padding:6px 8px;font-size:12.5px;width:auto;flex:0 0 auto">'+stOpt.map(function(x){ return '<option value="'+x[0]+'"'+(F.st===x[0]?' selected':'')+'>'+x[1]+'</option>'; }).join('')+'</select>'
@@ -21235,6 +21253,11 @@ var PDF_JOBS={
        day:function(d){ return String((d.rwk&&d.rwk.date)||d.date||''); },
        name:function(d){ return String((d.rwk&&d.rwk.no)||d.no||'RWK'); },
        html:function(id){ return ncxPrint('rwk',id,'html'); }},
+  SCR:{key:'SCR',type:'NC',types:['NC'],label:'ขออนุมัติทิ้งงานเสีย (SCRAP)',slot:'qc64',code:'qc.fm64',def:'FM-QC-64',dirKey:'dirSCR',
+       ready:function(d){ return !!(ncxOf(d,'scr')&&d.scr.no); },
+       day:function(d){ return String((d.scr&&d.scr.date)||d.date||''); },
+       name:function(d){ return String((d.scr&&d.scr.no)||d.no||'SCP'); },
+       html:function(id){ return ncxPrint('scr',id,'html'); }},
   /* 📅 เลื่อนส่งสินค้า (แจ้งลูกค้า) — เอกสาร type PDN */
   PDN:{key:'PDN',type:'PDN',label:'เลื่อนส่งสินค้า',slot:'mk13',code:'mk.fm13',def:'FM-MK-13',dirKey:'dirPDN',
        html:function(id){ return pdnPrint([id],'html'); }},
@@ -21257,7 +21280,7 @@ function pdfJob(k){ return PDF_JOBS[String(k||'PRD').toUpperCase()]||PDF_JOBS.PR
 function pdfCfg(){
   try{ ensureSettings(); var c=DB.settings.pdfAuto=DB.settings.pdfAuto||{};
     if(c.on==null)c.on=true; if(!c.dir)c.dir=PDF_DIR_DEF;
-    if(c.dirRW==null)c.dirRW=''; if(c.dirPO==null)c.dirPO=''; if(c.dirGR==null)c.dirGR=''; if(c.dirINV==null)c.dirINV=''; if(c.dirWD==null)c.dirWD=''; if(c.dirFGI==null)c.dirFGI=''; if(c.dirSI==null)c.dirSI=''; if(c.dirQC==null)c.dirQC=''; if(c.dirIP==null)c.dirIP=''; if(c.dirSP==null)c.dirSP=''; if(c.dirGI==null)c.dirGI=''; if(c.dirGS==null)c.dirGS=''; if(c.dirSUP==null)c.dirSUP=''; if(c.dirWS==null)c.dirWS=''; if(c.dirRMC==null)c.dirRMC=''; if(c.dirQC28==null)c.dirQC28=''; if(c.dirTDB==null)c.dirTDB=''; if(c.dirCLM==null)c.dirCLM=''; if(c.dirSRT==null)c.dirSRT=''; if(c.dirRWK==null)c.dirRWK=''; if(c.dirCRX==null)c.dirCRX=''; if(c.dirPRQ==null)c.dirPRQ=''; if(c.dirMRQ==null)c.dirMRQ=''; if(c.dirPDN==null)c.dirPDN=''; if(c.dirCCP==null)c.dirCCP='';
+    if(c.dirRW==null)c.dirRW=''; if(c.dirPO==null)c.dirPO=''; if(c.dirGR==null)c.dirGR=''; if(c.dirINV==null)c.dirINV=''; if(c.dirWD==null)c.dirWD=''; if(c.dirFGI==null)c.dirFGI=''; if(c.dirSI==null)c.dirSI=''; if(c.dirQC==null)c.dirQC=''; if(c.dirIP==null)c.dirIP=''; if(c.dirSP==null)c.dirSP=''; if(c.dirGI==null)c.dirGI=''; if(c.dirGS==null)c.dirGS=''; if(c.dirSUP==null)c.dirSUP=''; if(c.dirWS==null)c.dirWS=''; if(c.dirRMC==null)c.dirRMC=''; if(c.dirQC28==null)c.dirQC28=''; if(c.dirTDB==null)c.dirTDB=''; if(c.dirCLM==null)c.dirCLM=''; if(c.dirSRT==null)c.dirSRT=''; if(c.dirRWK==null)c.dirRWK=''; if(c.dirSCR==null)c.dirSCR=''; if(c.dirCRX==null)c.dirCRX=''; if(c.dirPRQ==null)c.dirPRQ=''; if(c.dirMRQ==null)c.dirMRQ=''; if(c.dirPDN==null)c.dirPDN=''; if(c.dirCCP==null)c.dirCCP='';
     if(!c.from)c.from='17:00'; if(!c.to)c.to='18:00';
     return c;
   }catch(e){ return {on:true,dir:PDF_DIR_DEF,dirRW:'',dirPO:'',dirGR:'',dirINV:'',dirWD:'',dirFGI:'',dirSI:'',dirQC:'',dirIP:'',dirSP:'',dirGI:'',dirGS:'',dirSUP:'',dirWS:'',dirRMC:'',dirQC28:'',from:'17:00',to:'18:00'}; }
@@ -24123,7 +24146,7 @@ function viewReport(el){
   const custs=[...new Set(prods.map(p=>p.customer).filter(c=>c&&c!=='ไม่ระบุ'))].sort();
   const rptMakers=[...new Set(DB.docs.filter(d=>d.type==='PRD'&&d.status!=='cancelled'&&!d.statOnly).map(d=>d.maker).filter(Boolean).concat((DB.settings.makers||[]).map(m=>m.code).filter(Boolean)))].sort();
   let html=`<div class="panel"><div class="panel-h" style="flex-wrap:wrap;gap:8px"><h2>🔎 เลือกชิ้นงานเพื่อดูเส้นทาง</h2>
-    <div class="right" style="display:flex;gap:6px;flex-wrap:wrap"><input id="rptSel" list="dl_rptsel" placeholder="พิมพ์ Part Number / ชื่อ" value="${sel?esc(sel.pn):''}" onchange="rptPick(this.value)" style="min-width:240px"><datalist id="dl_rptsel">${prods.slice(0,1600).map(p=>`<option value="${esc(p.pn)}">${esc(p.name||'')}</option>`).join('')}</datalist><input id="rptOvQ" placeholder="ค้นหาในตารางสรุป" oninput="filterRptOv()" style="max-width:160px"><input id="rptOvCust" class="fchip" list="dl_rptcust" placeholder="👤 ลูกค้า" oninput="filterRptOv()" style="max-width:140px"><datalist id="dl_rptcust">${custs.map(c=>'<option value="'+esc(c)+'">').join('')}</datalist><input id="rptOvPo" class="fchip" placeholder="🔢 PO" oninput="filterRptOv()" style="max-width:120px"><input id="rptOvMaker" class="fchip" list="dl_rptmaker" placeholder="🏭 ผู้ผลิต" oninput="filterRptOv()" style="max-width:130px"><datalist id="dl_rptmaker">${rptMakers.map(m=>'<option value="'+esc(m)+'">').join('')}</datalist><select id="rptOvOut" class="fchip" onchange="filterRptOv()" style="max-width:150px;width:auto"><option value="">📦 ทั้งหมด</option><option value="wip">เฉพาะค้าง WIP</option><option value="qt">เฉพาะค้าง Q-Time</option><option value="bal">เฉพาะมีคงเหลือ</option></select><select id="rptOvSort" class="fchip" onchange="filterRptOv()" style="max-width:165px;width:auto"><option value="date_desc">↓ ใหม่ → เก่า</option><option value="date_asc">↑ เก่า → ใหม่</option><option value="po_desc">PO: มาก→น้อย</option><option value="po_asc">PO: น้อย→มาก</option><option value="cust">เรียง: ลูกค้า</option><option value="pn">เรียง: Part</option><option value="bal">ค้าง มาก→น้อย</option><option value="wip">WIP มาก→น้อย</option><option value="qt">Q-Time มาก→น้อย</option></select></div>
+    <div class="right" style="display:flex;gap:6px;flex-wrap:wrap"><input id="rptSel" list="dl_rptsel" placeholder="พิมพ์ Part Number / ชื่อ" value="${sel?esc(sel.pn):''}" onchange="rptPick(this.value)" style="min-width:240px"><datalist id="dl_rptsel">${prods.slice(0,1600).map(p=>`<option value="${esc(p.pn)}">${esc(p.name||'')}</option>`).join('')}</datalist><input id="rptOvQ" placeholder="ค้นหาในตารางสรุป" oninput="filterRptOv()" style="max-width:160px"><input id="rptOvCust" class="fchip" list="dl_rptcust" placeholder="👤 ลูกค้า" oninput="filterRptOv()" style="max-width:140px"><datalist id="dl_rptcust">${custs.map(c=>'<option value="'+esc(c)+'">').join('')}</datalist><input id="rptOvPo" class="fchip" placeholder="🔢 PO" oninput="filterRptOv()" style="max-width:120px"><input id="rptOvMaker" class="fchip" list="dl_rptmaker" placeholder="🏭 ผู้ผลิต" oninput="filterRptOv()" style="max-width:130px"><datalist id="dl_rptmaker">${rptMakers.map(m=>'<option value="'+esc(m)+'">').join('')}</datalist><select id="rptOvD" class="fchip" onchange="filterRptOv()" title="วันสั่งผลิต" style="min-width:132px;width:auto"><option value="">📆 วันสั่งผลิต</option>${Array.from({length:31},(_,i)=>'<option value="'+String(i+1).padStart(2,'0')+'">วันที่ '+(i+1)+'</option>').join('')}</select><select id="rptOvM" class="fchip" onchange="filterRptOv()" title="เดือนสั่งผลิต" style="min-width:142px;width:auto"><option value="">🗓️ เดือนสั่งผลิต</option>${['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'].map((m,i)=>'<option value="'+String(i+1).padStart(2,'0')+'">'+m+'</option>').join('')}</select><select id="rptOvY" class="fchip" onchange="filterRptOv()" title="ปีสั่งผลิต" style="min-width:122px;width:auto"><option value="">📅 ปีสั่งผลิต</option>${[...new Set(DB.docs.filter(d=>d.type==='PRD'&&d.status!=='cancelled'&&!d.statOnly).map(d=>String(d.date||'').slice(0,4)).filter(y=>/^\d{4}$/.test(y)))].sort().reverse().map(y=>'<option value="'+y+'">'+y+'</option>').join('')}</select><button class="btn sm" title="ล้างตัวกรองวันที่" onclick="['rptOvD','rptOvM','rptOvY'].forEach(i=>{var e=document.getElementById(i);if(e)e.value='';});filterRptOv()">✕</button><select id="rptOvOut" class="fchip" onchange="filterRptOv()" style="max-width:150px;width:auto"><option value="">📦 ทั้งหมด</option><option value="wip">เฉพาะค้าง WIP</option><option value="qt">เฉพาะค้าง Q-Time</option><option value="bal">เฉพาะมีคงเหลือ</option></select><select id="rptOvSort" class="fchip" onchange="filterRptOv()" style="max-width:165px;width:auto"><option value="date_desc">↓ ใหม่ → เก่า</option><option value="date_asc">↑ เก่า → ใหม่</option><option value="po_desc">PO: มาก→น้อย</option><option value="po_asc">PO: น้อย→มาก</option><option value="cust">เรียง: ลูกค้า</option><option value="pn">เรียง: Part</option><option value="bal">ค้าง มาก→น้อย</option><option value="wip">WIP มาก→น้อย</option><option value="qt">Q-Time มาก→น้อย</option></select></div>
   </div>`;
   if(sel){
     const a=agg[sel.id]||{po:0,prd:0,recv:0,ok:0,ng:0,si:0,inv:0};
@@ -24220,8 +24243,8 @@ function viewReport(el){
   try{ setTimeout(rptOvTotals,0); }catch(e){}     /* ★ คิดยอดรวมท้ายตารางตั้งแต่เปิดหน้า */
 }
 function rptPick(val){const pn=(val||'').split(' ')[0];const p=DB.products.find(x=>x.pn===pn||x.pn===val);window.__rptPid=p?p.id:'';render();}
-function filterRptOv(){const g=id=>((document.getElementById(id)||{}).value||'').trim().toLowerCase();const q=g('rptOvQ'),c=g('rptOvCust'),po=g('rptOvPo'),mkr=g('rptOvMaker'),out=((document.getElementById('rptOvOut')||{}).value||''),sort=((document.getElementById('rptOvSort')||{}).value||'date_desc');
-  document.querySelectorAll('#rptOvRows tr').forEach(tr=>{const ds=tr.dataset||{};const t=tr.textContent.toLowerCase();let show=(!q||t.includes(q))&&(!c||(ds.cust||'').includes(c))&&(!po||(ds.po||'').includes(po))&&(!mkr||(ds.maker||'').includes(mkr));if(show&&out){if(out==='wip')show=Number(ds.wip||0)>0;else if(out==='qt')show=Number(ds.qt||0)>0;else if(out==='bal')show=Number(ds.bal||0)>0;}tr.style.display=show?'':'none';});
+function filterRptOv(){const g=id=>((document.getElementById(id)||{}).value||'').trim().toLowerCase();const fD=g('rptOvD'),fM=g('rptOvM'),fY=g('rptOvY');const q=g('rptOvQ'),c=g('rptOvCust'),po=g('rptOvPo'),mkr=g('rptOvMaker'),out=((document.getElementById('rptOvOut')||{}).value||''),sort=((document.getElementById('rptOvSort')||{}).value||'date_desc');
+  document.querySelectorAll('#rptOvRows tr').forEach(tr=>{const ds=tr.dataset||{};const t=tr.textContent.toLowerCase();let show=(!q||t.includes(q))&&(!c||(ds.cust||'').includes(c))&&(!po||(ds.po||'').includes(po))&&(!mkr||(ds.maker||'').includes(mkr));if(show&&(fD||fM||fY)){const dt=String(ds.date||'');show=(!fY||dt.slice(0,4)===fY)&&(!fM||dt.slice(5,7)===fM)&&(!fD||dt.slice(8,10)===fD);}if(show&&out){if(out==='wip')show=Number(ds.wip||0)>0;else if(out==='qt')show=Number(ds.qt||0)>0;else if(out==='bal')show=Number(ds.bal||0)>0;}tr.style.display=show?'':'none';});
   const tb=document.getElementById('rptOvRows');if(tb){const rows=[...tb.querySelectorAll('tr')];rows.sort((a,b)=>{const A=a.dataset||{},B=b.dataset||{};if(sort==='date_desc')return (B.date||'').localeCompare(A.date||'')||String(B.po||'').localeCompare(String(A.po||''),undefined,{numeric:true});if(sort==='date_asc')return (A.date||'').localeCompare(B.date||'')||String(A.po||'').localeCompare(String(B.po||''),undefined,{numeric:true});if(sort==='po_desc')return String(B.po||'').localeCompare(String(A.po||''),undefined,{numeric:true});if(sort==='po_asc')return String(A.po||'').localeCompare(String(B.po||''),undefined,{numeric:true});if(sort==='pn')return (A.pn||'').localeCompare(B.pn||'');if(sort==='bal')return Number(B.bal||0)-Number(A.bal||0);if(sort==='wip')return Number(B.wip||0)-Number(A.wip||0);if(sort==='qt')return Number(B.qt||0)-Number(A.qt||0);return (A.cust||'').localeCompare(B.cust||'')||(A.pn||'').localeCompare(B.pn||'');});rows.forEach(r=>tb.appendChild(r));}
   rptOvTotals();}
 /* รวมยอดท้ายตารางรายงาน — นับเฉพาะแถวที่แสดงอยู่หลังกรอง */
@@ -31629,10 +31652,24 @@ var NCX={
    ['method','ขั้นตอน / วิธีการแก้ไข-ซ่อม','ta'],['cusRef','อนุมัติลูกค้า (เลขที่ · วันที่ · ผู้อนุมัติ)'],['cost','ค่าใช้จ่ายการแก้ไข (บาท)','num'],
    ['verify','ผลตรวจสอบหลังแก้ไข (วิธี · จำนวน · ผล)','ta'],['remark','หมายเหตุ','ta']],
   cols:[['date','วันที่','date'],['lot','Lot','text'],['qty','จำนวนแก้','num'],['ok','OK หลังแก้','num'],['ng','แก้ไม่ได้','num'],['by','ผู้แก้ไข','text'],['insp','ผู้ตรวจ','text']],
-  sum:['qty','ok','ng'],qtyF:'qtyIn'}
+  sum:['qty','ok','ng'],qtyF:'qtyIn'},
+ scr:{k:'scr',code:'qc.fm64',def:'FM-QC-64',pre:'SCP',slot:'qc64',ico:'🗑️',btn:'SCRAP',menu:'ขออนุมัติทิ้งงานเสีย',route:'ncscr',job:'SCR',
+  th:'ใบขออนุมัติทิ้งงานเสีย',en:'SCRAP DISPOSAL APPROVAL REQUEST',
+  iso:'ISO 9001:2015 ข้อ 8.7 · IATF 16949 ข้อ 8.7.1.7 (Disposition of nonconforming product) · 8.7.1.4 / 8.7.1.5',
+  flow:'งาน NG ที่แก้ไข / ซ่อม / ยอมรับพิเศษไม่ได้ → ผู้ขอระบุจำนวน มูลค่า และเหตุผล → ผู้ตรวจสอบยืนยันจำนวนจริงและยืนยันว่าแก้ไม่ได้ → ผู้อนุมัติพิจารณา → ทำให้ใช้งานไม่ได้ก่อนทิ้ง (IATF 8.7.1.7) → ทิ้ง / ขายเศษ บันทึกผลพร้อมพยาน → ปิดเรื่อง',
+  groups:[['why','1. เหตุผลที่ต้องทิ้ง',[['norwk','แก้ไขไม่ได้ (Rework)'],['norep','ซ่อมไม่ได้ (Repair)'],['nosa','ลูกค้าไม่ยอมรับพิเศษ'],['cost','ค่าแก้ไขสูงกว่ามูลค่างาน'],['safety','กระทบความปลอดภัย / Special characteristic'],['oth','อื่น ๆ']]],
+   ['ref','2. ดำเนินการแล้วก่อนขอทิ้ง',[['srt','คัดแยกแล้ว (FM-QC-62)'],['rwk','พยายามแก้ไข / ซ่อมแล้ว (FM-QC-63)'],['sa','ขอยอมรับพิเศษแล้ว (FM-QC-43)'],['claim','ออก Claim Sheet แล้ว (FM-QC-27)']]],
+   ['pay','3. ผู้รับผิดชอบค่าเสียหาย',[['rtk','RTK'],['mk','ผู้ผลิต / ผู้ขาย'],['cus','ลูกค้า']]],
+   ['how','4. วิธีทำลาย / กำจัด',[['deform','ทำให้ใช้งานไม่ได้ (ตัด / ทุบ / ทำเครื่องหมาย) ก่อนทิ้ง'],['metal','ขายเป็นเศษเหล็ก'],['waste','ทิ้งเป็นขยะอุตสาหกรรม (ผู้รับกำจัดที่ได้รับอนุญาต)'],['ret','ส่งคืนผู้ผลิต / ผู้ขายทำลาย'],['cus','ทำลายตามข้อกำหนดลูกค้า']]],
+   ['ident','5. การชี้บ่ง / แยกพื้นที่',[['tag','ติดป้าย SCRAP (แดง)'],['area','แยกเก็บพื้นที่ของเสีย'],['photo','ถ่ายรูปหลักฐานก่อน-หลังทำลาย']]],
+   ['dec','6. ผลการพิจารณา (ผู้อนุมัติ)',[['ok','อนุมัติให้ทิ้ง'],['no','ไม่อนุมัติ — ส่งกลับแก้ไข / ยอมรับพิเศษ'],['more','ขอข้อมูลเพิ่มเติม']]]],
+  fields:[['qty','จำนวนที่ขอทิ้ง (ชิ้น)','num'],['kg','น้ำหนักรวม (กก.)','num'],['unitCost','มูลค่าต่อชิ้น (บาท)','num'],['value','มูลค่ารวม (บาท · ว่าง = คำนวณ)','num'],
+   ['due','กำหนดทำลาย','date'],['place','สถานที่ / ผู้รับกำจัด'],['reason','รายละเอียดเหตุผล (ทำไมแก้ไข / ซ่อม / ยอมรับพิเศษไม่ได้)','ta'],['evid','หลักฐานการทำลาย (วันที่ · ผู้ทำลาย · ผู้ตรวจสอบ · เอกสารผู้รับกำจัด)','ta'],['remark','หมายเหตุ','ta']],
+  cols:[['date','วันที่ทิ้ง','date'],['lot','Lot','text'],['qty','จำนวนทิ้ง','num'],['kg','น้ำหนัก (กก.)','num'],['how','วิธีทำลาย','text'],['by','ผู้ทำลาย','text'],['wit','ผู้ตรวจสอบ / พยาน','text']],
+  sum:['qty','kg'],qtyF:'qty',sig:[['prep','REQUESTED BY','ผู้ขอ'],['chk','CHECKED BY','ผู้ตรวจสอบ'],['app','APPROVED BY','ผู้อนุมัติ']]}
 };
 var NCX_SIG=[['prep','PREPARED BY','ผู้จัดทำ'],['chk','CHECKED BY','ผู้ตรวจสอบ'],['app','APPROVED BY','ผู้อนุมัติ']];
-var _ncxK='', _ncxId='', _ncxD=null, _ncxF={srt:{q:'',st:'',mon:'',sort:'date_desc'},rwk:{q:'',st:'',mon:'',sort:'date_desc'}};
+var _ncxK='', _ncxId='', _ncxD=null, _ncxF={srt:{q:'',st:'',mon:'',sort:'date_desc'},rwk:{q:'',st:'',mon:'',sort:'date_desc'},scr:{q:'',st:'',mon:'',sort:'date_desc'}};
 function ncxCode(k){ var C=NCX[k]; try{ return fmCode(C.code,C.def); }catch(e){ return C.def; } }
 function ncxOf(d,k){ var x=d&&d[k]; return (x&&!x.cancelled)?x:null; }
 function ncxNextNo(k,iso,selfId){ var C=NCX[k], dt=iso?new Date(String(iso).slice(0,10)+'T00:00:00'):new Date(); if(isNaN(dt))dt=new Date();
@@ -31644,6 +31681,10 @@ function ncxDefaults(k,d){ var C=NCX[k], D={no:'',date:todayISO(),status:'open',
   C.fields.forEach(function(f){ D[f[0]]=''; });
   if(k==='srt'){ D.suspect=Number(d.qty)||Number(d.ng)||''; D.lotFrom=d.lot||''; D.criteria='ตรวจตามข้อกำหนด Drawing / Spec ของ '+(d.part||'')+'\nNG = '+String(d.defect||'').trim(); D.chk.scope={stk:1}; D.chk.how={vis:1}; D.chk.who={in:1}; D.chk.ident={ok:1,ng:1};
     D.rows=[{date:todayISO(),lot:d.lot||d.po||'',chk:'',ok:'',ng:'',by:'',hr:''}]; }
+  else if(k==='scr'){ var rk=ncxOf(d,'rwk'), rs=rk?ncxSum('rwk',rk):null, nq=(rs&&rs.ng)?rs.ng:(Number(d.ng)||Number(d.qty)||0), pp=null; try{ pp=(d.productId?P(d.productId):null)||(d.part?findFGByPN(d.part):null); }catch(e){}   /* ใบ NC ไม่ผูกรหัส = หาจาก Part No. */
+    D.qty=nq||''; D.unitCost=pp?(Number(pp.prodPrice)||''):''; D.reason='งาน NG จากใบ NC '+(d.no||'')+' · '+(d.part||'')+'\nปัญหา : '+String(d.defect||'').trim()+(rs&&rs.ng?('\nแก้ไข-ซ่อม '+(rk.no||'')+' แก้ไม่ได้ '+fmt(rs.ng)+' ชิ้น'):'');
+    D.chk.why=rs&&rs.ng?{norwk:1}:{}; D.chk.ref={}; if(ncxOf(d,'srt'))D.chk.ref.srt=1; if(rk)D.chk.ref.rwk=1; if(d.sa&&!d.sa.cancelled)D.chk.ref.sa=1; if(d.claim)D.chk.ref.claim=1;
+    D.chk.how={deform:1}; D.chk.ident={tag:1,area:1}; D.rows=[{date:'',lot:d.lot||d.po||'',qty:'',kg:'',how:'',by:'',wit:''}]; }
   else { D.qtyIn=Number(d.ng)||''; D.method=String(d.method||'').trim(); D.chk.kind={rework:1}; D.chk.risk={risk:1,trace:1}; D.chk.where={in:1}; D.chk.insp={all:1}; D.chk.ident={mark:1};
     D.rows=[{date:todayISO(),lot:d.lot||d.po||'',qty:'',ok:'',ng:'',by:'',insp:''}]; }
   return D; }
@@ -31678,20 +31719,20 @@ function ncxForm(){ var k=_ncxK, C=NCX[k], D=_ncxD, d=(DB.docs||[]).find(functio
    +'<label style="display:inline-flex;gap:6px;align-items:center;font-size:12.5px"><input type="checkbox" id="ncx_pic"'+(D.pic?' checked':'')+' style="width:auto"> แสดงรูปในใบพิมพ์</label>'
    +'<div style="display:flex;gap:12px;margin-top:6px">'+(pc.ng?'<div style="text-align:center"><div style="font-size:11px;font-weight:800;color:#c00">PICTURE NG</div><img src="'+esc(pc.ng)+'" style="max-height:120px;max-width:220px;border:1px solid var(--line)"></div>':'')+(pc.ok?'<div style="text-align:center"><div style="font-size:11px;font-weight:800;color:#16a34a">PICTURE OK</div><img src="'+esc(pc.ok)+'" style="max-height:120px;max-width:220px;border:1px solid var(--line)"></div>':'')
      +((!pc.ng&&!pc.ok)?'<span class="muted" style="font-size:12px">ใบ NC นี้ยังไม่ได้แนบรูป — แนบที่ช่อง PICTURE NG / PICTURE OK ในหน้า NC</span>':'')+'</div>'
-   +sec('บันทึกผล'+(k==='srt'?'การคัดแยก':'การแก้ไข / ซ่อม'))
+   +sec('บันทึกผล'+(k==='srt'?'การคัดแยก':k==='scr'?'การทิ้ง / ทำลายจริง':'การแก้ไข / ซ่อม'))
    +'<div class="tbl-wrap"><table style="width:100%;font-size:12px;border-collapse:collapse"><thead><tr style="background:var(--panel2)"><th style="width:30px">#</th>'+C.cols.map(function(c){ return '<th style="padding:4px 6px;text-align:'+(c[2]==='num'?'right':'left')+'">'+esc(c[1])+'</th>'; }).join('')+'<th style="width:30px"></th></tr></thead><tbody>'
      +D.rows.map(function(r,i){ return '<tr><td class="muted c">'+(i+1)+'</td>'+C.cols.map(function(c){ return '<td style="padding:2px 3px"><input id="ncx_r'+i+'_'+c[0]+'"'+(c[2]==='num'?' type="number" step="any" style="text-align:right"':(c[2]==='date'?' type="date"':''))+' value="'+esc(r[c[0]]==null?'':r[c[0]])+'"></td>'; }).join('')+'<td class="c"><span style="cursor:pointer;color:var(--red)" onclick="ncxRowDel('+i+')">✕</span></td></tr>'; }).join('')
      +'</tbody></table></div><button class="btn sm" style="margin-top:6px" onclick="ncxRowAdd()">+ เพิ่มบรรทัด</button>'
    +sec('ผู้ลงนาม (พิมพ์ชื่อ · แนบลายเซ็นตามชื่อ)')
-   +'<div class="row c3">'+NCX_SIG.map(function(s){ return '<div class="field"><label>'+s[2]+' · '+s[1]+'</label><input id="ncx_sg_'+s[0]+'" value="'+esc(D.sg[s[0]]||'')+'"></div>'; }).join('')+'</div>';
+   +'<div class="row c3">'+(C.sig||NCX_SIG).map(function(s){ return '<div class="field"><label>'+s[2]+' · '+s[1]+'</label><input id="ncx_sg_'+s[0]+'" value="'+esc(D.sg[s[0]]||'')+'"></div>'; }).join('')+'</div>';
   modal({title:C.ico+' '+esc(C.th)+' · '+esc(ncxCode(k))+' Rev.00 · '+esc(d.part||''),size:'full',body:body,
-    footer:'<button class="btn" onclick="closeModal()">ปิด</button>'+(d[k]?'<button class="btn danger" onclick="ncxDel(\''+k+'\',\''+d.id+'\')">🗑️ ลบ</button>':'')+'<button class="btn" onclick="ncxSave(1)">🖨️ บันทึก + พิมพ์</button><button class="btn pri" onclick="ncxSave(0)">💾 บันทึก</button>'}); }
+    footer:'<button class="btn" onclick="closeModal()">ปิด</button>'+(d[k]?(k==='scr'?(d[k].cancelled?'':'<button class="btn danger" onclick="ncxCancelOpen(\''+k+'\',\''+d.id+'\')">ยกเลิกใบ</button>'):'<button class="btn danger" onclick="ncxDel(\''+k+'\',\''+d.id+'\')">🗑️ ลบ</button>'):'')+'<button class="btn" onclick="ncxSave(1)">🖨️ บันทึก + พิมพ์</button><button class="btn pri" onclick="ncxSave(0)">💾 บันทึก</button>'}); }
 function ncxCollect(){ var k=_ncxK, C=NCX[k], D=_ncxD; if(!D)return null; var v=function(id){ var e=document.getElementById(id); return e?String(e.value==null?'':e.value):null; };
   ['no','date','status','closeDate'].concat(C.fields.map(function(f){ return f[0]; })).forEach(function(f){ var x=v('ncx_'+f); if(x!=null)D[f]=x; });
   D.chk={}; C.groups.forEach(function(g){ g[2].forEach(function(o){ var e=document.getElementById('ncx_c_'+g[0]+'_'+o[0]); if(e&&e.checked){ D.chk[g[0]]=D.chk[g[0]]||{}; D.chk[g[0]][o[0]]=1; } }); });
   var pe=document.getElementById('ncx_pic'); if(pe)D.pic=pe.checked?1:0;
   D.rows=D.rows.map(function(r,i){ var o={}; C.cols.forEach(function(c){ var x=v('ncx_r'+i+'_'+c[0]); o[c[0]]=(x!=null)?x:(r[c[0]]||''); }); return o; });
-  NCX_SIG.forEach(function(s){ var x=v('ncx_sg_'+s[0]); if(x!=null)D.sg[s[0]]=x.trim(); });
+  (C.sig||NCX_SIG).forEach(function(s){ var x=v('ncx_sg_'+s[0]); if(x!=null)D.sg[s[0]]=x.trim(); });
   return D; }
 function ncxRowAdd(){ ncxCollect(); var o={}; NCX[_ncxK].cols.forEach(function(c){ o[c[0]]=c[2]==='date'?todayISO():''; }); _ncxD.rows.push(o); ncxForm(); }
 function ncxRowDel(i){ ncxCollect(); _ncxD.rows.splice(i,1); ncxForm(); }
@@ -31700,7 +31741,8 @@ function ncxSave(andPrint){ var k=_ncxK, D=ncxCollect(); var d=(DB.docs||[]).fin
   if(ncxNoUsed(k,D.no,d.id)){ toast('เลขที่ '+D.no+' มีอยู่แล้ว — แก้เลขที่ก่อนบันทึก','err'); return; }
   if(D.status==='closed'&&!D.closeDate)D.closeDate=todayISO(); if(D.closeDate&&D.status!=='closed')D.status='closed';
   D.rows=D.rows.filter(function(r){ return Object.keys(r).some(function(x){ return x!=='date'&&String(r[x]||'').trim(); }); });
-  delete D.cancelled; D.ts=Date.now(); d[k]=D; d.ts=Date.now(); try{ saveDB(); }catch(e){} try{ xLinkPushNow(); }catch(e){}
+  if(k==='scr'&&!(Number(D.value)>0)&&Number(D.qty)>0&&Number(D.unitCost)>0)D.value=String(Math.round(Number(D.qty)*Number(D.unitCost)*100)/100);   /* มูลค่ารวม = จำนวน × มูลค่าต่อชิ้น */
+  delete D.cancelled; delete D.cancelWhy; delete D.cancelAt; D.ts=Date.now(); d[k]=D; d.ts=Date.now(); try{ saveDB(); }catch(e){} try{ xLinkPushNow(); }catch(e){}
   closeModal(); try{ render(); }catch(e){} toast('บันทึก '+NCX[k].th+' '+D.no+' แล้ว','ok');
   if(andPrint){ var id=d.id; setTimeout(function(){ ncxPrint(k,id); },80); } }
 function ncxDel(k,id){ var d=(DB.docs||[]).find(function(x){ return x&&x.id===id; }); if(!d||!d[k])return;
@@ -31730,17 +31772,17 @@ function ncxPrint(k,id,mode){ var C=NCX[k], d=(DB.docs||[]).find(function(x){ re
   var rate=(k==='srt'&&S.chk)?(' · NG '+(Math.round(S.ng/S.chk*10000)/100)+'%'):((k==='rwk'&&S.qty)?(' · สำเร็จ '+(Math.round(S.ok/S.qty*10000)/100)+'%'):'');
   var html='<!DOCTYPE html><html lang="th"><head><meta charset="utf-8"><title>'+e(ncxCode(k))+' '+e(C.th)+' '+e(D.no||'')+'</title><style>'+css+'</style></head><body><div class="pg">'
    +'<div class="hd"><div class="lg">'+((typeof LOGO_RTK!=='undefined'&&LOGO_RTK)?'<div style="width:24.4mm;height:15mm;overflow:hidden" title="RTK"><img src="'+LOGO_RTK+'" style="height:15mm;width:auto;max-width:none;max-height:none;display:block"></div>':'<b style="font-size:22px;color:#16315f">RTK</b>')+'</div><div class="tt">'+e(C.th)+'<span>'+e(C.en)+'</span></div>'
-     +'<div class="rr"><b>NO. :</b> '+e(D.no||'')+'<br><b>DATE :</b> '+e(D.date?dlvDMY(D.date):'')+'<br><b>STATUS :</b> '+(D.status==='closed'?'CLOSED '+e(D.closeDate?dlvDMY(D.closeDate):''):'OPEN')+'</div></div>'
+     +'<div class="rr"><b>NO. :</b> '+e(D.no||'')+'<br><b>DATE :</b> '+e(D.date?dlvDMY(D.date):'')+'<br><b>STATUS :</b> '+(D.cancelled?'<b style="color:#c00">CANCELLED ยกเลิก</b>':D.status==='closed'?'CLOSED '+e(D.closeDate?dlvDMY(D.closeDate):''):'OPEN')+'</div></div>'
    +'<div class="sec">ข้อมูลปัญหา / NON-CONFORMANCE</div><table class="inf">'+ir.join('')+'</table>'
    +'<div class="sec">รายละเอียด / DETAIL</div><table class="fd">'+nr.join('')+'</table>'
    +'<div class="grp">'+C.groups.map(function(g){ var on=(D.chk||{})[g[0]]||{}; return '<div><b>'+e(g[1])+'</b>'+g[2].map(function(o){ return ck(on[o[0]])+e(o[1]); }).join('')+'</div>'; }).join('')+'</div>'
    +'<table class="fd">'+tx.map(function(f){ return '<tr><td class="l">'+e(f[1])+'</td><td class="tx">'+e(D[f[0]]||'')+'</td></tr>'; }).join('')+'</table>'
    +((pc.ng||pc.ok)?('<div class="sec">รูปประกอบ / PICTURE</div><div class="pics">'+(pc.ng?'<div><span style="color:#c00">PICTURE NG</span><img src="'+e(pc.ng)+'"></div>':'')+(pc.ok?'<div><span style="color:#16a34a">PICTURE OK</span><img src="'+e(pc.ok)+'"></div>':'')+'</div>'):'')
-   +'<div class="sec">บันทึกผล'+(k==='srt'?'การคัดแยก / SORTING RECORD':'การแก้ไข-ซ่อม / REWORK RECORD')+e(rate)+'</div>'
+   +'<div class="sec">บันทึกผล'+(k==='srt'?'การคัดแยก / SORTING RECORD':k==='scr'?'การทิ้ง / ทำลายจริง / DISPOSAL RECORD':'การแก้ไข-ซ่อม / REWORK RECORD')+e(rate)+'</div>'
    +'<table class="rt"><tr><th style="width:6mm">#</th>'+C.cols.map(function(c){ return '<th>'+e(c[1])+'</th>'; }).join('')+'</tr>'
      +rows.map(function(r,i){ return '<tr><td style="text-align:center">'+(r&&Object.keys(r).length?(i+1):'')+'</td>'+C.cols.map(function(c){ var v=r[c[0]]; if(c[2]==='date'&&v)v=dlvDMY(v); if(c[2]==='num'&&v!==''&&v!=null)v=fmt(Number(v)||0); return '<td'+(c[2]==='num'?' class="n"':'')+'>'+e(v||'')+'&nbsp;</td>'; }).join('')+'</tr>'; }).join('')
      +'<tr class="t"><td></td>'+C.cols.map(function(c){ return '<td class="n">'+(C.sum.indexOf(c[0])>=0?fmt(Math.round(S[c[0]]*100)/100):(c===C.cols[0]?'รวม':''))+'</td>'; }).join('')+'</tr></table>'
-   +'<table class="sg"><tr>'+NCX_SIG.map(function(s){ var nm=(D.sg||{})[s[0]]||'', im=sgImg(nm); return '<td><div class="sh">'+s[2]+'<br><i>'+s[1]+'</i></div><div class="sb">'+(im?'<img src="'+im+'">':'')+'</div><div class="sn">( '+(nm?e(nm):'&nbsp;'.repeat(26))+' )</div></td>'; }).join('')+'</tr></table>'
+   +'<table class="sg"><tr>'+(C.sig||NCX_SIG).map(function(s){ var nm=(D.sg||{})[s[0]]||'', im=sgImg(nm); return '<td><div class="sh">'+s[2]+'<br><i>'+s[1]+'</i></div><div class="sb">'+(im?'<img src="'+im+'">':'')+'</div><div class="sn">( '+(nm?e(nm):'&nbsp;'.repeat(26))+' )</div></td>'; }).join('')+'</tr></table>'
    +'</div><div class="ft"><span>'+e(C.iso)+'</span><span>'+e(ncxCode(k))+' Rev.00</span></div>'
    +'<div class="noprint" style="text-align:center;padding:8px"><button onclick="window.print()" style="padding:8px 22px;cursor:pointer">🖨️ พิมพ์ / บันทึก PDF</button></div>'
    +'<scr'+'ipt>setTimeout(function(){window.print()},500)</scr'+'ipt></body></html>';
@@ -31748,19 +31790,27 @@ function ncxPrint(k,id,mode){ var C=NCX[k], d=(DB.docs||[]).find(function(x){ re
   if(mode==='preview')html=html.replace('<scr'+'ipt>setTimeout(function(){window.print()},500)</scr'+'ipt>','');
   var w=window.open('','_blank'); if(!w){ toast('เบราว์เซอร์บล็อก popup','err'); return; }
   w.document.write(html); w.document.close(); }
-function ncxDocs(k){ return (DB.docs||[]).filter(function(d){ return d&&d.type==='NC'&&d.status!=='cancelled'&&ncxOf(d,k); }); }
+function ncxDocs(k,all){ return (DB.docs||[]).filter(function(d){ return d&&d.type==='NC'&&d.status!=='cancelled'&&(ncxOf(d,k)||(all&&d[k]&&d[k].cancelled)); }); }
+/* ยกเลิกใบ (ไม่ลบ · คืนค่า = ✏️ แก้ไข แล้วบันทึก) — ใช้กับ ขออนุมัติทิ้งงานเสีย */
+function ncxCancelOpen(k,id){ var C=NCX[k], d=(DB.docs||[]).find(function(x){ return x&&x.id===id; }); if(!d||!d[k])return;
+  modal({title:'ยกเลิก '+esc(C.th)+' '+esc(d[k].no||''),body:'<div class="field"><label>เหตุผลที่ยกเลิก</label><input id="ncx_cw" placeholder="เช่น ลูกค้ายอมรับพิเศษแล้ว / ออกใบซ้ำ"></div><div class="hint"><span class="i">💡</span><div>ใบยังอยู่ในระบบ (ไม่ลบ) · เลขที่ไม่หาย · คืนค่าได้ด้วย ✏️ แก้ไข แล้วบันทึก</div></div>',
+    footer:'<button class="btn" onclick="closeModal()">ปิด</button><button class="btn danger" onclick="ncxCancelGo(\''+k+'\',\''+id+'\')">ยืนยันยกเลิก</button>'}); }
+function ncxCancelGo(k,id){ var d=(DB.docs||[]).find(function(x){ return x&&x.id===id; }); if(!d||!d[k])return; var w=String((document.getElementById('ncx_cw')||{}).value||'').trim(); if(!w){ toast('กรุณาระบุเหตุผลที่ยกเลิก','err'); return; }
+  d[k].cancelled=1; d[k].cancelWhy=w; d[k].cancelAt=new Date().toLocaleString('th-TH'); d[k].ts=Date.now(); d.ts=Date.now(); try{ saveDB(); }catch(e){} closeModal(); try{ render(); }catch(e){} toast('ยกเลิก '+(d[k].no||'')+' แล้ว','ok'); }
 function viewNCX(el,k){ var C=NCX[k], F=_ncxF[k], so=F.sort||'date_desc', q=String(F.q||'').toLowerCase();
   setTitle(C.ico+' '+C.menu,C.th+' '+ncxCode(k)+' Rev.00 · รายการจากปุ่ม '+C.btn+' ของงานไม่ตรงข้อกำหนด (NC) · '+C.iso);
   var dOf=function(d){ return String(d[k].date||d.date||''); }, cn=function(a,b){ return String(a[k].no||'').localeCompare(String(b[k].no||''),undefined,{numeric:true}); }, cd=function(a,b){ return dOf(a).localeCompare(dOf(b))||cn(a,b); };
-  var all=ncxDocs(k).sort(function(a,b){ return so==='date_asc'?cd(a,b):so==='no_desc'?cn(b,a):so==='no_asc'?cn(a,b):cd(b,a); });
+  var all=ncxDocs(k,k==='scr').sort(function(a,b){ return so==='date_asc'?cd(a,b):so==='no_desc'?cn(b,a):so==='no_asc'?cn(a,b):cd(b,a); });
   var mons=[...new Set(all.map(function(d){ return dOf(d).slice(0,7); }).filter(Boolean))].sort().reverse();
   var rows=all.filter(function(d){ var x=d[k]; if(F.mon&&dOf(d).slice(0,7)!==F.mon)return false; if(F.st&&(x.status==='closed'?'closed':'open')!==F.st)return false;
     if(q){ var t=[x.no,d.no,d.part,d.partName,d.customer,d.maker,d.po,d.lot,d.defect,x.remark].join(' ').toLowerCase(); if(t.indexOf(q)<0)return false; } return true; });
-  var nOpen=all.filter(function(d){ return d[k].status!=='closed'; }).length, nLink=all.filter(function(d){ try{ return !!xLinkGet(d.id,C.slot); }catch(e){ return false; } }).length;
-  var tot={q:0,ok:0,ng:0}; all.forEach(function(d){ var s=ncxSum(k,d[k]); tot.q+=k==='srt'?s.chk:s.qty; tot.ok+=s.ok; tot.ng+=s.ng; });
+  var nOpen=all.filter(function(d){ return d[k].status!=='closed'&&!d[k].cancelled; }).length, nLink=all.filter(function(d){ try{ return !!xLinkGet(d.id,C.slot); }catch(e){ return false; } }).length;
+  var scrV=function(x){ return Number(x.value)||((Number(x.qty)||0)*(Number(x.unitCost)||0)); };
+  var tot={q:0,ok:0,ng:0}; all.forEach(function(d){ if(d[k].cancelled)return; var s=ncxSum(k,d[k]); if(k==='scr'){ tot.q+=s.qty||0; tot.ok+=s.kg||0; tot.ng+=scrV(d[k]); return; } tot.q+=k==='srt'?s.chk:s.qty; tot.ok+=s.ok; tot.ng+=s.ng; });
   var pdfN=0; try{ pdfN=pdfPending(false,C.job).length; }catch(e){}
   var card=function(ic,lbl,v,c){ return '<div class="card"><div class="lbl"><span class="dot d-'+c+'">'+ic+'</span>'+lbl+'</div><div class="val">'+v+'</div></div>'; };
-  el.innerHTML='<div class="cards">'+card(C.ico,'ใบทั้งหมด',fmt(all.length),'brand')+card('⏳','กำลังดำเนินการ',fmt(nOpen),'amber')+card('✅',(k==='srt'?'ตรวจแล้ว':'แก้ไขแล้ว')+' (ชิ้น)',fmt(tot.q),'teal')+card('🟢','OK',fmt(tot.ok),'green')+card('🔴',k==='srt'?'NG':'แก้ไม่ได้',fmt(tot.ng),'red')+card('🔗','แนบไฟล์ '+esc(ncxCode(k))+' แล้ว',fmt(nLink)+' / '+fmt(all.length),'violet')+'</div>'
+  el.innerHTML='<div class="cards">'+card(C.ico,'ใบทั้งหมด',fmt(all.length),'brand')+card('⏳','กำลังดำเนินการ',fmt(nOpen),'amber')+(k==='scr'?(card('🗑️','ทิ้งแล้ว (ชิ้น)',fmt(tot.q),'teal')+card('⚖️','น้ำหนักที่ทิ้ง (กก.)',fmt2(tot.ok),'green')+card('💰','มูลค่าที่ขอทิ้ง (บาท)',fmt2(tot.ng),'red'))
+     :(card('✅',(k==='srt'?'ตรวจแล้ว':'แก้ไขแล้ว')+' (ชิ้น)',fmt(tot.q),'teal')+card('🟢','OK',fmt(tot.ok),'green')+card('🔴',k==='srt'?'NG':'แก้ไม่ได้',fmt(tot.ng),'red')))+card('🔗','แนบไฟล์ '+esc(ncxCode(k))+' แล้ว',fmt(nLink)+' / '+fmt(all.length),'violet')+'</div>'
    +'<div class="panel"><div class="panel-h" style="flex-wrap:wrap;gap:8px"><h2>'+C.ico+' '+esc(C.th)+'</h2><div class="desc">'+fmt(rows.length)+' / '+fmt(all.length)+' ใบ</div>'
      +'<div class="right" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">'
        +'<div class="seg">'+[['','ทั้งหมด'],['open','กำลังดำเนินการ'],['closed','ปิดแล้ว']].map(function(x){ return '<button class="'+(F.st===x[0]?'on':'')+'" onclick="_ncxF.'+k+'.st=\''+x[0]+'\';render()">'+x[1]+'</button>'; }).join('')+'</div>'
@@ -31769,17 +31819,18 @@ function viewNCX(el,k){ var C=NCX[k], F=_ncxF[k], so=F.sort||'date_desc', q=Stri
        +'<select onchange="_ncxF.'+k+'.sort=this.value;render()" title="เรียงลำดับ" style="padding:6px 8px;font-size:12.5px;width:auto;flex:0 0 auto">'+[['date_desc','📅 วันที่: ปัจจุบัน (ล่าสุด)'],['date_asc','⬆ วันที่: เก่า → ใหม่'],['no_desc','เลขที่ มาก→น้อย'],['no_asc','เลขที่ น้อย→มาก']].map(function(x){ return '<option value="'+x[0]+'"'+(so===x[0]?' selected':'')+'>'+x[1]+'</option>'; }).join('')+'</select>'
        +'<button class="btn" style="'+(pdfN?'border-color:#2563eb;color:#1d4ed8;font-weight:700':'')+'" onclick="pdfPanel(\''+C.job+'\')" title="เก็บเป็นไฟล์ PDF ที่เครื่องแม่ข่าย — ทำอัตโนมัติทุกวัน 17:00-18:00 น. แล้วแนบลิงก์ช่อง '+esc(ncxCode(k))+'">📄 PDF เก็บเข้าแฟ้ม'+(pdfN?(' ('+fmt(pdfN)+')'):'')+'</button>'
        +'<button class="btn" onclick="go(\'nc\')">🚫 หน้า NC</button><button class="btn pri" onclick="ncxNewPick(\''+k+'\')">+ สร้างใบใหม่</button></div></div>'
-   +'<div class="panel-b nopad">'+(rows.length?('<div class="tbl-wrap"><table style="font-size:12px;white-space:nowrap"><thead><tr><th>เลขที่ NO.</th><th>วันที่</th><th>NC No.</th><th>Part No.</th><th>ลูกค้า</th><th>ผู้ผลิต</th><th>Lot</th><th>ปัญหา</th><th class="num">'+(k==='srt'?'ต้องคัด':'ส่งแก้')+'</th><th class="num">'+(k==='srt'?'ตรวจแล้ว':'แก้แล้ว')+'</th><th class="num">OK</th><th class="num">'+(k==='srt'?'NG':'แก้ไม่ได้')+'</th><th>สถานะ</th><th style="text-align:center">'+esc(ncxCode(k))+'</th><th></th></tr></thead><tbody>'
+   +'<div class="panel-b nopad">'+(rows.length?('<div class="tbl-wrap"><table style="font-size:12px;white-space:nowrap"><thead><tr><th>เลขที่ NO.</th><th>วันที่</th><th>NC No.</th><th>Part No.</th><th>ลูกค้า</th><th>ผู้ผลิต</th><th>Lot</th><th>ปัญหา</th><th class="num">'+(k==='srt'?'ต้องคัด':k==='scr'?'ขอทิ้ง':'ส่งแก้')+'</th><th class="num">'+(k==='srt'?'ตรวจแล้ว':k==='scr'?'ทิ้งแล้ว':'แก้แล้ว')+'</th><th class="num">'+(k==='scr'?'กก.':'OK')+'</th><th class="num">'+(k==='srt'?'NG':k==='scr'?'มูลค่า (บาท)':'แก้ไม่ได้')+'</th><th>สถานะ</th><th style="text-align:center">'+esc(ncxCode(k))+'</th><th></th></tr></thead><tbody>'
      +rows.map(function(d){ var x=d[k], s=ncxSum(k,x), mk=''; try{ mk=makerShort(d.maker||'')||d.maker||''; }catch(e){ mk=d.maker||''; }
         return '<tr><td class="pn linkish" onclick="ncxPrint(\''+k+'\',\''+d.id+'\',\'preview\')"><b>'+esc(x.no||'')+'</b></td><td class="muted">'+esc(dOf(d))+'</td><td class="muted linkish" onclick="viewNCDoc(\''+d.id+'\')">'+esc(d.no||'')+'</td>'
          +'<td><span class="pn">'+esc(d.part||'')+'</span></td><td>'+esc(d.customer||'-')+'</td><td>'+esc(mk||'-')+'</td><td>'+esc(d.lot||'-')+'</td>'
          +'<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;color:var(--red)" title="'+esc(d.defect||'')+'">'+esc(d.defect||'-')+'</td>'
-         +'<td class="num">'+fmt(Number(x[C.qtyF])||0)+'</td><td class="num">'+fmt(k==='srt'?s.chk:s.qty)+'</td><td class="num" style="color:var(--teal)">'+fmt(s.ok)+'</td><td class="num" style="color:var(--red)"><b>'+fmt(s.ng)+'</b></td>'
-         +'<td>'+(x.status==='closed'?'<span class="tag green">✅ ปิดแล้ว</span>':'<span class="tag amber">⏳ ดำเนินการ</span>')+'</td><td style="text-align:center">'+xLinkBtn(d.id,C.slot,ncxCode(k))+'</td>'
-         +'<td><button class="btn sm" onclick="ncxPrint(\''+k+'\',\''+d.id+'\',\'preview\')">ดู</button> <button class="btn sm" onclick="ncxPrint(\''+k+'\',\''+d.id+'\')" title="พิมพ์">🖨️</button> <button class="btn sm" onclick="ncxOpen(\''+k+'\',\''+d.id+'\')" title="แก้ไข">✏️</button> <button class="btn sm danger" onclick="ncxDel(\''+k+'\',\''+d.id+'\')" title="ลบใบนี้ (ใบ NC ยังอยู่)">ลบ</button></td></tr>'; }).join('')
+         +'<td class="num">'+fmt(Number(x[C.qtyF])||0)+'</td><td class="num">'+fmt(k==='srt'?s.chk:s.qty)+'</td><td class="num" style="color:var(--teal)">'+(k==='scr'?fmt2(s.kg||0):fmt(s.ok))+'</td><td class="num" style="color:var(--red)"><b>'+(k==='scr'?fmt2(scrV(x)):fmt(s.ng))+'</b></td>'
+         +'<td>'+(x.cancelled?'<span class="tag red" title="'+esc(x.cancelWhy||'')+'">🚫 ยกเลิก</span>':x.status==='closed'?'<span class="tag green">✅ ปิดแล้ว</span>':'<span class="tag amber">⏳ '+(k==='scr'?'รออนุมัติ / ดำเนินการ':'ดำเนินการ')+'</span>')+'</td><td style="text-align:center">'+xLinkBtn(d.id,C.slot,ncxCode(k))+'</td>'
+         +'<td><button class="btn sm" onclick="ncxPrint(\''+k+'\',\''+d.id+'\',\'preview\')">ดู</button> <button class="btn sm" onclick="ncxPrint(\''+k+'\',\''+d.id+'\')" title="พิมพ์">🖨️</button> <button class="btn sm" onclick="ncxOpen(\''+k+'\',\''+d.id+'\')" title="แก้ไข">✏️</button> '+(k==='scr'?(x.cancelled?'<span class="muted" style="font-size:11px">คืนค่า = ✏️ แล้วบันทึก</span>':'<button class="btn sm danger" onclick="ncxCancelOpen(\''+k+'\',\''+d.id+'\')" title="ยกเลิกใบ (ไม่ลบ)">ยกเลิก</button>'):'<button class="btn sm danger" onclick="ncxDel(\''+k+'\',\''+d.id+'\')" title="ลบใบนี้ (ใบ NC ยังอยู่)">ลบ</button>')+'</td></tr>'; }).join('')
      +'</tbody></table></div>'):'<div class="empty"><div class="big">'+C.ico+'</div><div class="t">ยังไม่มี'+esc(C.th)+'</div><div>กดปุ่ม '+C.btn+' ท้ายแถวในหน้า NC หรือ + สร้างใบใหม่</div></div>')+'</div></div>'; }
 function viewNCSRT(el){ viewNCX(el,'srt'); }
 function viewNCRWK(el){ viewNCX(el,'rwk'); }
+function viewNCSCR(el){ viewNCX(el,'scr'); }
 function ncxNewPick(k){ var C=NCX[k], L=(DB.docs||[]).filter(function(d){ return d&&d.type==='NC'&&d.status!=='cancelled'&&!ncxOf(d,k); }).sort(function(a,b){ return String(b.date||'').localeCompare(String(a.date||'')); }).slice(0,300);
   if(!L.length){ toast('ทุกใบ NC มี'+C.th+'แล้ว','ok'); return; }
   modal({title:'+ '+esc(C.th)+' ('+esc(ncxCode(k))+') — เลือกใบ NC',body:'<div class="tbl-wrap" style="max-height:60vh;overflow:auto"><table style="font-size:12px;white-space:nowrap"><thead><tr><th>NC No.</th><th>วันที่</th><th>Part</th><th>ลูกค้า / ผู้ผลิต</th><th>ปัญหา</th><th class="num">NG</th><th></th></tr></thead><tbody>'
@@ -32129,6 +32180,167 @@ function ccpTrB(g,lg){ return fetch('https://clients5.google.com/translate_a/t?c
 function ccpTrPre(t,lg){ var g=String(t||''); (CCP_TR_GL[lg]||[]).forEach(function(x){ g=g.split(x[0]).join(x[1]); }); return g; }
 function ccpTrFin(o,lg){ o=String(o||''); (CCP_TR_POST[lg]||[]).forEach(function(p){ o=o.replace(p[0],p[1]); }); if(lg==='en')o=o.split('\n').map(function(y){ return y?y.charAt(0).toUpperCase()+y.slice(1):y; }).join('\n'); return o; }
 function ccpTr1(g,lg){ return ccpTrA(g,lg).catch(function(){ return ccpTrB(g,lg); }); }
+/* ===== ★ 31/10c แปลเอกสารงาน NC เป็นภาษาอังกฤษ / จีน (XLG) : CLAIM SHEET · NCR · 8D · SPECIAL REQUEST · คัดแยก · แก้ไข-ซ่อม · ECR =====
+   ติ๊ก English / 中文 ที่ฟอร์ม (หรือที่หน้าใบพิมพ์) → เก็บภาษาไว้ที่เอกสาร d.xlgL[ชนิด] (ซิงก์ทุกเครื่อง)
+   ฟอร์ม : แปลป้าย/หัวข้อ (ข้อมูลที่กรอกยังเป็นไทย) · ใบพิมพ์ : แปลทั้งหน้า (ป้าย + ข้อมูล) · ข้อมูลไทยไม่ถูกแตะ
+   คำแปล : d.xlg[lg][ข้อความไทย] (แก้เองต่อใบ · ซิงก์) → คลังคำแปลในเครื่อง rtk_xlg_tm → แปลอัตโนมัติ (ccpTrSeq ชุดเดียวกับ FM-MK-25)
+   ใบ PDF ที่เก็บเข้าแฟ้มอัตโนมัติ (mode html) ยังเป็นภาษาไทยตามเดิม */
+var XLG_TH=/[฀-๿]/;
+var XLG_LANGS=[['en','English'],['zh','中文 (Chinese)']];
+var XLG_FIX={'บริษัท รัสสมิทองตระกูล จำกัด':'RUSSAMITONGTRAKUL CO., LTD.','บริษัท รัสสมิทองตระกูล จำกัด (สำนักงานใหญ่)':'RUSSAMITONGTRAKUL CO., LTD. (Head Office)'};
+/* ★ 31/10d ศัพท์ที่แปลตายตัว (ใบขออนุมัติทิ้งงานเสีย FM-QC-64) — ใช้ก่อน Google · ค่าแบบ string = ทุกภาษา */
+Object.assign(XLG_FIX,{"ใบขออนุมัติทิ้งงานเสีย":{en:"Scrap Disposal Approval Request",zh:"报废处理审批单"},
+ "ขออนุมัติทิ้งงานเสีย":{en:"Scrap Disposal Approval",zh:"报废审批"},
+ "1. เหตุผลที่ต้องทิ้ง":{en:"1. Reason for scrapping",zh:"1. 报废原因"},
+ "2. ดำเนินการแล้วก่อนขอทิ้ง":{en:"2. Actions taken before scrap request",zh:"2. 申请报废前已采取的措施"},
+ "3. ผู้รับผิดชอบค่าเสียหาย":{en:"3. Cost responsibility",zh:"3. 损失承担方"},
+ "4. วิธีทำลาย / กำจัด":{en:"4. Disposal method",zh:"4. 销毁 / 处置方法"},
+ "5. การชี้บ่ง / แยกพื้นที่":{en:"5. Identification / segregation",zh:"5. 标识 / 隔离"},
+ "6. ผลการพิจารณา (ผู้อนุมัติ)":{en:"6. Decision (Approver)",zh:"6. 审批结果（批准人）"},
+ "แก้ไขไม่ได้ (Rework)":{en:"Cannot be reworked",zh:"无法返工"},
+ "ซ่อมไม่ได้ (Repair)":{en:"Cannot be repaired",zh:"无法返修"},
+ "ลูกค้าไม่ยอมรับพิเศษ":{en:"Customer rejected special acceptance (deviation)",zh:"客户不接受特采"},
+ "ค่าแก้ไขสูงกว่ามูลค่างาน":{en:"Rework cost exceeds part value",zh:"返工成本高于零件价值"},
+ "กระทบความปลอดภัย / Special characteristic":{en:"Affects safety / Special characteristic",zh:"影响安全 / 特殊特性"},
+ "อื่น ๆ":{en:"Others",zh:"其他"},
+ "คัดแยกแล้ว (FM-QC-62)":{en:"Sorted (FM-QC-62)",zh:"已挑选 (FM-QC-62)"},
+ "พยายามแก้ไข / ซ่อมแล้ว (FM-QC-63)":{en:"Rework / repair attempted (FM-QC-63)",zh:"已尝试返工 / 返修 (FM-QC-63)"},
+ "ขอยอมรับพิเศษแล้ว (FM-QC-43)":{en:"Special acceptance requested (FM-QC-43)",zh:"已申请特采 (FM-QC-43)"},
+ "ออก Claim Sheet แล้ว (FM-QC-27)":{en:"Claim Sheet issued (FM-QC-27)",zh:"已开具索赔单 (FM-QC-27)"},
+ "ผู้ผลิต / ผู้ขาย":{en:"Manufacturer / Supplier",zh:"外协厂 / 供应商"},
+ "ลูกค้า":{en:"Customer",zh:"客户"},
+ "ทำให้ใช้งานไม่ได้ (ตัด / ทุบ / ทำเครื่องหมาย) ก่อนทิ้ง":{en:"Render unusable (cut / crush / mark) before disposal",zh:"报废前使其无法使用（切割 / 压碎 / 标记）"},
+ "ขายเป็นเศษเหล็ก":{en:"Sell as scrap metal",zh:"作为废钢出售"},
+ "ทิ้งเป็นขยะอุตสาหกรรม (ผู้รับกำจัดที่ได้รับอนุญาต)":{en:"Dispose as industrial waste (licensed contractor)",zh:"作为工业废弃物处理（持证处理商）"},
+ "ส่งคืนผู้ผลิต / ผู้ขายทำลาย":{en:"Return to manufacturer / supplier for destruction",zh:"退回外协厂 / 供应商销毁"},
+ "ทำลายตามข้อกำหนดลูกค้า":{en:"Destroy per customer requirement",zh:"按客户要求销毁"},
+ "ติดป้าย SCRAP (แดง)":{en:"SCRAP tag attached (red)",zh:"贴 SCRAP 标签（红色）"},
+ "แยกเก็บพื้นที่ของเสีย":{en:"Segregated in scrap area",zh:"隔离存放于废品区"},
+ "ถ่ายรูปหลักฐานก่อน-หลังทำลาย":{en:"Photo evidence before / after destruction",zh:"销毁前后拍照留证"},
+ "อนุมัติให้ทิ้ง":{en:"Approved for scrap",zh:"批准报废"},
+ "ไม่อนุมัติ — ส่งกลับแก้ไข / ยอมรับพิเศษ":{en:"Not approved — return for rework / special acceptance",zh:"不批准 — 退回返工 / 特采"},
+ "ขอข้อมูลเพิ่มเติม":{en:"More information required",zh:"需补充资料"},
+ "จำนวนที่ขอทิ้ง (ชิ้น)":{en:"Scrap quantity requested (pcs)",zh:"申请报废数量（件）"},
+ "น้ำหนักรวม (กก.)":{en:"Total weight (kg)",zh:"总重量（公斤）"},
+ "มูลค่าต่อชิ้น (บาท)":{en:"Unit value (THB)",zh:"单价（泰铢）"},
+ "มูลค่ารวม (บาท · ว่าง = คำนวณ)":{en:"Total value (THB)",zh:"总价值（泰铢）"},
+ "กำหนดทำลาย":{en:"Disposal due date",zh:"计划销毁日期"},
+ "สถานที่ / ผู้รับกำจัด":{en:"Location / disposal contractor",zh:"地点 / 处置商"},
+ "รายละเอียดเหตุผล (ทำไมแก้ไข / ซ่อม / ยอมรับพิเศษไม่ได้)":{en:"Reason details (why rework / repair / special acceptance is not possible)",zh:"原因说明（为何无法返工 / 返修 / 特采）"},
+ "หลักฐานการทำลาย (วันที่ · ผู้ทำลาย · ผู้ตรวจสอบ · เอกสารผู้รับกำจัด)":{en:"Disposal evidence (date · disposed by · checked by · contractor documents)",zh:"销毁证据（日期 · 销毁人 · 检查人 · 处置商文件）"},
+ "หมายเหตุ":{en:"Remarks",zh:"备注"},
+ "วันที่ทิ้ง":{en:"Disposal date",zh:"报废日期"},
+ "จำนวนทิ้ง":{en:"Qty scrapped",zh:"报废数量"},
+ "น้ำหนัก (กก.)":{en:"Weight (kg)",zh:"重量（公斤）"},
+ "วิธีทำลาย":{en:"Method",zh:"销毁方法"},
+ "ผู้ทำลาย":{en:"Disposed by",zh:"销毁人"},
+ "ผู้ตรวจสอบ / พยาน":{en:"Checked by / Witness",zh:"检查人 / 见证人"},
+ "ผู้ขอ":{en:"Requester",zh:"申请人"},
+ "ผู้ตรวจสอบ":{en:"Checker",zh:"审核人"},
+ "ผู้อนุมัติ":{en:"Approver",zh:"批准人"},
+ "บันทึกผลการทิ้ง / ทำลายจริง / DISPOSAL RECORD":{en:"DISPOSAL RECORD",zh:"报废 / 销毁记录 (DISPOSAL RECORD)"},
+ "บันทึกผลการทิ้ง / ทำลายจริง":{en:"Disposal record",zh:"报废 / 销毁记录"}});
+function xlgFix(s,lg){ var f=XLG_FIX[s]; if(f==null)return null; return typeof f==='string'?f:(f[lg]!=null?f[lg]:null); }
+function xlgDoc(k,id){ var d=id?(DB.docs||[]).find(function(x){ return x&&x.id===id; }):null;
+  if(!d&&k==='ecr'&&typeof _ecrD!=='undefined'&&_ecrD&&(!id||_ecrD.id===id))return _ecrD; return d||null; }
+function xlgLang(k,id){ var d=xlgDoc(k,id), v=d&&d.xlgL&&d.xlgL[k]; return (v==='en'||v==='zh')?v:''; }
+function xlgSetLang(k,id,lg){ var d=xlgDoc(k,id); if(!d)return; var L=Object.assign({},d.xlgL||{}); if(lg)L[k]=lg; else delete L[k]; d.xlgL=L; d.ts=Date.now();
+  try{ if(k==='ecr'&&typeof _ecrD!=='undefined'&&_ecrD&&_ecrD!==d&&_ecrD.id===d.id)_ecrD.xlgL=JSON.parse(JSON.stringify(L)); }catch(e){}
+  try{ saveDB(); }catch(e){} }
+var _xlgTM=null;
+function xlgTM(){ if(_xlgTM)return _xlgTM; try{ _xlgTM=JSON.parse(localStorage.getItem('rtk_xlg_tm')||'null'); }catch(e){} if(!_xlgTM||typeof _xlgTM!=='object')_xlgTM={}; _xlgTM.en=_xlgTM.en||{}; _xlgTM.zh=_xlgTM.zh||{}; return _xlgTM; }
+function xlgTMSave(){ try{ var T=xlgTM(); ['en','zh'].forEach(function(l){ var ks=Object.keys(T[l]); if(ks.length>6000)ks.slice(0,ks.length-6000).forEach(function(x){ delete T[l][x]; }); }); localStorage.setItem('rtk_xlg_tm',JSON.stringify(T)); }catch(e){} }
+/* ป้ายสองภาษา "Problem (ปัญหาที่พบ)" / "รายละเอียด / DETAILS" : อังกฤษ = ส่วนอังกฤษ · จีน = อังกฤษ (จีน) */
+var XLG_LAT=/^(?=[^฀-๿]*[A-Za-z]{2})[A-Za-z0-9 .,&#'’:\-\/+%]{2,48}$/;
+function xlgPlan(t){ if(t.length>80||t.indexOf('\n')>=0)return {th:t};   /* ป้ายสองภาษาสั้นเสมอ · ข้อความยาวห้ามเข้า regex (ย้อนรอยนาน = หน้าค้าง) */
+  var m=/^(.*?)\s*[(（]([^()（）]*[฀-๿][^()（）]*)[)）]\s*(.*)$/.exec(t);
+  if(m&&!XLG_TH.test(m[1]+m[3])&&XLG_LAT.test((m[1]+(m[3]?' '+m[3]:'')).trim())&&!/\d{4}/.test(m[1]+m[3]))return {bi:1,lat:(m[1]+(m[3]?' '+m[3]:'')).trim(),th:m[2].trim()};
+  m=/^([^฀-๿]+?)\s*[\/|]\s*([^A-Za-z]*[฀-๿][^A-Za-z]*)$/.exec(t); if(m&&XLG_LAT.test(m[1].trim())&&!/\d{4}/.test(m[1]))return {bi:1,lat:m[1].trim(),th:m[2].trim()};
+  m=/^([^A-Za-z]*[฀-๿][^A-Za-z]*?)\s*[\/|]\s*([^฀-๿]+)$/.exec(t); if(m&&XLG_LAT.test(m[2].trim())&&!/\d{4}/.test(m[2]))return {bi:1,lat:m[2].trim(),th:m[1].trim()};
+  return {th:t}; }
+function xlgCo(s){ if(!/ทองตระกูล/.test(s))return null;   /* ชื่อในตั้งค่าบริษัท = รัศมีทองตระกูล */ var ho=/สำนักงานใหญ่/.test(s)?'(Head Office)':''; if(window.__xlgHasEnCo)return ho||' '; return 'RUSSAMITONGTRAKUL CO., LTD.'+(ho?' '+ho:''); }
+function xlgRes(s,lg,d){ var o=d&&d.xlg&&d.xlg[lg]; if(o&&o[s]!=null&&o[s]!=='')return o[s];   /* คำแปลที่แก้เองในใบนี้ ชนะเสมอ */
+  var co=xlgCo(s); if(co!=null)return co; var fx=xlgFix(s,lg); if(fx!=null)return fx; var T=xlgTM()[lg]; return T[s]!=null?T[s]:null; }
+function xlgOut(v,lg,d){ var lead=(v.match(/^\s*/)||[''])[0], trail=(v.match(/\s*$/)||[''])[0], t=v.trim(); if(!t)return {txt:v,need:[]};
+  var ov=d&&d.xlg&&d.xlg[lg]&&d.xlg[lg][t]; if(ov)return {txt:lead+ov+trail,need:[],src:t}; var fx=xlgFix(t,lg); if(fx!=null)return {txt:lead+fx+trail,need:[],src:t};   /* แก้เองในใบ → ศัพท์ตายตัว → ป้ายสองภาษา → แปล */
+  var P=xlgPlan(t);
+  if(P.bi){ if(lg==='en')return {txt:lead+P.lat+trail,need:[]}; var r=xlgRes(P.th,lg,d); return r==null?{need:[P.th]}:{txt:lead+P.lat+' ('+r+')'+trail,need:[],src:P.th}; }
+  var r2=xlgRes(t,lg,d); return r2==null?{need:[t]}:{txt:lead+r2+trail,need:[],src:t}; }
+var XLG_SKIP='script,style,textarea,.xlg-bar,.xlg-sw,[contenteditable="true"]';
+function xlgNodes(root){ var doc=root.ownerDocument||document, out=[], w=doc.createTreeWalker(root,NodeFilter.SHOW_TEXT,null), n;
+  while((n=w.nextNode())){ var p=n.parentNode; if(!p||(p.closest&&p.closest(XLG_SKIP)))continue; if(XLG_TH.test(n.nodeValue||''))out.push(n); } return out; }
+function xlgAttrEls(root){ var out=[]; try{ root.querySelectorAll('[placeholder],[title]').forEach(function(el){ if(el.closest&&el.closest('.xlg-bar,.xlg-sw'))return; if(XLG_TH.test(el.getAttribute('placeholder')||'')||XLG_TH.test(el.getAttribute('title')||''))out.push(el); }); }catch(e){} return out; }
+function xlgFetch(list,lg){ var T=xlgTM()[lg], u={}, J=[]; list.forEach(function(s){ if(s&&!u[s]&&T[s]==null&&xlgFix(s,lg)==null&&xlgCo(s)==null){ u[s]=1; J.push({src:s}); } });
+  if(!J.length)return Promise.resolve(0);
+  return ccpTrSeq(J,lg).then(function(){ var n=0; J.forEach(function(j){ if(!j.err&&j.res){ T[j.src]=String(j.res).trim(); n++; } }); xlgTMSave(); return n; }); }
+/* แปลใน DOM : mark = ห่อ span.xt (หน้าใบพิมพ์ แก้คำแปลได้) · ฟอร์ม = เก็บต้นฉบับไว้ที่ node.__xlgO เพื่อคืนไทย */
+function xlgApply(root,lg,d,mark){ if(!root||!lg)return Promise.resolve();
+  var go=function(){ var need=[]; xlgNodes(root).forEach(function(n){ var o=n.__xlgO!=null?n.__xlgO:n.nodeValue, r=xlgOut(o,lg,d); if(r.txt==null){ need=need.concat(r.need); return; }
+      if(mark&&r.src){ var sp=(root.ownerDocument||document).createElement('span'); sp.className='xt'; sp.setAttribute('data-s',r.src); sp.textContent=r.txt; n.parentNode.replaceChild(sp,n); }
+      else { if(n.__xlgO==null)n.__xlgO=n.nodeValue; n.nodeValue=r.txt; } });
+    xlgAttrEls(root).forEach(function(el){ ['placeholder','title'].forEach(function(a){ var v=el.getAttribute(a); if(!v||!XLG_TH.test(v))return; var r=xlgOut(v,lg,d); if(r.txt==null){ need=need.concat(r.need); return; } if(!el.hasAttribute('data-xlg-'+a))el.setAttribute('data-xlg-'+a,v); el.setAttribute(a,r.txt); }); });
+    return need; };
+  var need=go(); if(!need.length)return Promise.resolve();
+  return xlgFetch(need,lg).then(function(){ go(); }); }
+function xlgRestore(root){ if(!root)return; var w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,null), n; while((n=w.nextNode())){ if(n.__xlgO!=null){ n.nodeValue=n.__xlgO; n.__xlgO=null; } }
+  try{ root.querySelectorAll('[data-xlg-placeholder],[data-xlg-title]').forEach(function(el){ ['placeholder','title'].forEach(function(a){ var o=el.getAttribute('data-xlg-'+a); if(o!=null){ el.setAttribute(a,o); el.removeAttribute('data-xlg-'+a); } }); }); }catch(e){} }
+/* ---------- ฟอร์ม ---------- */
+function xlgFormBar(k,id){ var mb=document.querySelector('#modalRoot .modal-b'); if(!mb)return; var old=mb.querySelector('.xlg-bar'); if(old)old.remove(); var lg=xlgLang(k,id);
+  mb.insertAdjacentHTML('afterbegin','<div class="xlg-bar" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;border:1px solid #1B3A5C;border-radius:8px;padding:5px 10px;margin-bottom:8px;background:#f8fafc;font-size:12.5px">'
+    +XLG_LANGS.map(function(x){ return '<label style="display:flex;gap:5px;align-items:center;cursor:pointer;font-weight:700"><input type="checkbox"'+(lg===x[0]?' checked':'')+' onchange="xlgFormLang(\''+k+'\',\''+esc(id||'')+'\',\''+x[0]+'\',this.checked)"> 🌐 '+x[1]+'</label>'; }).join('')
+    +'<span style="font-size:11px;color:#64748b">แปลแบบฟอร์ม + ใบพิมพ์อัตโนมัติ (ข้อมูลที่กรอกเก็บเป็นภาษาไทย · ใบพิมพ์แปลให้ทั้งหน้า แก้คำแปลได้ที่หน้าใบพิมพ์)</span><span class="xlg-msg" style="font-size:11px;color:#0f766e"></span></div>');
+  window.__xlgForm={k:k,id:id||'',lg:lg};
+  if(lg)xlgFormRun(); }
+function xlgFormRun(){ window.__xlgHasEnCo=false; var F=window.__xlgForm, m=document.querySelector('#modalRoot .modal'); if(!F||!F.lg||!m)return; var msg=m.querySelector('.xlg-msg'); var d=xlgDoc(F.k,F.id);
+  var need=xlgNodes(m).length; if(msg&&need)msg.textContent='⏳ Translating…';
+  xlgApply(m,F.lg,d,0).then(function(){ if(msg)msg.textContent=''; },function(){ if(msg)msg.textContent='⚠️ แปลไม่สำเร็จ (ต้องมีอินเทอร์เน็ต)'; }); }
+function xlgFormLang(k,id,lg,on){ if(!xlgDoc(k,id)){ toast('บันทึกเอกสารก่อน แล้วจึงเลือกภาษา','err'); xlgFormBar(k,id); return; }
+  xlgSetLang(k,id,on?lg:''); var m=document.querySelector('#modalRoot .modal'); if(m)xlgRestore(m); xlgFormBar(k,id); }
+/* ฟอร์มวาดบางส่วนใหม่ (เพิ่มแถว ฯลฯ) → แปลส่วนที่เพิ่มขึ้นให้ด้วย */
+var _xlgObsT=0;
+function xlgObserve(){ var r=document.getElementById('modalRoot'); if(!r||r.__xlgObs||typeof MutationObserver==='undefined')return; r.__xlgObs=1;
+  new MutationObserver(function(){ var F=window.__xlgForm; if(!F||!F.lg)return; var m=r.querySelector('.modal'); if(!m||!m.querySelector('.xlg-bar'))return;
+    clearTimeout(_xlgObsT); _xlgObsT=setTimeout(function(){ var d=xlgDoc(F.k,F.id); xlgApply(m,F.lg,d,0); },60); }).observe(r,{childList:true,subtree:true}); }
+/* ---------- ใบพิมพ์ ---------- */
+var _xlgWin={}, _xlgTok=0;
+function xlgSwHtml(tok,lg,tr){ return '<div class="xlg-sw noprint" style="position:fixed;right:12px;bottom:12px;z-index:99999;background:#fff;border:1px solid #64748b;border-radius:10px;padding:7px 12px;font:12.5px Sarabun,Tahoma,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.18);display:flex;gap:12px;align-items:center">🌐 '
+  +XLG_LANGS.map(function(x){ return '<label style="cursor:pointer;display:flex;gap:4px;align-items:center"><input type="checkbox"'+(lg===x[0]?' checked':'')+' onchange="try{window.opener.xlgPageLang('+tok+',this.checked?\''+x[0]+'\':\'\')}catch(e){alert(\'ปิดหน้านี้แล้วเปิดจากโปรแกรมใหม่\')}"> '+x[1]+'</label>'; }).join('')
+  +(tr?'<button onclick="document.body.classList.toggle(\'xlg-ed\')" style="cursor:pointer">✏️ แก้คำแปล</button><button onclick="window.print()" style="cursor:pointer;font-weight:700">🖨️ Print</button>':'')+'</div>'
+  +'<style>@media print{.xlg-sw{display:none!important}} .xlg-ed .xt{outline:1px dashed #f59e0b;cursor:pointer;background:#fffbeb}</style>'; }
+var XLG_EDJS='<scr'+'ipt>document.addEventListener("click",function(e){ if(!document.body.classList.contains("xlg-ed"))return; var t=e.target.closest&&e.target.closest(".xt"); if(!t)return; e.preventDefault(); var v=prompt("แก้คำแปล / Edit translation\\n\\n"+t.getAttribute("data-s"),t.textContent); if(v!=null)try{ window.opener.xlgPageEdit(__TOK__,t.getAttribute("data-s"),v); }catch(x){} },true);</scr'+'ipt>';
+function xlgPrint(k,id,a,orig,mi){ var mode=a[mi];
+  if(mode==='html')return orig.apply(null,a);                 /* PDF เก็บเข้าแฟ้ม = ภาษาไทยตามเดิม */
+  var lg=xlgLang(k,id), tok=++_xlgTok;
+  if(!lg){ var ow=window.open, cap=null; window.open=function(){ cap=ow.apply(window,arguments); return cap; };
+    var r; try{ r=orig.apply(null,a); }finally{ window.open=ow; }
+    if(cap){ _xlgWin[tok]={k:k,id:id,a:a,orig:orig,mi:mi,w:cap}; setTimeout(function(){ try{ if(cap.document&&cap.document.body&&!cap.document.querySelector('.xlg-sw'))cap.document.body.insertAdjacentHTML('beforeend',xlgSwHtml(tok,'',0)); }catch(e){} },60); }
+    return r; }
+  var w=window.open('','_blank'); if(!w){ toast('เบราว์เซอร์บล็อกหน้าต่างใหม่ — อนุญาต Pop-up ก่อน','err'); return; }
+  _xlgWin[tok]={k:k,id:id,a:a,orig:orig,mi:mi,w:w}; xlgPageDraw(tok); }
+function xlgPageDraw(tok){ var C=_xlgWin[tok]; if(!C||!C.w||C.w.closed)return; var lg=xlgLang(C.k,C.id), d=xlgDoc(C.k,C.id);
+  var a=C.a.slice(); a[C.mi]='html'; var html=''; try{ html=C.orig.apply(null,a); }catch(e){} if(typeof html!=='string'||!html){ toast('สร้างใบพิมพ์ไม่สำเร็จ','err'); return; }
+  var put=function(h,tr){ try{ var w=C.w, add=xlgSwHtml(tok,lg,tr)+(tr?XLG_EDJS.replace('__TOK__',String(tok)):''); w.document.open(); w.document.write(/<\/body>/i.test(h)?h.replace(/<\/body>/i,function(){ return add+'</body>'; }):h+add); w.document.close(); }catch(e){} };
+  if(!lg){ put(html,0); return; }
+  try{ C.w.document.open(); C.w.document.write('<p style="font:16px sans-serif;padding:30px">⏳ Translating… กำลังแปล</p>'); C.w.document.close(); }catch(e){}
+  var doc=new DOMParser().parseFromString(html,'text/html'); window.__xlgHasEnCo=/RUSSAMITONGTRAKUL/i.test(doc.body.textContent||'');
+  xlgApply(doc.body,lg,d,1).then(function(){ var tt=doc.title||''; if(XLG_TH.test(tt)){ var r=xlgOut(tt,lg,d); if(r.txt!=null)doc.title=r.txt; }
+    doc.documentElement.setAttribute('lang',lg==='zh'?'zh-CN':'en');
+    if(lg==='zh'){ var st=doc.createElement('style'); st.textContent='body{font-family:"Microsoft YaHei","SimSun","Sarabun",Tahoma,sans-serif}'; doc.head.appendChild(st); }
+    put('<!DOCTYPE html>'+doc.documentElement.outerHTML,1); },function(){ put(html,0); toast('แปลไม่สำเร็จ (ต้องมีอินเทอร์เน็ต) — แสดงภาษาไทย','err'); }); }
+function xlgPageLang(tok,lg){ var C=_xlgWin[tok]; if(!C)return; if(!xlgDoc(C.k,C.id)){ toast('ไม่พบเอกสาร','err'); return; } xlgSetLang(C.k,C.id,lg); xlgPageDraw(tok); }
+function xlgPageEdit(tok,src,val){ var C=_xlgWin[tok]; if(!C)return; var d=xlgDoc(C.k,C.id), lg=xlgLang(C.k,C.id); if(!d||!lg||!src)return; val=String(val==null?'':val).trim();
+  var X=Object.assign({},d.xlg||{}); X[lg]=Object.assign({},X[lg]||{}); if(val)X[lg][src]=val; else delete X[lg][src]; d.xlg=X; d.ts=Date.now();
+  if(val){ xlgTM()[lg][src]=val; xlgTMSave(); } try{ saveDB(); }catch(e){} xlgPageDraw(tok); }
+/* ---------- ติดตั้ง : ครอบฟังก์ชันฟอร์ม/ใบพิมพ์เดิม ---------- */
+function xlgInstall(){ if(window.__xlgInst)return; window.__xlgInst=1; xlgObserve();
+  var wp=function(name,k,idF,mi,kF){ var o=window[name]; if(typeof o!=='function'||o.__xlg)return; var f=function(){ var a=[].slice.call(arguments); return xlgPrint(kF?kF(a):k,idF(a),a,o,mi); }; f.__xlg=1; window[name]=f; };
+  wp('clmPrint','clm',function(a){ return a[0]; },1); wp('printNCOne','ncr',function(a){ return a[0]; },1); wp('apPrint','ap',function(a){ return a[1]||window.__apId; },0);
+  wp('saPrint','sa',function(a){ return a[0]; },1); wp('ncxPrint','',function(a){ return a[1]; },2,function(a){ return a[0]; }); wp('ecrPrint','ecr',function(a){ return a[0]; },1);
+  var wf=function(name,k,idF,kF){ var o=window[name]; if(typeof o!=='function'||o.__xlg)return; var f=function(){ var a=[].slice.call(arguments); window.__xlgForm=null; var r=o.apply(this,a); try{ xlgFormBar(kF?kF(a):k,idF(a)); }catch(e){} return r; }; f.__xlg=1; window[name]=f; };
+  wf('clmOpen','clm',function(a){ return a[0]; }); wf('ncrEdit','ncr',function(a){ return a[0]; }); wf('apOpen','ap',function(a){ return a[0]; }); wf('saOpen','sa',function(a){ return a[0]; });
+  wf('ncxForm','',function(){ return _ncxId; },function(){ return _ncxK; }); wf('ecrForm','ecr',function(){ return (_ecrD&&_ecrD.id)||''; }); }
+try{ window.addEventListener('load',function(){ setTimeout(xlgInstall,0); }); }catch(e){}
+
 function ccpTr(t,lg){ lg=lg||'en'; return ccpTr1(ccpTrPre(t,lg),lg).then(function(o){ return ccpTrFin(o,lg); }); }
 function ccpTrRes(D,path){ var o=D; for(var i=0;i<path.length;i++){ if(o==null)return null; o=o[path[i]]; } return o||null; }
 function ccpTrJobs(D,force,lg){ lg=lg||ccpLg(D)||'en'; var J=[], add=function(path,k){ var o=ccpTrRes(D,path); if(!o)return; var t=String(o[k]==null?'':o[k]); if(!t.trim()||!ccpHasTh(t))return; if(!force&&ccpEnOk(o,k,lg))return; J.push({path:path,k:k,src:t}); };
@@ -32793,7 +33005,7 @@ function ncRowHtml(r){
     ${ncCol('method')?`<td class="muted" style="max-width:220px;overflow:hidden;text-overflow:ellipsis">${esc(r.method||'')}</td>`:''}
     ${ncCol('ng')?`<td class="num">${r.tqmId?`<b class="linkish" style="color:var(--red)" title="คลิกเพื่อดูใน RTK-TQM: ${esc(r.tqmId)}" onclick="openTQMItem('${esc(r.tqmId)}')">${r.ng?fmt(r.ng):'-'} 🔗</b>`:`<b style="color:var(--red)">${r.ng?fmt(r.ng):'-'}</b>`}</td>`:''}
     ${NC_LINKS.map(x=>`<td style="text-align:center">${ncLinkBtn(r.id,x[0])}</td>`).join('')}
-    <td style="white-space:nowrap"><button class="btn sm" onclick="ncToTQM('${r.id}')" title="ส่ง/ซิงก์เข้า RTK-TQM (QCDMS)">➡️ TQM</button> ${r.tqmId?`<span class="tag green linkish" title="คลิกเปิดดูใน RTK-TQM" onclick="openTQMItem('${esc(r.tqmId)}')">${esc(r.tqmId)} ↗</span> `:''}<button class="btn sm" onclick="viewNCDoc('${r.id}')">ดู</button> ${ncAct('NG TAG',`<button class="btn sm" onclick="openNCTag('${r.id}')" title="พิมพ์ NG TAG">🏷️</button>`)} ${ncAct('CLAIM',clmBtn(r))} ${ncAct('NCR',`<button class="btn sm" onclick="printNCOne('${r.id}')" title="พิมพ์ NCR (FM-QC-03)">🖨️</button>`)} ${ncAct('SPECIAL',saBtn(r))} ${ncAct('NCR',`<button class="btn sm" onclick="openNCForm(DB.docs.find(x=>x.id==='${r.id}'))" title="แก้ไขใบ NC / NCR">✏️</button>`)} ${ncAct('SORTING',ncxBtn(r,'srt'))} ${ncAct('REWORK',ncxBtn(r,'rwk'))} ${ncAct('COMPLAINT',ncCcpBtn(r))} <button class="btn sm danger" onclick="delNC('${r.id}')">ลบ</button></td>
+    <td style="white-space:nowrap"><button class="btn sm" onclick="ncToTQM('${r.id}')" title="ส่ง/ซิงก์เข้า RTK-TQM (QCDMS)">➡️ TQM</button> ${r.tqmId?`<span class="tag green linkish" title="คลิกเปิดดูใน RTK-TQM" onclick="openTQMItem('${esc(r.tqmId)}')">${esc(r.tqmId)} ↗</span> `:''}<button class="btn sm" onclick="viewNCDoc('${r.id}')">ดู</button> ${ncAct('NG TAG',`<button class="btn sm" onclick="openNCTag('${r.id}')" title="พิมพ์ NG TAG">🏷️</button>`)} ${ncAct('CLAIM',clmBtn(r))} ${ncAct('NCR',`<button class="btn sm" onclick="printNCOne('${r.id}')" title="พิมพ์ NCR (FM-QC-03)">🖨️</button>`)} ${ncAct('SPECIAL',saBtn(r))} ${ncAct('8D',nc8dBtn(r))} ${ncAct('NCR',`<button class="btn sm" onclick="openNCForm(DB.docs.find(x=>x.id==='${r.id}'))" title="แก้ไขใบ NC / NCR">✏️</button>`)} ${ncAct('SORTING',ncxBtn(r,'srt'))} ${ncAct('REWORK',ncxBtn(r,'rwk'))} ${ncAct('SCRAP',ncxBtn(r,'scr'))} ${ncAct('COMPLAINT',ncCcpBtn(r))} <button class="btn sm danger" onclick="delNC('${r.id}')">ลบ</button></td>
   </tr>`;
 }
 /* ซ่อน/แสดง NC TAG แยกอิสระต่อใบ (เก็บที่ตัวเอกสาร → ซิงก์คลาวด์อัตโนมัติ) */
@@ -39748,6 +39960,7 @@ function tagLogFill(rec){
   if(!rec)return;
   var pfx=(TAG_KIND[rec.kind]||TAG_KIND.DLV).pfx;
   var S=function(k,val){ var e=document.getElementById(pfx+k); if(e&&val!=null&&val!=='')e.value=val; };
+  try{ var _le=document.getElementById(pfx+'lot'); if(_le&&rec.lot){ var _iso=/^\d{4}-\d{2}-\d{2}$/.test(String(rec.lot)); _le.type=_iso?'date':'text'; var _lb=document.getElementById(pfx+'lotlbl'); if(_lb&&pfx==='dlv_')_lb.textContent=_iso?'ล๊อตวันที่ผลิต / LOT DATE':'ล๊อตผลิต / LOT (เลขที่สั่งผลิต)'; } }catch(e){}   /* ★ 31/10e */
   ['maker','po','pno','pname','lot','cust','due','dlv','insp','kg'].forEach(function(k){ S(k,rec[k]); });
   /* DEFECT : เขียนทับเสมอ (รวมกรณีเคยบันทึกเป็นค่าว่าง) */
   try{ var de=document.getElementById(pfx+'defect'); if(de)de.value=(rec.defect==null?'':rec.defect); }catch(e){}
@@ -39804,7 +40017,7 @@ function tagPrintFrom(rec,preview){
   var n=Math.max(1,Math.ceil((q||1)/per));
   var prod=(DB.products||[]).find(function(x){ return x.pn===rec.pno; })||null;
   var base={maker:rec.maker,po:rec.po,pno:rec.pno,pname:rec.pname,
-    lot:dlvDMY(rec.lot||''),due:dlvDMY(rec.due||''),dlv:dlvDMY(rec.dlv||''),
+    lot:dlvDMY(rec.lot||''),lotPrd:!!(rec.lot&&!/^\d{4}-\d{2}-\d{2}$/.test(String(rec.lot).trim())),due:dlvDMY(rec.due||''),dlv:dlvDMY(rec.dlv||''),
     cust:rec.cust,insp:rec.insp,defect:rec.defect||'',docNo:rec.docNo||''};
   var tags='';
   for(var i=0;i<n;i++){
@@ -39974,8 +40187,8 @@ function openDlvTagDialog(docId){
     </div>
     <div class="row c3">
       <div class="field"><label>ชื่อชิ้นส่วน / PART NAME</label><input id="dlv_pname" value="${esc(pt0.pname)}"></div>
-      <div class="field"><label>ล๊อตวันที่ผลิต / LOT DATE</label><input type="date" id="dlv_lot" value="${esc(d.date||todayISO())}"></div>
-      <div class="field"><label>CUSTOMER / ลูกค้า</label><input id="dlv_cust" value="${esc(d.customer||(p0?p0.customer:'')||'')}"></div>
+      ${dlvLotIsPrd(d.customer||(p0?p0.customer:''))?`<div class="field"><label id="dlv_lotlbl">ล๊อตผลิต / LOT (เลขที่สั่งผลิต)</label><input id="dlv_lot" value="${esc(dlvPrdLot(d,f0))}" data-auto="${esc(dlvPrdLot(d,f0))}" placeholder="เลขที่สั่งผลิต"></div>`:`<div class="field"><label id="dlv_lotlbl">ล๊อตวันที่ผลิต / LOT DATE</label><input type="date" id="dlv_lot" value="${esc(d.date||todayISO())}"></div>`}
+      <div class="field"><label>CUSTOMER / ลูกค้า</label><input id="dlv_cust" value="${esc(d.customer||(p0?p0.customer:'')||'')}" oninput="dlvLotSync()"></div>
     </div>
     <div class="row c3">
       <div class="field"><label>กำหนดส่ง / DUE DATE</label><input type="date" id="dlv_due" value="${esc(due)}"></div>
@@ -39995,9 +40208,20 @@ function openDlvTagDialog(docId){
       if(_r){ tagLogFill(_r);                      /* ★ คืนค่าที่บันทึกไว้ทั้งใบ */
         var _b=document.getElementById('tagSaveBtn_DLV'); if(_b)_b.textContent='💾 บันทึกทับ '+_r.no; }
     }catch(e){}
+    try{ dlvLotSync(); }catch(e){}   /* ★ 31/10e Thai FC : TAG เดิมที่บันทึก LOT เป็นวันที่ → เปลี่ยนเป็นเลขที่สั่งผลิต (ที่พิมพ์เองไว้ไม่ทับ) */
     try{ dlvTagCalc(); }catch(e){}
   },20);
 }
+/* ★ 31/10e ลูกค้าที่ใช้ เลขที่สั่งผลิต เป็น LOT บน TAG จัดส่ง (Thai FC · 211-54) */
+var DLV_LOT_PRD_CUST=['THAIFC','21154','ไทยเอฟซี'];
+function dlvLotIsPrd(cust){ var k=String(cust||'').toUpperCase().replace(/[\s\-_.\/()]+/g,''); if(!k)return false; var L=DLV_LOT_PRD_CUST.concat((DB.settings&&DB.settings.dlvLotPrdCust)||[]); return L.some(function(x){ x=String(x||'').toUpperCase().replace(/[\s\-_.\/()]+/g,''); return x&&k.indexOf(x)>=0; }); }
+function dlvPrdLot(d,l){ var v='', all=''; try{ all=String(fgiProdPO(d)||'').trim(); }catch(e){}
+  if(all&&!/[,+]/.test(all))v=all; else { try{ var pid=l&&(l.productId||l.fgId), mi=pid?lastMakeInfo(pid):null; if(mi&&mi.po)v=mi.po; }catch(e){} if(!v)v=all.split(',')[0]; }
+  return String(v||'').trim().replace(/^PO\s*-?\s*/i,''); }
+function dlvLotSync(force){ var c=document.getElementById('dlv_cust'), e=document.getElementById('dlv_lot'), lb=document.getElementById('dlv_lotlbl'); if(!c||!e)return; var d=DB.docs.find(function(x){ return x.id===window.__dlvDoc; }); if(!d)return;
+  var lines=(d.lines||[]).filter(function(l){ return Number(l.qty)>0; }), pk=document.getElementById('dlv_pick'), l=lines[pk?(Number(pk.value)||0):0]||lines[0]||{};
+  if(dlvLotIsPrd(c.value)){ var auto=dlvPrdLot(d,l); if(e.type!=='text'){ e.type='text'; e.value=auto; } else if(force||!e.value||e.value===e.dataset.auto)e.value=auto; e.dataset.auto=auto; e.placeholder='เลขที่สั่งผลิต'; if(lb)lb.textContent='ล๊อตผลิต / LOT (เลขที่สั่งผลิต)'; }
+  else { if(e.type!=='date'){ e.type='date'; e.value=d.date||todayISO(); } if(lb)lb.textContent='ล๊อตวันที่ผลิต / LOT DATE'; } }
 function dlvPickLine(){
   const d=DB.docs.find(x=>x.id===window.__dlvDoc);if(!d)return;
   const lines=(d.lines||[]).filter(l=>Number(l.qty)>0);
@@ -40009,6 +40233,7 @@ function dlvPickLine(){
   S('dlv_pname',pt.pname);
   S('dlv_qty',Number(l.qty)||0);S('dlv_per',Number(l.qty)||1);
   if(l.due)S('dlv_due',l.due);
+  try{ dlvLotSync(); }catch(e){}
   dlvTagCalc();
 }
 function dlvTagCalc(){const q=Number((document.getElementById('dlv_qty')||{}).value)||0;const per=Number((document.getElementById('dlv_per')||{}).value)||0;const n=per>0?Math.max(1,Math.ceil(q/per)):1;const e=document.getElementById('dlv_count');if(e)e.textContent=fmt(n);return n;}
@@ -40068,7 +40293,7 @@ function dlvTagOne(t){
    +'<tr>'+L('เลขที่ใบสั่งซื้อ','P.O NO.')+'<td class="v ctr big">'+esc(t.po)+'</td></tr>'
    +'<tr>'+L('หมายเลขชิ้นส่วน','PART NO.')+'<td class="v ctr big">'+esc(t.pno)+'</td></tr>'
    +'<tr>'+L('ชื่อชิ้นส่วน','PART NAME')+'<td class="v ctr big">'+esc(t.pname)+'</td></tr>'
-   +'<tr>'+L('ล๊อตวันที่ผลิต','LOT DATE')+'<td class="v ctr big">'+esc(t.lot)+'</td></tr>'
+   +'<tr>'+(t.lotPrd?L('ล๊อตผลิต','LOT'):L('ล๊อตวันที่ผลิต','LOT DATE'))+'<td class="v ctr big">'+esc(t.lot)+'</td></tr>'
    +'<tr>'+L('กำหนดส่ง','DUE DATE')+'<td class="v ctr big">'+esc(t.due)+'</td>'+L('วันที่ส่ง','DELIVERY DATE')+'<td class="v ctr big">'+esc(t.dlv)+'</td></tr>'
    +'<tr>'+L('CUSTOMER','ลูกค้า')+'<td class="v ctr big">'+esc(t.cust)+'</td>'+L('จำนวน',"Q'TY / Pcs.")+'<td class="v ctr big">'+esc(t.qtyTxt)+'</td></tr>'
    +'<tr>'+L('ผู้ตรวจสอบ/FIFO','INSPECTION')+'<td class="v ctr big">'+esc(t.insp)+'</td>'+L('น้ำหนัก','WEIGHT / Kgs.')+'<td class="v ctr big"'+(dlvPnColor(t.pno)?' style="background:'+dlvPnColor(t.pno)+';-webkit-print-color-adjust:exact;print-color-adjust:exact"':'')+'>'+esc(t.kg)+'</td></tr>'
