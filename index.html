@@ -1084,9 +1084,10 @@ const SEED={
 
 /* ---------- State ---------- */
 let DB=null;
-const APP_BUILD='NC8D-2026.11.02a';
+const APP_BUILD='NC8D-2026.11.02b';
 /* บันทึกการแก้ไขล่าสุด (แสดงเมื่อเอาเมาส์ชี้ที่ build — ไม่เอาไปต่อท้าย APP_BUILD เพราะทำให้แถบบนล้นจอ) */
 const APP_NOTE=[
+  '🛠️ NC ปุ่ม + 8D : คลิกแล้วสร้างรายการ CORRECTIVE ACTION PLAN (8D) ให้ทันที (เลขที่ AP-<เลข NC> · ปัญหา/ที่พบ/วันที่/จำนวน NG/มาตรการชั่วคราว/ผู้จัดทำ เติมจากใบ NC) แล้วไปหน้า 8D แสดงรายการนั้น · เดิมเปิดฟอร์มเปล่าและยังไม่ขึ้นในทะเบียนจนกว่าจะกดบันทึก · กด ✏️ ในหน้า 8D เพื่อกรอกสาเหตุ/การแก้ไขต่อ',
   '🛠️ งานไม่ตรงข้อกำหนด (NC) : เพิ่มปุ่ม 8D ในแถวรายการ (ต่อจาก SPECIAL) · มีแผนแล้ว = ปุ่มสีตามสถานะ (กำลังทำ/เกินกำหนด/รอปิด/ปิดแล้ว + %) คลิกแล้วไปหน้า CORRECTIVE ACTION PLAN (8D) แสดงเฉพาะแผนของใบ NC นั้น (แถบ ✕ แสดงทั้งหมด) · ยังไม่มีแผน = ปุ่ม + 8D ไปหน้า 8D แล้วเปิดฟอร์มสร้างแผนให้ทันที',
   '📑 รายงาน (Timeline) ตารางสรุปภาพรวมตามชิ้นงาน (ราย PO) : เพิ่มตัวกรอง วันสั่งผลิต (1–31) · เดือนสั่งผลิต (ม.ค.–ธ.ค.) · ปีสั่งผลิต (ปีที่มีใบสั่งผลิต) จากช่องวันที่สั่ง/ผลิต · ใช้รวมกันได้ (เช่น วัน 30 + เดือน ต.ค. + ปี 2026 = วันเดียว · เดือนอย่างเดียว = เดือนนั้นทุกปี) · แถว SUBTOTAL รวมตามตัวกรอง · ปุ่ม ✕ ล้างวันที่',
   '🏷️ TAG จัดส่ง (FM-ST-15) ลูกค้า Thai FC : ช่อง ล๊อตผลิต / LOT = เลขที่สั่งผลิต (ตามที่ลูกค้าขอ · เช่น PO6900490 → 6900490) แทนวันที่ · ดึงจากเลขที่ PO ผลิตของใบเบิกจ่าย (ช่องเลขที่ PO ในตาราง · หลายใบ = ใบสั่งผลิตล่าสุดของรายการที่เลือก) แก้ได้ · ป้ายบน TAG เป็น ล๊อตผลิต / LOT · ลูกค้าอื่นยังเป็น ล๊อตวันที่ผลิต / LOT DATE ตามเดิม · พิมพ์ชื่อลูกค้าเป็น Thai FC ในหน้าต่างแล้วช่องเปลี่ยนเอง · TAG ที่บันทึกไว้เปิดคืนค่าได้ถูกต้อง',
@@ -11733,8 +11734,13 @@ function nc8dBtn(d){ var has=capHas(d)&&!(d.ap&&d.ap.cancelled);
   return '<button class="btn sm" onclick="nc8dGo(\''+d.id+'\')" title="'+esc(no+' · '+st.th+((st.code==='open'||st.code==='late')?' '+st.pct+'%':''))+' — คลิกไปหน้า CORRECTIVE ACTION PLAN (8D)" style="font-weight:800;font-size:11px;background:'+st.bg+';color:#fff;border-color:'+st.bg+'">8D'+((st.code==='open'||st.code==='late')?' <span style="font-weight:600;font-size:9.5px">'+st.pct+'%</span>':st.code==='closed'?' ✓':'')+'</button>'; }
 function capOnlyClear(){ _capF.id=''; render(); }
 function nc8dGo(id){ var d=(DB.docs||[]).find(function(x){ return x.id===id; }); if(!d)return;
-  _capF.id=id; _capF.q=''; _capF.st=''; _capF.mon=''; go('cap');
-  if(!(capHas(d)&&!(d.ap&&d.ap.cancelled)))setTimeout(function(){ try{ apOpen(id); }catch(e){} },60); }
+  /* ★ 2/11b ยังไม่มีแผน → สร้างรายการ 8D ให้เลย (เติมข้อมูลจากใบ NC) แล้วส่งไปทะเบียน CORRECTIVE ACTION PLAN */
+  if(!(capHas(d)&&!(d.ap&&d.ap.cancelled))){ try{ var a=apGet(d); delete a.cancelled; delete a.cancelWhy;
+      if(!String(a.what||'').trim())a.what=d.detail||d.defect||'ปัญหาตามใบ '+(d.no||'');
+      if(!a.where)a.where=d.loc||''; if(!a.when)a.when=d.date||''; if(!a.many&&d.ng)a.many=fmt(d.ng)+' ชิ้น';
+      if(!a.cont&&d.temp)a.cont=d.temp; if(!a.by)a.by=d.reporter||'';
+      capNoFix(d); d.ts=Date.now(); saveDB(); toast('📋 ส่ง '+(d.no||'')+' ไป CORRECTIVE ACTION PLAN (8D) แล้ว · '+(a.no||''),'ok'); }catch(e){ toast('สร้างแผน 8D ไม่สำเร็จ','err'); return; } }
+  _capF.id=id; _capF.q=''; _capF.st=''; _capF.mon=''; go('cap'); }
 
 function viewCAP(el){
   setTitle('🛠️ CORRECTIVE ACTION PLAN (8D)','แผนปฏิบัติการแก้ไขปัญหา '+AP_CODE+' · รายการจาก ACTION PLAN ของงานไม่ตรงข้อกำหนด (NC) อัตโนมัติ');
