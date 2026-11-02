@@ -491,6 +491,21 @@ function syncWatchSet(st){
 }
 /* ===== LAN sync (เครื่องแม่ข่ายในออฟฟิศ) — ใช้คู่กับคลาวด์ ===== */
 let lanMode=false, lanOK=false, lanCloud=false, lanBase='', lanLastUpdated=0, lanPoll=null;
+/* ★ 2/11c LANPERF : จำ "เวลาประทับของแม่ข่าย" ที่เห็นล่าสุด (ข้อความ) — ข้อมูลใหม่ = ค่าเปลี่ยน ไม่เทียบกับนาฬิกาเครื่อง (เครื่องนาฬิกาคลาดทำให้มองไม่เห็นงานของกันและกัน) */
+var lanSeenAt='', __lanLastPull=0, __lanCost=0;
+function lanIsNew(at,cid){ return !!at && at!==lanSeenAt && cid!==CLIENT_ID; }
+function lanThrottle(){ var min=Math.min(60000,(__lanCost||0)*5); try{ if(document.hidden)min=60000; }catch(e){} return (Date.now()-__lanLastPull)<min; }
+function lanRender(){ try{ if(document.hidden){ window.__lanNeedRender=1; return; } }catch(e){} render(); }
+try{ document.addEventListener('visibilitychange',function(){ try{ if(!document.hidden&&window.__lanNeedRender&&!applyingRemote){ window.__lanNeedRender=0; render(); } }catch(e){} }); }catch(e){}
+/* ★ นาฬิกาเครื่องคลาดจากแม่ข่าย → เตือน + ชดเชยเวลาที่ส่งขึ้นแม่ข่าย */
+async function lanClockCheck(){ try{ if(!lanBase)return; var t0=Date.now(); var r=await fetchTO(lanBase+'/api/ping',{cache:'no-store'},6000); if(!r.ok)return; var j=await r.json(); var t1=Date.now(); var st=Date.parse(j.time||''); if(!st)return;
+  var off=st-Math.round((t0+t1)/2); window.__clockOff=Math.abs(off)>5000?off:0;
+  if(Math.abs(off)>60000&&!window.__clockTold){ window.__clockTold=1; var m=Math.round(Math.abs(off)/60000);
+    try{ toastRaw('⏰ นาฬิกาเครื่องนี้'+(off>0?'ช้า':'เร็ว')+'กว่าเครื่องแม่ข่ายประมาณ '+m+' นาที — ตั้งวันเวลา Windows ให้ตรง (Settings → Time & language → Date & time → Sync now) ไม่งั้นข้อมูลระหว่างเครื่องอาจไม่อัปเดต/ทับกัน','err'); }catch(e){} }
+  if(Math.abs(off)<=60000)window.__clockTold=0;
+}catch(e){} }
+function lanNowIso(){ return new Date(Date.now()+(window.__clockOff||0)).toISOString(); }
+
 /* จับเวลาที่ผู้ใช้เพิ่งกด/พิมพ์ — ใช้เลื่อนการรีเฟรชอัตโนมัติ กันจอรีเซ็ตสิ่งที่ผู้ใช้เพิ่งตั้ง (เช่น ซ่อนคอลัมน์) */
 var _lastAct=Date.now();
 try{['pointerdown','keydown','input','change'].forEach(function(ev){document.addEventListener(ev,function(){_lastAct=Date.now();},true);});}catch(e){}
@@ -580,7 +595,7 @@ async function lanLoad(){
           }catch(e){}
         }
       } else { DB=srv; try{ tombRebase(); }catch(_tb){} }
-      lanLastUpdated=j.updated_at?new Date(j.updated_at).getTime():0;
+      lanLastUpdated=j.updated_at?new Date(j.updated_at).getTime():0; lanSeenAt=j.updated_at||'';
       if(merged){ try{ await lanPush(true); }catch(e){}
         try{ toast('🔁 รวมข้อมูลที่ยังไม่ได้ซิงก์จากเครื่องนี้แล้ว','ok'); }catch(e){} }
     }
@@ -1036,7 +1051,7 @@ async function _lanPushDo(force){
       if(!_e||_e.b!==APP_BUILD||_e.d!==_d)_cl[CLIENT_ID]={b:APP_BUILD,d:_d};
     }catch(e){}
     const json=JSON.stringify(DB);
-    const now=new Date().toISOString();
+    const now=lanNowIso();
     const r=await fetchTO(lanBase+'/api/state',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({data:DB,client_id:CLIENT_ID,updated_at:now,base_at:_pushBaseAt,allow_shrink:!!window.__shrinkOK})},25000);
     if(r.status===409){                                   /* ★ เครื่องอื่นเขียนแม่ข่ายก่อนเรา → ดึงมารวมใหม่แล้วดันอีกครั้ง (ไม่ทับงานของเขา) */
       if(++_pushRetry<=3){ try{ console.warn('🔁 แม่ข่ายมีข้อมูลใหม่กว่า — รวมใหม่แล้วดันซ้ำ รอบที่ '+_pushRetry); }catch(e){} await new Promise(function(rs){ setTimeout(rs,300+Math.floor(Math.random()*700)); }); return await _lanPushDo(true); }
@@ -1045,8 +1060,8 @@ async function _lanPushDo(force){
     _pushRetry=0;
     if(!r.ok)throw 0;
     const j=await r.json().catch(()=>({}));
-    lastSyncedJSON=json; _dbJSON=json; lanLastUpdated=new Date(now).getTime(); lanOK=true; lanCloud=!!(j&&j.cloud);
-    if(j&&j.guarded&&j.guarded.length){ lanLastUpdated=0;   /* ★ แม่ข่ายคืนข้อมูลที่ชุดของเราทำหาย → ดึงชุดล่าสุดรอบถัดไปทันที */
+    lastSyncedJSON=json; _dbJSON=json; lanLastUpdated=new Date(now).getTime(); lanSeenAt=(j&&j.updated_at)||now; lanOK=true; lanCloud=!!(j&&j.cloud);
+    if(j&&j.guarded&&j.guarded.length){ lanLastUpdated=0; lanSeenAt='';   /* ★ แม่ข่ายคืนข้อมูลที่ชุดของเราทำหาย → ดึงชุดล่าสุดรอบถัดไปทันที */
       try{ console.warn('🛡️ แม่ข่ายกันข้อมูลหาย : '+j.guarded.join(' ; ')); }catch(e){} try{ toast('🛡️ แม่ข่ายกันข้อมูลหายจากการบันทึกของเครื่องนี้ — กำลังดึงข้อมูลล่าสุด','err'); }catch(e){} }
     try{lsSet('rtk_pending','0');}catch(e){}
     try{ window.__dirtyLocal=false; }catch(e){}   /* ★ ขึ้นเครื่องแม่ข่ายเรียบร้อยแล้ว */
@@ -1056,23 +1071,25 @@ async function _lanPushDo(force){
 }
 function lanStartPoll(){
   if(lanPoll)return;
+  try{ setTimeout(lanClockCheck,5000); setInterval(lanClockCheck,30*60*1000); }catch(e){}
   lanPoll=setInterval(async()=>{
     if(applyingRemote)return;
     if(uiBusy()){ window.__pendingSync=true;
       if(uiLocked()){ try{ const rq=await fetchTO(lanBase+'/api/state?meta=1',{cache:'no-store'},8000);
           if(rq.ok){ const jq=await rq.json(); const tq=jq.updated_at?new Date(jq.updated_at).getTime():0;
-            if(tq>lanLastUpdated&&jq.client_id!==CLIENT_ID){ window.__lockSeen=window.__lockSeen||{};
+            if(lanIsNew(jq.updated_at,jq.client_id)){ window.__lockSeen=window.__lockSeen||{};
               if(!window.__lockSeen[tq]){ window.__lockSeen[tq]=1; window.__lockPend=(window.__lockPend||0)+1; uiLockBadge(); } } } }catch(e){} }
       return; }
     if(actCooldown())return; /* ผู้ใช้เพิ่งกด/พิมพ์ — เลื่อนการรีเฟรชรอบนี้ กันจอเด้งทับสิ่งที่เพิ่งตั้ง (ซ่อน/แสดง ฯลฯ) */
     if(localDirty()){ try{ if(typeof lanPush==='function')lanPush(true); }catch(e){} return; }
     try{ const r=await fetchTO(lanBase+'/api/state?meta=1',{cache:'no-store'},8000); if(!r.ok)throw 0;
       const j=await r.json(); const t=j.updated_at?new Date(j.updated_at).getTime():0;
-      if(t>lanLastUpdated && j.client_id!==CLIENT_ID){
+      if(lanIsNew(j.updated_at,j.client_id)&&!lanThrottle()){ var _c0=performance.now(); __lanLastPull=Date.now();
         const full=await (await fetchTO(lanBase+'/api/state',{cache:'no-store'},12000)).json();
-        if(full&&full.data&&full.data.products){ var _srv=full.data; var _pb=null; try{_pb=JSON.parse(lastSyncedJSON);}catch(e){} var _mg=(typeof mergeDB==='function')?mergeDB(_pb,DB,_srv):_srv; var _mj=JSON.stringify(_mg); var _sj=JSON.stringify(_srv); if(_mj!==(_dbJSON||JSON.stringify(DB))){ applyingRemote=true; DB=_mg; try{ tombRebase(); }catch(_tb){} lanLastUpdated=t; dbWrite(_mj); _dbJSON=_mj; render(); applyingRemote=false; toast('🔄 ข้อมูลอัปเดตจากเครื่องอื่นในออฟฟิศ','ok'); } else { lanLastUpdated=t; } if(_mj!==_sj){ lastSyncedJSON=_sj; try{ if(_sj.length<1500000)lsSet('rtk_base',_sj); }catch(e){} try{if(typeof lanPush==='function')lanPush(true);}catch(e){} }
+        if(full&&full.data&&full.data.products){ var _srv=full.data; var _pb=null; try{_pb=JSON.parse(lastSyncedJSON);}catch(e){} var _mg=(typeof mergeDB==='function')?mergeDB(_pb,DB,_srv):_srv; var _mj=JSON.stringify(_mg); var _sj=JSON.stringify(_srv); if(_mj!==(_dbJSON||JSON.stringify(DB))){ applyingRemote=true; DB=_mg; try{ tombRebase(); }catch(_tb){} lanLastUpdated=t; lanSeenAt=j.updated_at; dbWrite(_mj); _dbJSON=_mj; lanRender(); applyingRemote=false; toast('🔄 ข้อมูลอัปเดตจากเครื่องอื่นในออฟฟิศ','ok'); } else { lanLastUpdated=t; lanSeenAt=j.updated_at; } if(_mj!==_sj){ lastSyncedJSON=_sj; try{ if(_sj.length<1500000)lsSet('rtk_base',_sj); }catch(e){} try{if(typeof lanPush==='function')lanPush(true);}catch(e){} }
         else { lastSyncedJSON=_mj; try{ baseSet(_mj); }catch(e){} } } /* ไม่รีเฟรชถ้าข้อมูลเหมือนเดิม */
       }
+      try{ if(_c0)__lanCost=Math.round(performance.now()-_c0); }catch(e){}
       lanOK=true; lanCloud=!!j.cloud; try{ if(document.getElementById('lanWaitBar'))lanBanner(false); }catch(e){}
     }catch(e){ lanOK=false; }
   },8000);
@@ -1084,9 +1101,10 @@ const SEED={
 
 /* ---------- State ---------- */
 let DB=null;
-const APP_BUILD='NC8D-2026.11.02b';
+const APP_BUILD='LANPERF-2026.11.02c';
 /* บันทึกการแก้ไขล่าสุด (แสดงเมื่อเอาเมาส์ชี้ที่ build — ไม่เอาไปต่อท้าย APP_BUILD เพราะทำให้แถบบนล้นจอ) */
 const APP_NOTE=[
+  '🐢 แก้เครื่องช้า/ค้าง : (1) ตรวจข้อมูลใหม่จากแม่ข่ายด้วย "เวลาประทับของแม่ข่ายเปลี่ยน" แทนการเทียบกับนาฬิกาเครื่อง — เดิมเครื่องที่นาฬิกาช้า (พบ 1 เครื่องช้าราว 2 นาที) เขียนเวลาย้อนหลัง เครื่องอื่นมองไม่เห็นงานของเครื่องนั้น แล้วดันข้อมูลชน (409) วนดึง-รวม-ส่ง 10 MB ซ้ำหลายรอบ (2) เตือนบนจอเมื่อนาฬิกาเครื่องคลาดจากแม่ข่ายเกิน 1 นาที + ใช้เวลาที่ชดเชยแล้วตอนส่ง (3) เครื่องที่รวมข้อมูล+วาดจอช้า ดึงข้อมูลห่างขึ้นอัตโนมัติ (5 เท่าของเวลาที่ใช้ ไม่เกิน 60 วิ) · หน้าโปรแกรมที่ถูกย่อ/อยู่แท็บหลัง ดึงทุก 60 วิ และไม่วาดจอจนกว่าจะกลับมาเปิด (การบันทึกขึ้นแม่ข่ายยังทำทันทีเหมือนเดิม) · server.js ใช้เวลาของแม่ข่ายเองเป็นเวลาประทับ (เพิ่มขึ้นเสมอ)',
   '🛠️ NC ปุ่ม + 8D : คลิกแล้วสร้างรายการ CORRECTIVE ACTION PLAN (8D) ให้ทันที (เลขที่ AP-<เลข NC> · ปัญหา/ที่พบ/วันที่/จำนวน NG/มาตรการชั่วคราว/ผู้จัดทำ เติมจากใบ NC) แล้วไปหน้า 8D แสดงรายการนั้น · เดิมเปิดฟอร์มเปล่าและยังไม่ขึ้นในทะเบียนจนกว่าจะกดบันทึก · กด ✏️ ในหน้า 8D เพื่อกรอกสาเหตุ/การแก้ไขต่อ',
   '🛠️ งานไม่ตรงข้อกำหนด (NC) : เพิ่มปุ่ม 8D ในแถวรายการ (ต่อจาก SPECIAL) · มีแผนแล้ว = ปุ่มสีตามสถานะ (กำลังทำ/เกินกำหนด/รอปิด/ปิดแล้ว + %) คลิกแล้วไปหน้า CORRECTIVE ACTION PLAN (8D) แสดงเฉพาะแผนของใบ NC นั้น (แถบ ✕ แสดงทั้งหมด) · ยังไม่มีแผน = ปุ่ม + 8D ไปหน้า 8D แล้วเปิดฟอร์มสร้างแผนให้ทันที',
   '📑 รายงาน (Timeline) ตารางสรุปภาพรวมตามชิ้นงาน (ราย PO) : เพิ่มตัวกรอง วันสั่งผลิต (1–31) · เดือนสั่งผลิต (ม.ค.–ธ.ค.) · ปีสั่งผลิต (ปีที่มีใบสั่งผลิต) จากช่องวันที่สั่ง/ผลิต · ใช้รวมกันได้ (เช่น วัน 30 + เดือน ต.ค. + ปี 2026 = วันเดียว · เดือนอย่างเดียว = เดือนนั้นทุกปี) · แถว SUBTOTAL รวมตามตัวกรอง · ปุ่ม ✕ ล้างวันที่',
@@ -3694,7 +3712,7 @@ function subscribeRealtime(){
     if(uiBusy()){ window.__pendingSync=true;
       if(uiLocked()){ try{ const rq=await fetchTO(lanBase+'/api/state?meta=1',{cache:'no-store'},8000);
           if(rq.ok){ const jq=await rq.json(); const tq=jq.updated_at?new Date(jq.updated_at).getTime():0;
-            if(tq>lanLastUpdated&&jq.client_id!==CLIENT_ID){ window.__lockSeen=window.__lockSeen||{};
+            if(lanIsNew(jq.updated_at,jq.client_id)){ window.__lockSeen=window.__lockSeen||{};
               if(!window.__lockSeen[tq]){ window.__lockSeen[tq]=1; window.__lockPend=(window.__lockPend||0)+1; uiLockBadge(); } } } }catch(e){} }
       return; }
     if(cloudPaused())return;
