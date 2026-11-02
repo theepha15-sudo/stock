@@ -1101,9 +1101,10 @@ const SEED={
 
 /* ---------- State ---------- */
 let DB=null;
-const APP_BUILD='LANPERF-2026.11.02c';
+const APP_BUILD='DPIPC-2026.11.02d';
 /* บันทึกการแก้ไขล่าสุด (แสดงเมื่อเอาเมาส์ชี้ที่ build — ไม่เอาไปต่อท้าย APP_BUILD เพราะทำให้แถบบนล้นจอ) */
 const APP_NOTE=[
+  '🧪 รายงานผลิตประจำวัน : เพิ่มปุ่ม IN-PROCESS CHECK (FM-QC-11) ในทุกแถว ทุกผู้ผลิต (ก่อนปุ่ม TAG) · ยังไม่มีใบตรวจ = กดแล้วสร้างใบตรวจให้อัตโนมัติจากรายการนั้น (Part · ชื่อ · ลูกค้า · ผู้ผลิต · เลข PO · กระบวนการย่อยทุกขั้น + ยอด OK/NG) แล้วเปิดใบทันที · มีใบแล้ว = ปุ่มสีตามสถานะ (รออนุมัติ SET UP / พบ NG / หยุดผลิต / อนุมัติครบ) กดเปิดใบเดิม',
   '🐢 แก้เครื่องช้า/ค้าง : (1) ตรวจข้อมูลใหม่จากแม่ข่ายด้วย "เวลาประทับของแม่ข่ายเปลี่ยน" แทนการเทียบกับนาฬิกาเครื่อง — เดิมเครื่องที่นาฬิกาช้า (พบ 1 เครื่องช้าราว 2 นาที) เขียนเวลาย้อนหลัง เครื่องอื่นมองไม่เห็นงานของเครื่องนั้น แล้วดันข้อมูลชน (409) วนดึง-รวม-ส่ง 10 MB ซ้ำหลายรอบ (2) เตือนบนจอเมื่อนาฬิกาเครื่องคลาดจากแม่ข่ายเกิน 1 นาที + ใช้เวลาที่ชดเชยแล้วตอนส่ง (3) เครื่องที่รวมข้อมูล+วาดจอช้า ดึงข้อมูลห่างขึ้นอัตโนมัติ (5 เท่าของเวลาที่ใช้ ไม่เกิน 60 วิ) · หน้าโปรแกรมที่ถูกย่อ/อยู่แท็บหลัง ดึงทุก 60 วิ และไม่วาดจอจนกว่าจะกลับมาเปิด (การบันทึกขึ้นแม่ข่ายยังทำทันทีเหมือนเดิม) · server.js ใช้เวลาของแม่ข่ายเองเป็นเวลาประทับ (เพิ่มขึ้นเสมอ)',
   '🛠️ NC ปุ่ม + 8D : คลิกแล้วสร้างรายการ CORRECTIVE ACTION PLAN (8D) ให้ทันที (เลขที่ AP-<เลข NC> · ปัญหา/ที่พบ/วันที่/จำนวน NG/มาตรการชั่วคราว/ผู้จัดทำ เติมจากใบ NC) แล้วไปหน้า 8D แสดงรายการนั้น · เดิมเปิดฟอร์มเปล่าและยังไม่ขึ้นในทะเบียนจนกว่าจะกดบันทึก · กด ✏️ ในหน้า 8D เพื่อกรอกสาเหตุ/การแก้ไขต่อ',
   '🛠️ งานไม่ตรงข้อกำหนด (NC) : เพิ่มปุ่ม 8D ในแถวรายการ (ต่อจาก SPECIAL) · มีแผนแล้ว = ปุ่มสีตามสถานะ (กำลังทำ/เกินกำหนด/รอปิด/ปิดแล้ว + %) คลิกแล้วไปหน้า CORRECTIVE ACTION PLAN (8D) แสดงเฉพาะแผนของใบ NC นั้น (แถบ ✕ แสดงทั้งหมด) · ยังไม่มีแผน = ปุ่ม + 8D ไปหน้า 8D แล้วเปิดฟอร์มสร้างแผนให้ทันที',
@@ -18849,6 +18850,15 @@ function dpRowNums(d,recv,order,ng){
     wd:wd,diff:wd-(Number(recv)||0),ng:Number(ng)||0,qok:q.ok||0,qng:q.ng||0,
     amt:Math.round(pz*(Number(recv)||0)*100)/100};
 }
+/* ★ 2/11d ปุ่ม IN-PROCESS CHECK ในแถวรายงานผลิตประจำวัน (ทุกผู้ผลิต) */
+function dpIpcMap(){ var c=window.__dpIpcC; if(c&&c.db===DB&&c.n===ensureIPC().length&&Date.now()-c.t<3000)return c.m;
+  var m={}; ensureIPC().forEach(function(x){ if(x&&x.srcId&&!m[x.srcId])m[x.srcId]=x; }); window.__dpIpcC={db:DB,n:ensureIPC().length,t:Date.now(),m:m}; return m; }
+function dpIpcBtn(d){ try{ if(!d||d.status==='cancelled')return '';
+  var s=dpIpcMap()[d.id];
+  if(!s)return '<button class="btn sm" onclick="ipcNewFromDoc(\''+d.id+'\')" title="สร้างใบตรวจ IN-PROCESS CHECK (FM-QC-11) จากรายการนี้อัตโนมัติ" style="font-weight:700;font-size:11px;color:#0f766e;border-color:#5eead4">🧪 + IN-PROCESS</button>';
+  var st=ipcStat(s);
+  return '<button class="btn sm" onclick="ipcOpen(\''+s.id+'\')" title="'+esc('IN-PROCESS CHECK · '+st.th+' — คลิกเปิดใบตรวจ')+'" style="font-weight:700;font-size:11px;background:'+st.bg+';color:#fff;border-color:'+st.bg+'">🧪 IN-PROCESS</button>';
+  }catch(e){ return ''; } }
 function dpRow(d){
   const pid=l=>l.productId||l.fgId;
   const items=(d.lines||[]).map(l=>pid(l)&&P(pid(l))?P(pid(l)).pn:(l.name||'')).filter(Boolean);
@@ -18900,6 +18910,7 @@ function dpRow(d){
     ${dpStockCell(d)}
     <td>${statusTag(d.status)}</td>
     <td style="text-align:right;white-space:nowrap">
+      ${dpIpcBtn(d)}
       <button class="btn sm pri" onclick="vs4Tag('${d.id}')" title="พิมพ์ TAG ควบคุมการเคลื่อนที่ชิ้นงาน (FM-ST-04) + บันทึกจัดส่งเข้ารับชิ้นงาน">🏷️ TAG</button>
       <button class="btn sm" onclick="viewDoc('${d.id}')">ดู</button>
       <button class="btn sm" onclick="printDP('${d.id}')" title="พิมพ์รายงานผลิต">🖨️</button>
