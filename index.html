@@ -1101,9 +1101,11 @@ const SEED={
 
 /* ---------- State ---------- */
 let DB=null;
-const APP_BUILD='WDSUM-2026.11.04b';
+const APP_BUILD='APQP-2026.11.04d';
 /* บันทึกการแก้ไขล่าสุด (แสดงเมื่อเอาเมาส์ชี้ที่ build — ไม่เอาไปต่อท้าย APP_BUILD เพราะทำให้แถบบนล้นจอ) */
 const APP_NOTE=[
+  '🧭 8.2 SALE รายการเสนอราคา คอลัมน์ APQP = ปุ่มเปิดแผน APQP (ACTION PLAN FM-MK-22) ของแถวนั้นได้ทันที : ยังไม่มี = กด APQP สร้างโครงการ Kick-off จากแถวแล้วเลื่อนไปหัวข้อ I) ACTION PLAN · มีแล้ว = APQP เสร็จ/ทั้งหมด สีตามสถานะ (เขียวครบ · ส้มกำลังทำ · แดงเกินกำหนด) + 🖨️ พิมพ์ FM-MK-22 · วันที่เดิมในช่อง (107 แถว) ยังแสดงอยู่ (แก้ได้ที่ ✏️) · ปุ่มแนบไฟล์ APQP เดิมยังใช้ได้',
+  '📐 8.2 SALE รายการเสนอราคา (FM-MK-19) : เพิ่ม KICK OFF (ในช่อง สรุป · ยังไม่มี = + KICK OFF สร้างจากแถว · มีแล้ว = % ความคืบหน้าแผน APQP) และคอลัมน์ DFMEA / PFMEA ต่อจาก APQP · เอกสารใหม่ DFMEA FM-RD-24 Rev.00 และ PFMEA FM-RD-02 Rev.00 ตาม AIAG-VDA FMEA 7 ขั้นตอน (IATF 16949 8.3.3.1 · 8.3.5.1 · 8.3.5.2 · 9.1.1.1) : หัวเอกสาร/ทีม · โครงสร้าง (PFMEA มี 4M) · หน้าที่ · ผลกระทบ–ลักษณะ–สาเหตุ · S/O/D → Action Priority อัตโนมัติ (H/M/L) · คุณลักษณะพิเศษ CC/SC · มาตรการ/ผู้รับผิดชอบ/สถานะ/ค่าหลังปรับปรุง · สรุปผล · ผู้ลงนาม · แถวตั้งต้นตามบริบทงาน (วัสดุ ชุบแข็ง ชุบผิว จากแถวเสนอราคา/Kick-off) · ใบพิมพ์ A4 แนวนอน + เกณฑ์ให้คะแนน · ยกเลิก = ไม่ลบ · AP สูงไม่มีมาตรการ = อนุมัติไม่ได้',
   '🖨️ สรุปเบิกวัตถุดิบรายเดือน : เพิ่มคอลัมน์ จำนวน (เส้น/แผ่น · บรรทัดที่บันทึกเป็นชิ้น = ≈ ชิ้น ÷ ชิ้นต่อเส้น) · ได้งาน (ชิ้น) · PART NUMBER (fgPn ของบรรทัด → ใบสั่งผลิตของ PO) อัตโนมัติ ทั้งในหน้าต่างและใบพิมพ์ · ใบพิมพ์มีช่องลงนาม VENDER / ISSUE ผู้จ่าย วัชราภรณ์ / CHECKED อลิสา / APPROVED ธีรสิทธิ์ (ชื่อ+ลายเซ็น · วันที่ = วันพิมพ์ · WDM_SIG_DEF / settings.wdmSig) + เลขที่เอกสาร FM-ST-12 Rev.00',
   '🖨️ สรุปเบิกวัตถุดิบรายเดือน : (1) ช่อง ปรับราคา +% (ใส่อิสระ เช่น 10 = บวก 10% · ติดลบได้) คูณทุกรายการที่มีราคา (ไม่รวมแมทลูกค้า) ราคา/มูลค่า/ยอดรวม/ใบพิมพ์เปลี่ยนทันที · จำค่าไว้ (settings.wdPrPct ซิงก์ทุกเครื่อง) · ชี้ที่ราคาเห็นราคาฐานก่อนบวก · หัวใบพิมพ์ระบุ ราคารวมบวก X% (2) บรรทัดเบิกเหล็ก/โลหะเป็นชิ้น (เช่น WD-69100096 เหล็กเส้นกลม 70 มม. 110 ชิ้น) เดิมราคา 0 หรือเอาราคาต่อ กก. คูณจำนวนชิ้น → แปลงเป็น กก. = ชิ้น ÷ ชิ้นต่อเส้น × กก.ต่อเส้น (110 ÷ 93 × 90.699 ≈ 107.278 กก.) แล้วคูณราคาต่อ กก. · แสดง ≈ กก. ชี้ดูวิธีคิด',
   '🖨️ เบิกวัตถุดิบ → พิมพ์สรุปเบิกวัตถุดิบรายเดือน : คอลัมน์ MAKER (เดิมเป็นรหัสตัวเลข 1/2/10) → ผู้ผลิต = ชื่อย่อ (RTK-K · RTK-V · VS4 · SM · AKE · JARUN …) ทั้งหน้าต่างและใบพิมพ์ · ราคาอัตโนมัติ (wdAutoPrice) : แมทลูกค้า = 0 → ราคาในใบ/ราคาผลิตในสินค้าคงคลัง → ราคาซื้อล่าสุดจาก PO/IP/SP ของวัตถุดิบนั้น (บาท/กก. สำหรับเบิกเป็น กก. · บาท/ชิ้น หรือ บาท/กก. × กก.ต่อชิ้น สำหรับเบิกเป็นชิ้น) ตัวเอียงสีเขียว ชี้ดูที่มา · ไม่พบราคา = สีส้ม · เพิ่มตัวกรองผู้ผลิตในหน้าต่าง (ยอดรวม/ใบพิมพ์ตามตัวกรอง · หัวใบพิมพ์มีชื่อผู้ผลิต) · จำนวนแสดงหน่วย กก./ชิ้น',
@@ -25880,6 +25882,287 @@ function csHTML(){
   var dl='<datalist id="dl_csCust">'+(DB.settings.custList||[]).map(function(c){var nm=(c&&typeof c==='object')?(c.name||c.code||''):c;return nm?'<option value="'+esc(nm)+'">':'';}).join('')+((DB.settings.customers||[]).map(function(c){return '<option value="'+esc(c)+'">';}).join(''))+'</datalist>';
   return hdr+dl+'<div style="margin:6px 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="muted" style="font-size:11px">💡 พิมพ์เกรดที่ลูกค้าให้แต่ละเดือน (เช่น A/B/C) · กด <b>+</b> ในช่องเดือนเพื่อแนบใบประเมินจากลูกค้า</span><button class="btn sm pri" onclick="csAdd()">+ เพิ่มลูกค้า</button></div>'+'<div class="tbl-wrap" style="max-height:56vh;overflow:auto"><table style="border-collapse:collapse;font-size:11px"><thead><tr>'+th+'</tr></thead><tbody>'+body+'</tbody></table></div></div>';
 }
+/* ===================================================================
+   ★ 4/11c DFMEA (FM-RD-24) / PFMEA (FM-RD-02) — AIAG-VDA FMEA Handbook 2019 (7 ขั้นตอน)
+   ISO 9001:2015 6.1 · 8.3 · 8.5.1 | IATF 16949:2016 8.3.2.1 · 8.3.3.1 · 8.3.3.3 · 8.3.5.1 · 8.3.5.2 · 9.1.1.1
+   เก็บที่ DB.operation.fmea [{id,kind D/P,mk19Id,no,rev,…,rows[]}] · ผูกกับแถวรายการเสนอราคา (FM-MK-19)
+   =================================================================== */
+var FMEA_K={
+ D:{t:'DFMEA',key:'rd.fm24',def:'FM-RD-24',pre:'DF',
+   th:'การวิเคราะห์ลักษณะข้อบกพร่องและผลกระทบของการออกแบบ',en:'DESIGN FAILURE MODE AND EFFECTS ANALYSIS (DFMEA)',
+   ref:'ISO 9001:2015 6.1 · 8.3.3 · 8.3.5 | IATF 16949:2016 8.3.2.1 · 8.3.3.1 · 8.3.3.3 · 8.3.5.1 | AIAG-VDA FMEA Handbook 1st Ed. 2019',
+   st:[['s1','ระบบระดับบน','Next higher level'],['s2','ชิ้นงาน/องค์ประกอบที่วิเคราะห์','Focus element'],['s3','องค์ประกอบ/คุณลักษณะระดับล่าง','Next lower level / characteristic']],
+   fn:[['f1','หน้าที่ & ข้อกำหนดระดับบน','Next higher level function & requirement'],['f2','หน้าที่ & ข้อกำหนดของชิ้นงาน','Focus element function & requirement'],['f3','หน้าที่ & คุณลักษณะระดับล่าง','Next lower level function & characteristic']],
+   fe:['ผลกระทบ (FE) ต่อระบบ / ลูกค้า / ผู้ใช้','Failure effect'],fm:['ลักษณะความล้มเหลว (FM)','Failure mode'],fc:['สาเหตุ (FC) จากการออกแบบ','Failure cause'],
+   pc:['การควบคุมเชิงป้องกันในการออกแบบ (PC)','Current prevention controls'],dc:['การควบคุมเชิงตรวจจับในการออกแบบ (DC)','Current detection controls'],
+   resp:'ผู้รับผิดชอบการออกแบบ / Design responsibility'},
+ P:{t:'PFMEA',key:'rd.fm02',def:'FM-RD-02',pre:'PF',
+   th:'การวิเคราะห์ลักษณะข้อบกพร่องและผลกระทบของกระบวนการ',en:'PROCESS FAILURE MODE AND EFFECTS ANALYSIS (PFMEA)',
+   ref:'ISO 9001:2015 6.1 · 8.5.1 | IATF 16949:2016 8.3.3.3 · 8.3.5.2 · 8.5.1.1 · 9.1.1.1 · 10.2.3 | AIAG-VDA FMEA Handbook 1st Ed. 2019',
+   st:[['s1','รายการกระบวนการ (ชิ้นงาน/สายการผลิต)','Process item'],['s2','ขั้นตอน / สถานีงาน','Process step / station'],['s3','องค์ประกอบงาน (4M)','Process work element']],
+   fn:[['f1','หน้าที่ของรายการกระบวนการ (โรงงาน/ลูกค้า/ผู้ใช้)','Function of process item'],['f2','หน้าที่ของขั้นตอน & คุณลักษณะผลิตภัณฑ์','Process step function & product characteristic'],['f3','หน้าที่ขององค์ประกอบงาน & คุณลักษณะกระบวนการ','Work element function & process characteristic']],
+   fe:['ผลกระทบ (FE) ต่อโรงงาน / ลูกค้าที่รับของ / ผู้ใช้','Failure effect'],fm:['ลักษณะความล้มเหลว (FM) ของขั้นตอน','Failure mode'],fc:['สาเหตุ (FC) จากองค์ประกอบงาน','Failure cause'],
+   pc:['การควบคุมเชิงป้องกัน (PC)','Current prevention controls'],dc:['การควบคุมเชิงตรวจจับ (DC)','Current detection controls'],
+   resp:'ผู้รับผิดชอบกระบวนการ / Process responsibility'}
+};
+var FMEA_4M=[['','-'],['Man','Man คน'],['Machine','Machine เครื่องจักร'],['Material','Material วัสดุ'],['Method','Method วิธีการ'],['Env','Environment สภาพแวดล้อม'],['Meas','Measurement การวัด']];
+var FMEA_ST=[['open','ยังไม่ดำเนินการ','Open'],['dec','ตัดสินใจแล้ว','Decision taken'],['impl','กำลังดำเนินการ','Implementation pending'],['done','เสร็จสิ้น','Completed'],['na','ไม่ดำเนินการ','Not implemented']];
+var FMEA_DST=[['draft','ร่าง','#7c3aed'],['review','รอทบทวน','#f59e0b'],['approved','อนุมัติแล้ว','#16a34a']];
+var FMEA_SIG_DEF={prep:'PATTANADET.T',chk:'TEERASIT.P',app:'CHANUNPORN.R'};
+/* ตาราง Action Priority (AIAG-VDA) : แถว O 8-10 / 6-7 / 4-5 / 2-3 / 1 · คอลัมน์ D 7-10 / 5-6 / 2-4 / 1 */
+var FMEA_APT={
+ a:[['H','H','H','H'],['H','H','H','H'],['H','H','H','M'],['H','M','L','L'],['L','L','L','L']],
+ b:[['H','H','H','H'],['H','H','H','M'],['H','M','M','M'],['M','M','L','L'],['L','L','L','L']],
+ c:[['H','H','M','M'],['M','M','M','L'],['M','L','L','L'],['L','L','L','L'],['L','L','L','L']],
+ d:[['M','M','L','L'],['L','L','L','L'],['L','L','L','L'],['L','L','L','L'],['L','L','L','L']]};
+function fmeaAP(S,O,D){ S=+S||0; O=+O||0; D=+D||0; if(!S||!O||!D)return ''; if(S<2)return 'L';
+  var t=S>=9?'a':S>=7?'b':S>=4?'c':'d', oi=O>=8?0:O>=6?1:O>=4?2:O>=2?3:4, di=D>=7?0:D>=5?1:D>=2?2:3;
+  return FMEA_APT[t][oi][di]; }
+var FMEA_APC={H:['#dc2626','#fff','สูง / High'],M:['#f59e0b','#111','กลาง / Medium'],L:['#16a34a','#fff','ต่ำ / Low']};
+function fmeaApTag(a){ if(!a)return '<span style="color:#999">-</span>'; var c=FMEA_APC[a];
+  return '<span style="display:inline-block;min-width:18px;padding:1px 5px;border-radius:4px;background:'+c[0]+';color:'+c[1]+';font-weight:700;text-align:center;-webkit-print-color-adjust:exact;print-color-adjust:exact">'+a+'</span>'; }
+/* เกณฑ์ให้คะแนน (ย่อ) */
+var FMEA_SC={
+ D:[['9–10','กระทบความปลอดภัยการใช้งาน / ไม่เป็นไปตามกฎหมาย','Affects safe operation / regulatory'],['7–8','หน้าที่หลักสูญเสียหรือลดลง','Loss or degradation of primary function'],['5–6','หน้าที่รองสูญเสียหรือลดลง','Loss or degradation of secondary function'],['2–4','รูปลักษณ์ / เสียง / สัมผัส ไม่พึงพอใจ','Annoyance: appearance, sound, feel'],['1','ไม่มีผลที่รับรู้ได้','No discernible effect']],
+ P:[['9–10','กระทบความปลอดภัยของพนักงาน/ผู้ใช้ หรือไม่เป็นไปตามกฎหมาย','Safety / regulatory'],['7–8','ลูกค้าหยุดสายการผลิต / คัดทิ้ง 100% / หน้าที่หลักเสีย','Line shutdown, 100% scrap, primary function'],['5–6','ต้องซ่อม/คัดแยกบางส่วน ลูกค้าได้รับผลกระทบ','Partial rework or sort, customer impact'],['2–4','แก้ไขในสายการผลิตได้ ผลกระทบเล็กน้อย','Minor in-station rework'],['1','ไม่มีผลกระทบที่รับรู้ได้','No discernible effect']]};
+var FMEA_OC={
+ D:[['10','ใหม่ทั้งหมด ไม่มีประวัติ/การป้องกัน','New design, no history'],['8–9','ใช้กับเงื่อนไขใหม่ การป้องกันน้อย','New application, little prevention'],['6–7','คล้ายแบบเดิมที่เคยมีปัญหา','Similar design with known issues'],['4–5','ปรับปรุงเล็กน้อย มีมาตรฐานรองรับ','Minor change, standards applied'],['2–3','แบบที่พิสูจน์แล้ว / Best practice','Proven design, best practice'],['1','ขจัดสาเหตุได้ด้วยการออกแบบ','Failure eliminated by design']],
+ P:[['10','ไม่มีการป้องกัน','No prevention'],['8–9','การป้องกันมีผลน้อย','Low effectiveness'],['6–7','การป้องกันปานกลาง (อบรม / WI)','Moderate: training, WI'],['4–5','การป้องกันดี (PM / อายุเครื่องมือ / SPC)','High: PM, tool life, SPC'],['2–3','ป้องกันได้มาก (Poka-yoke ป้องกันสาเหตุ)','Very high: error-proofing'],['1','ขจัดสาเหตุได้สมบูรณ์','Cause eliminated']]};
+var FMEA_DC={
+ D:[['9–10','ไม่มีวิธีทดสอบ / ยังไม่ได้วางแผน','No test method'],['7–8','วิธีทดสอบใหม่ ยังไม่พิสูจน์','New, unproven test method'],['5–6','วิธีพิสูจน์แล้ว ทดสอบหลังแบบเสร็จ','Proven method, late timing'],['2–4','วิธีพิสูจน์แล้ว ทดสอบก่อนปล่อยแบบ (DV)','Proven method before design freeze'],['1','ตรวจพบแน่นอน / ไม่เกิดความล้มเหลว','Always detected']],
+ P:[['9–10','ไม่มีการตรวจ / สุ่มตรวจไม่สม่ำเสมอ','No or random inspection'],['7–8','ตรวจด้วยสายตา/สัมผัส โดยพนักงาน','Visual or tactile by operator'],['5–6','ตรวจด้วยเครื่องมือวัด/เกจ โดยพนักงาน','Gauging by operator'],['2–4','ตรวจอัตโนมัติ / Poka-yoke ตรวจจับ','Automated detection, error-proofing'],['1','ไม่สามารถผลิตงานเสียได้','Cannot make discrepant part']]};
+function fmeaList(){ ensureOperation(); if(!Array.isArray(DB.operation.fmea))DB.operation.fmea=[]; return DB.operation.fmea; }
+var __fmMap=null,__fmMapT=0;
+function fmeaMap(){ var n=Date.now(); if(__fmMap&&n-__fmMapT<1500)return __fmMap; var m={};
+  fmeaList().forEach(function(d){ if(d.cancel||!d.mk19Id)return; var k=d.mk19Id+'|'+d.kind, o=m[k]; if(!o||(d.ts||0)>(o.ts||0))m[k]=d; });
+  __fmMap=m; __fmMapT=n; return m; }
+function fmeaLatest(mk19Id,kind){ return fmeaMap()[mk19Id+'|'+kind]||null; }
+function fmeaNextNo(kind){ var y=String(new Date().getFullYear()).slice(-2), pre=FMEA_K[kind].pre+y+'-', mx=0;
+  fmeaList().forEach(function(d){ var s=String(d.no||''); if(s.indexOf(pre)===0){ var n=parseInt(s.slice(pre.length),10); if(n>mx)mx=n; } });
+  return pre+('00'+(mx+1)).slice(-3); }
+function fmeaHasVal(v){ v=String(v||'').trim(); return !!v&&v!=='-'&&!/^(no|none|non|ไม่มี|n\/a|na)$/i.test(v); }
+function fmeaRow(o){ return Object.assign({id:uid(),s1:'',s2:'',s3:'',m4:'',f1:'',f2:'',f3:'',fe:'',S:'',fm:'',fc:'',sc:'',pc:'',O:'',dc:'',D:'',pa:'',da:'',resp:'',due:'',ast:'open',act:'',cdate:'',S2:'',O2:'',D2:'',rm:''},o||{}); }
+/* แถวตั้งต้นตามบริบทงาน RTK (ชิ้นส่วนกลึง/ขึ้นรูปโลหะ + ชุบแข็ง/ชุบผิว) — แก้ไขได้ทุกช่อง */
+function fmeaSeed(kind,h){
+  var pn=(h.pname||h.pn||'ชิ้นงาน')+(h.pn&&h.pname?' ('+h.pn+')':''), hard=fmeaHasVal(h.harden), plat=fmeaHasVal(h.plating), a=[];
+  if(kind==='D'){
+    var top='ชุดประกอบของลูกค้า'+(h.cust?' '+h.cust:'')+(h.model?' — '+h.model:''), b={s1:top,s2:pn,f1:'ยึด/ประกอบชิ้นส่วนให้ชุดประกอบทำงานตามหน้าที่'};
+    a.push(fmeaRow(Object.assign({},b,{s3:'วัสดุ'+(h.material?' '+h.material:''),f2:'รับแรงใช้งานตามสเปคโดยไม่แตกหัก/เสียรูป',f3:'ความแข็งแรงของวัสดุตามมาตรฐาน (JIS / ลูกค้า)',fe:'ชิ้นงานแตก/เสียรูป ชุดประกอบทำงานผิดปกติ',S:8,fm:'ความแข็งแรงของชิ้นงานต่ำกว่าข้อกำหนด',fc:'เลือกเกรดวัสดุไม่เหมาะกับภาระใช้งาน',pc:'อ้างอิงเกรดวัสดุตาม Drawing ลูกค้า · ทบทวนความเป็นไปได้ FM-RD-01',O:3,dc:'ทดสอบแรงดึง/แรงบิดชิ้นตัวอย่าง + ใบรับรองวัสดุ (Mill cert)',D:4})));
+    a.push(fmeaRow(Object.assign({},b,{s3:'ขนาดและพิกัดความเผื่อ',f2:'ขนาดสำคัญอยู่ในพิกัดตาม Drawing',f3:'พิกัดสัมพันธ์กับชิ้นคู่ประกอบ',fe:'ประกอบไม่ได้ / หลวมคลอน ลูกค้าหยุดสายการผลิต',S:7,fm:'ประกอบกับชิ้นคู่ไม่ได้',fc:'กำหนดพิกัดไม่สัมพันธ์กับชิ้นคู่ (ไม่ได้ทำ Tolerance stack-up)',pc:'ทบทวน Drawing ร่วมกับลูกค้า (Kick-off) · ใช้แบบชิ้นงานที่คล้ายกันเป็นฐาน',O:3,dc:'ทดลองประกอบชิ้นตัวอย่างกับชิ้นคู่ · ตรวจขนาด (Dimensional result)',D:4,sc:'SC'})));
+    a.push(fmeaRow(Object.assign({},b,{s3:'เกลียว / รูปร่างจุดยึด',f2:'ยึดแน่นไม่คลายระหว่างใช้งาน',f3:'ระดับเกลียวและความยาวเกลียวเหมาะสม',fe:'ขันไม่เข้า / คลายตัว ชิ้นส่วนหลุด',S:7,fm:'การยึดแน่นไม่เพียงพอ',fc:'กำหนดระดับเกลียว/ความยาวเกลียวไม่เหมาะสม',pc:'ใช้มาตรฐานเกลียว ISO / JIS',O:2,dc:'ตรวจ Go/No-Go gauge และทดสอบแรงบิดขันชิ้นตัวอย่าง',D:4})));
+    if(hard)a.push(fmeaRow(Object.assign({},b,{s3:'ชุบแข็ง '+h.harden,f2:'ทนการสึกหรอและแรงกระแทกตลอดอายุใช้งาน',f3:'ค่าความแข็ง/ความลึกชุบแข็งตามสเปค',fe:'ผิวสึกเร็ว หรือเปราะแตก',S:7,fm:'ทนการสึก/แรงกระแทกไม่พอ',fc:'กำหนดช่วงความแข็ง/ความลึกไม่เหมาะกับวัสดุ',pc:'อ้างอิงมาตรฐานชุบแข็งของวัสดุ (CQI-9)',O:3,dc:'ทดสอบความแข็ง + ตัดดูความลึกชิ้นตัวอย่าง',D:4})));
+    if(plat)a.push(fmeaRow(Object.assign({},b,{s3:'ผิวชุบ '+h.plating,f2:'ทนการกัดกร่อนตลอดอายุใช้งาน',f3:'ชนิดและความหนาผิวชุบตามสเปค',fe:'เกิดสนิมก่อนกำหนด รูปลักษณ์ไม่ผ่าน ลูกค้าร้องเรียน',S:6,fm:'ทนการกัดกร่อนไม่ถึงชั่วโมงที่กำหนด',fc:'กำหนดชนิด/ความหนาผิวชุบไม่เพียงพอ',pc:'อ้างอิงมาตรฐานผิวชุบลูกค้า (ELV / RoHS)',O:3,dc:'ทดสอบ Salt spray + วัดความหนาผิวชุบ',D:3})));
+    return a;
+  }
+  var s1=pn, f1='ผลิตชิ้นงานตามข้อกำหนดลูกค้า และส่งมอบตรงเวลา', P=function(o){ a.push(fmeaRow(Object.assign({s1:s1,f1:f1},o))); };
+  P({s2:'10 รับวัตถุดิบ / Incoming',m4:'Material',s3:'วัตถุดิบ'+(h.material?' '+h.material:''),f2:'รับวัตถุดิบถูกเกรด/ขนาดตามใบสั่งซื้อ',f3:'เกรด ขนาด และใบรับรองวัสดุถูกต้อง',fe:'ชิ้นงานไม่ได้สเปค ลูกค้าปฏิเสธทั้งล็อต',S:7,fm:'รับวัตถุดิบผิดเกรด/ขนาด',fc:'ผู้ขายส่งผิด / ไม่ตรวจใบรับรอง',pc:'ซื้อจากผู้ขายใน ASL (FM-PC-02) · ระบุเกรดในใบสั่งซื้อ',O:3,dc:'ตรวจรับวัตถุดิบ + ตรวจ Mill certificate ทุกล็อต',D:5});
+  P({s2:'20 กลึง / ขึ้นรูป CNC',m4:'Machine',s3:'เครื่องกลึง CNC / มีดตัด',f2:'ขึ้นรูปขนาดตาม Drawing',f3:'ค่าตั้งเครื่องและสภาพมีดตัดถูกต้อง',fe:'ประกอบไม่ได้ ลูกค้าหยุดสายการผลิต / คัดแยก',S:7,fm:'ขนาดเกินพิกัด (OD / ความยาว)',fc:'มีดสึก / ตั้งค่าเครื่องผิด',pc:'เปลี่ยนมีดตามอายุใช้งาน · อนุมัติชิ้นแรก (First piece)',O:4,dc:'ตรวจ First/Last piece + IN-PROCESS CHECK (FM-QC-11) ด้วยเวอร์เนีย/ไมโครมิเตอร์',D:5,sc:'SC'});
+  P({s2:'20 กลึง / ขึ้นรูป CNC',m4:'Man',s3:'พนักงานควบคุมเครื่อง',f2:'ขึ้นรูปขนาดตาม Drawing',f3:'ทำตาม WI และบันทึกผลตรวจ',fe:'งานเสียหลุดไปขั้นตอนถัดไป',S:6,fm:'ใช้ Drawing / โปรแกรมผิดรุ่น',fc:'ไม่ได้ตรวจสอบ Rev. ของ Drawing ก่อนผลิต',pc:'ควบคุมเอกสาร (DCC) · อบรม WI',O:3,dc:'ตรวจชิ้นแรกเทียบ Drawing ก่อนผลิตจริง',D:5});
+  P({s2:'30 ทำเกลียว / ต๊าป / รีดเกลียว',m4:'Machine',s3:'ต๊าป / ลูกรีดเกลียว',f2:'เกลียวได้ขนาดตามมาตรฐาน',f3:'เครื่องมือทำเกลียวอยู่ในอายุใช้งาน',fe:'ขันไม่เข้า ลูกค้าประกอบไม่ได้',S:7,fm:'เกลียวไม่ผ่านเกจ / เกลียวเสีย',fc:'ต๊าป/ลูกรีดสึก หรือหัก',pc:'กำหนดอายุเครื่องมือ (จำนวนชิ้น)',O:4,dc:'ตรวจ Go/No-Go gauge ตามความถี่ใน Control Plan',D:4});
+  if(hard)P({s2:'40 ชุบแข็ง (ผู้รับจ้าง) / Heat treatment',m4:'Method',s3:'กระบวนการชุบแข็ง '+h.harden,f2:'ได้ค่าความแข็งตามสเปค',f3:'อุณหภูมิ / เวลา / บรรยากาศเตาตามมาตรฐาน',fe:'ชิ้นงานสึก/แตกที่ลูกค้า',S:8,fm:'ความแข็งไม่ได้ตามสเปค',fc:'ควบคุมอุณหภูมิ/เวลาไม่ถูกต้อง',pc:'ประเมินผู้รับจ้างตาม CQI-9 · ระบุสเปคในใบสั่ง',O:3,dc:'ตรวจใบรายงานผลความแข็ง + สุ่มวัดความแข็งเมื่อรับเข้า',D:4,sc:'SC'});
+  if(plat)P({s2:(hard?'50':'40')+' ชุบผิว (ผู้รับจ้าง) / Plating',m4:'Method',s3:'กระบวนการชุบผิว '+h.plating,f2:'ผิวชุบทนการกัดกร่อนตามสเปค',f3:'เวลา / กระแสไฟ / ความเข้มข้นน้ำยาตามมาตรฐาน',fe:'เกิดสนิม รูปลักษณ์ไม่ผ่าน ลูกค้าร้องเรียน',S:6,fm:'ความหนาผิวชุบไม่พอ / ผิวด่าง',fc:'ควบคุมพารามิเตอร์การชุบไม่ถูกต้อง',pc:'ประเมินผู้ชุบ (FM-PC-03) · ระบุสเปคในใบส่งชุบ',O:3,dc:'ตรวจรับหลังชุบ FM-QC-28 (ลักษณะผิว + วัดความหนา)',D:4});
+  var n=40+(hard?10:0)+(plat?10:0);
+  P({s2:n+' คัดแยก / ตรวจสุดท้าย / Final inspection',m4:'Man',s3:'พนักงานคัดแยก',f2:'คัดงาน NG ออกก่อนส่งมอบ',f3:'คัดตาม Limit sample และเกณฑ์ตัดสิน',fe:'งาน NG หลุดถึงลูกค้า (Claim)',S:7,fm:'งาน NG ปนไปกับงาน OK',fc:'พนักงานไม่ได้รับการอบรม / ไม่มี Limit sample',pc:'อบรม + ประเมินทักษะ (Skill matrix) · มี Limit sample ที่จุดคัด',O:4,dc:'สุ่มตรวจซ้ำ (Audit) ก่อนบรรจุ · บันทึก FM-QC-20',D:5});
+  P({s2:(n+10)+' บรรจุ / จัดส่ง / Packing & delivery',m4:'Method',s3:'การบรรจุและติด TAG',f2:'บรรจุถูกรุ่น ถูกจำนวน ไม่เสียหาย',f3:'1 พื้นที่ 1 รุ่น · ติด TAG ถูกต้อง',fe:'ลูกค้าได้รับของผิดรุ่น/จำนวนไม่ครบ',S:6,fm:'ปนรุ่น / จำนวนผิด / TAG ผิด',fc:'บรรจุหลายรุ่นในพื้นที่เดียวกัน',pc:'แยกพื้นที่บรรจุ · TAG จัดส่ง FM-ST-15',O:3,dc:'ชั่งนับจำนวน + ตรวจ TAG ก่อนส่ง',D:4});
+  return a;
+}
+function fmeaBlank(kind,mk){
+  var c=(mk&&mk.c)||[], ko=mk?ensureKO().find(function(x){ return x.mk19Id===mk.id; }):null; ko=ko||{};
+  var h={cust:ko.cust||c[5]||'',model:ko.model||c[2]||'',pn:ko.pn||c[3]||'',pname:ko.pname||c[4]||'',material:ko.material||c[6]||'',harden:ko.harden||c[7]||'',plating:ko.plating||c[8]||''};
+  var co=(DB.settings&&DB.settings.company)||{};
+  return Object.assign({id:uid(),kind:kind,mk19Id:mk?mk.id:'',koId:ko.id||'',no:fmeaNextNo(kind),rev:'00',date:todayISO(),revDate:'',
+    drawRev:ko.drawRev||'',sop:ko.sopDate||'',resp:'',conf:'ภายในบริษัท / Internal',loc:co.name||'RTK',team:'',status:'draft',note:'',
+    sg:{prep:FMEA_SIG_DEF.prep,chk:FMEA_SIG_DEF.chk,app:FMEA_SIG_DEF.app,prepD:'',chkD:'',appD:''},rows:fmeaSeed(kind,h),_new:1},h);
+}
+/* ---------- ปุ่มในตาราง FM-MK-19 ---------- */
+function fmeaTh(){ var s='position:sticky;top:0;background:#f1f1f7;white-space:nowrap;font-size:10px;padding:3px 5px;border:1px solid #ddd';
+  return '<th style="'+s+'">DFMEA</th><th style="'+s+'">PFMEA</th>'; }
+function fmeaBtn(mk19Id,kind){ var d=fmeaLatest(mk19Id,kind), K=FMEA_K[kind];
+  if(!d)return '<button class="btn sm" style="padding:1px 6px;font-size:10px" onclick="fmeaOpenFor(\''+mk19Id+'\',\''+kind+'\')" title="จัดทำ '+K.t+' ('+K.def+')">+ '+K.t+'</button>';
+  var st=FMEA_DST.find(function(x){ return x[0]===d.status; })||FMEA_DST[0], hN=(d.rows||[]).filter(function(r){ return fmeaAP(r.S2||r.S,r.O2||r.O,r.D2||r.D)==='H'; }).length;
+  return '<button class="btn sm" style="padding:1px 6px;font-size:10px;border-color:'+st[2]+';color:'+st[2]+';font-weight:700" onclick="fmeaOpen(\''+d.id+'\')" title="'+esc(d.no+' Rev.'+(d.rev||'00')+' · '+st[1]+' · '+(d.rows||[]).length+' รายการ'+(hN?' · AP สูง '+hN:''))+'">'+K.t+(hN?' <span style="color:#dc2626">●'+hN+'</span>':'')+'</button>'; }
+function fmeaCells(mk19Id){ var s='white-space:nowrap;padding:1px 3px;border:1px solid #eee;text-align:center';
+  return '<td style="'+s+'">'+fmeaBtn(mk19Id,'D')+'</td><td style="'+s+'">'+fmeaBtn(mk19Id,'P')+'</td>'; }
+/* KICK OFF ในช่อง สรุป */
+var __koMap=null,__koMapT=0;
+/* ★ 4/11d APQP ในตาราง FM-MK-19 → แผน APQP (ACTION PLAN FM-MK-22) ในโครงการ Kick-off */
+function apqpGo(mk19Id){ __koMap=null; koFromMk19(mk19Id); setTimeout(function(){ var e=document.getElementById('ko_apbox'); if(e)e.scrollIntoView({block:'start'}); },250); }
+function apqpPrintMk(koId){ koOpen(koId); setTimeout(function(){ try{ apnPrint(); }catch(e){ toast('พิมพ์ไม่สำเร็จ','err'); } },250); }
+function apqpCell(r){ var k=koMk19Map()[r.id], v=r.c[21]||'', h;
+  if(!k)h='<button class="btn sm" style="padding:1px 7px;font-size:10px;font-weight:700" onclick="apqpGo(\''+r.id+'\')" title="เปิดแผน APQP (ACTION PLAN '+AP2_CODE+') — สร้างโครงการ Kick-off จากแถวนี้">APQP</button>';
+  else { var s=koStat(k), ls=(k.acts||[]).filter(function(a){ return a.st!=='na'; }), d=ls.filter(function(a){ return a.st==='done'; }).length;
+    h='<button class="btn sm" style="padding:1px 7px;font-size:10px;font-weight:700;border-color:'+s.bg+';color:'+s.bg+'" onclick="apqpGo(\''+r.id+'\')" title="'+esc((k.no||'')+' · แผน APQP '+s.th+' '+s.pct+'%')+'">APQP '+d+'/'+ls.length+'</button>'
+     +' <button class="btn sm" style="padding:1px 5px;font-size:10px" onclick="apqpPrintMk(\''+k.id+'\')" title="พิมพ์ ACTION PLAN '+AP2_CODE+'">🖨️</button>'; }
+  return '<td style="white-space:nowrap;padding:1px 3px;border:1px solid #eee">'+h+(v?' <span class="muted" style="font-size:9.5px" title="ค่าเดิมในช่อง (แก้ได้ที่ ✏️)">'+esc(v)+'</span>':'')+' '+mk19ALBtn(r.id)+'</td>'; }
+function koMk19Map(){ var n=Date.now(); if(__koMap&&n-__koMapT<1500)return __koMap; var m={}; ensureKO().forEach(function(k){ if(k.mk19Id)m[k.mk19Id]=k; }); __koMap=m; __koMapT=n; return m; }
+function koMkBtn(mk19Id){ var k=koMk19Map()[mk19Id];
+  if(!k)return '<button class="btn sm" style="padding:1px 6px;font-size:10px" onclick="__koMap=null;koFromMk19(\''+mk19Id+'\')" title="ประชุมเปิดงานใหม่ '+KO_CODE+' + แผน APQP '+AP2_CODE+'">+ KICK OFF</button>';
+  var s=koStat(k);
+  return '<button class="btn sm" style="padding:1px 6px;font-size:10px;border-color:'+s.bg+';color:'+s.bg+';font-weight:700" onclick="koOpen(\''+k.id+'\')" title="'+esc((k.no||'')+' · '+s.th+' '+s.pct+'%')+'">KICK OFF '+s.pct+'%</button>'; }
+/* ---------- ฟอร์ม ---------- */
+var _fmD=null;
+function fmeaOpenFor(mk19Id,kind){ var ex=fmeaLatest(mk19Id,kind); if(ex){ fmeaOpen(ex.id); return; }
+  var mk=mk19Find(mk19Id); if(!mk){ toast('ไม่พบรายการเสนอราคา','err'); return; } _fmD=fmeaBlank(kind,mk); fmeaForm(); }
+function fmeaOpen(id){ var d=fmeaList().find(function(x){ return x.id===id; }); if(!d){ toast('ไม่พบเอกสาร FMEA','err'); return; }
+  _fmD=JSON.parse(JSON.stringify(d)); if(!Array.isArray(_fmD.rows))_fmD.rows=[]; if(!_fmD.sg)_fmD.sg={}; fmeaForm(); }
+var FMEA_HF=[['no','เลขที่ FMEA / FMEA ID'],['rev','Rev.'],['date','วันที่เริ่ม / Start date','date'],['revDate','วันที่แก้ไข / Revision date','date'],
+  ['cust','ลูกค้า / Customer'],['model','MODEL / Program'],['pn','PART NUMBER'],['pname','PART NAME / Subject'],['drawRev','Drawing Rev.'],['material','วัสดุ / Material'],
+  ['harden','ชุบแข็ง / Hardening'],['plating','ชุบผิว / Plating'],['sop','วันเริ่มผลิต (SOP) / Key date','date'],['resp',''],['loc','สถานที่ / Location'],['conf','ระดับความลับ / Confidentiality']];
+function fmeaHdrRead(){ var D=_fmD; if(!D)return; FMEA_HF.forEach(function(f){ var e=document.getElementById('fm_h_'+f[0]); if(e)D[f[0]]=e.value.trim(); });
+  ['team','note','status'].forEach(function(f){ var e=document.getElementById('fm_h_'+f); if(e)D[f]=e.value; });
+  ['prep','chk','app','prepD','chkD','appD'].forEach(function(f){ var e=document.getElementById('fm_sg_'+f); if(e)D.sg[f]=e.value.trim(); }); }
+function fmeaIn(el){ var D=_fmD; if(!D)return; var i=+el.getAttribute('data-i'), f=el.getAttribute('data-f'), r=D.rows[i]; if(!r)return; r[f]=el.value;
+  if(/^[SOD]2?$/.test(f)){ var a=document.getElementById('fm_ap_'+i), b=document.getElementById('fm_ap2_'+i);
+    if(a)a.innerHTML=fmeaApTag(fmeaAP(r.S,r.O,r.D)); if(b)b.innerHTML=fmeaApTag(fmeaAP(r.S2,r.O2,r.D2)); fmeaSumLive(); } }
+function fmeaCount(rows,after){ var c={H:0,M:0,L:0}; (rows||[]).forEach(function(r){ var a=after?fmeaAP(r.S2||r.S,r.O2||r.O,r.D2||r.D):fmeaAP(r.S,r.O,r.D); if(a)c[a]++; }); return c; }
+function fmeaSumHTML(){ var D=_fmD, b=fmeaCount(D.rows,0), a=fmeaCount(D.rows,1), miss=(D.rows||[]).filter(function(r){ return fmeaAP(r.S,r.O,r.D)==='H'&&!String(r.pa||'').trim()&&!String(r.da||'').trim(); }).length;
+  return 'ก่อนปรับปรุง : '+fmeaApTag('H')+' '+b.H+' · '+fmeaApTag('M')+' '+b.M+' · '+fmeaApTag('L')+' '+b.L+' &nbsp;→&nbsp; หลังปรับปรุง : '+fmeaApTag('H')+' '+a.H+' · '+fmeaApTag('M')+' '+a.M+' · '+fmeaApTag('L')+' '+a.L
+    +(miss?' &nbsp;<b style="color:#dc2626">⚠️ AP สูง (H) ยังไม่มีมาตรการ '+miss+' รายการ</b>':''); }
+function fmeaSumLive(){ var e=document.getElementById('fm_sum'); if(e)e.innerHTML=fmeaSumHTML(); }
+function fmeaTblHTML(){
+  var D=_fmD, K=FMEA_K[D.kind], P=D.kind==='P';
+  var ta=function(i,f,w){ return '<textarea data-i="'+i+'" data-f="'+f+'" oninput="fmeaIn(this)" rows="2" style="width:'+(w||130)+'px;font-size:11px;padding:3px 4px;resize:vertical">'+esc(D.rows[i][f]||'')+'</textarea>'; };
+  var num=function(i,f){ var v=String(D.rows[i][f]||''); var o='<option value=""></option>'; for(var n=10;n>=1;n--)o+='<option'+(String(n)===v?' selected':'')+'>'+n+'</option>';
+    return '<select data-i="'+i+'" data-f="'+f+'" onchange="fmeaIn(this)" style="width:46px;font-size:12px;font-weight:700;padding:2px">'+o+'</select>'; };
+  var sel=function(i,f,arr,w){ var v=String(D.rows[i][f]||''); return '<select data-i="'+i+'" data-f="'+f+'" onchange="fmeaIn(this)" style="width:'+(w||90)+'px;font-size:11px;padding:2px">'+arr.map(function(o){ return '<option value="'+o[0]+'"'+(o[0]===v?' selected':'')+'>'+esc(o[1])+'</option>'; }).join('')+'</select>'; };
+  var dt=function(i,f){ return '<input type="date" data-i="'+i+'" data-f="'+f+'" onchange="fmeaIn(this)" value="'+esc(D.rows[i][f]||'')+'" style="width:118px;font-size:11px;padding:2px">'; };
+  var th=function(t,e,x){ return '<th'+(x||'')+' style="background:#f1f1f7;border:1px solid #ccc;padding:3px 4px;font-size:10.5px;white-space:nowrap">'+t+(e?'<div style="font-weight:400;font-size:9px;color:#666">'+e+'</div>':'')+'</th>'; };
+  var g=function(t,n,bg){ return '<th colspan="'+n+'" style="background:'+bg+';color:#fff;border:1px solid #ccc;padding:3px;font-size:11px">'+t+'</th>'; };
+  var h='<table style="border-collapse:collapse;font-size:11px"><thead><tr><th rowspan="2" style="background:#f1f1f7;border:1px solid #ccc">#</th>'
+   +g('ขั้นที่ 2 วิเคราะห์โครงสร้าง / Structure',P?4:3,'#475569')+g('ขั้นที่ 3 วิเคราะห์หน้าที่ / Function',3,'#0f766e')+g('ขั้นที่ 4 วิเคราะห์ความล้มเหลว / Failure',4,'#b45309')
+   +g('ขั้นที่ 5 วิเคราะห์ความเสี่ยง / Risk',6,'#b91c1c')+g('ขั้นที่ 6 ปรับปรุง / Optimization',12,'#1d4ed8')+'<th rowspan="2" style="background:#f1f1f7;border:1px solid #ccc"></th></tr><tr>'
+   +K.st.slice(0,2).map(function(x){ return th(x[1],x[2]); }).join('')+(P?th('4M',''):'')+th(K.st[2][1],K.st[2][2])
+   +K.fn.map(function(x){ return th(x[1],x[2]); }).join('')
+   +th(K.fe[0],K.fe[1])+th('S','Severity')+th(K.fm[0],K.fm[1])+th(K.fc[0],K.fc[1])
+   +th(K.pc[0],K.pc[1])+th('O','Occurrence')+th(K.dc[0],K.dc[1])+th('D','Detection')+th('AP','Action priority')+th('คุณลักษณะพิเศษ','Special char.')
+   +th('มาตรการป้องกัน','Prevention action')+th('มาตรการตรวจจับ','Detection action')+th('ผู้รับผิดชอบ','Responsible')+th('กำหนดเสร็จ','Target date')+th('สถานะ','Status')
+   +th('ผลการดำเนินการ & หลักฐาน','Action taken & evidence')+th('วันที่เสร็จ','Completion date')+th('S','new')+th('O','new')+th('D','new')+th('AP','new')+th('หมายเหตุ / เหตุผลที่ไม่ทำ','Remarks')
+   +'</tr></thead><tbody>';
+  h+=(D.rows||[]).map(function(r,i){ var td=function(x,st){ return '<td style="border:1px solid #ddd;padding:2px;vertical-align:top'+(st||'')+'">'+x+'</td>'; };
+    var miss=fmeaAP(r.S,r.O,r.D)==='H'&&!String(r.pa||'').trim()&&!String(r.da||'').trim();
+    return '<tr'+(miss?' style="background:#fff1f2"':'')+'>'+td('<b>'+(i+1)+'</b>',';text-align:center')
+     +td(ta(i,'s1',120))+td(ta(i,'s2',120))+(P?td(sel(i,'m4',FMEA_4M,96)):'')+td(ta(i,'s3',120))
+     +td(ta(i,'f1',130))+td(ta(i,'f2',140))+td(ta(i,'f3',140))
+     +td(ta(i,'fe',150))+td(num(i,'S'))+td(ta(i,'fm',140))+td(ta(i,'fc',150))
+     +td(ta(i,'pc',150))+td(num(i,'O'))+td(ta(i,'dc',150))+td(num(i,'D'))
+     +'<td id="fm_ap_'+i+'" style="border:1px solid #ddd;text-align:center;vertical-align:middle">'+fmeaApTag(fmeaAP(r.S,r.O,r.D))+'</td>'
+     +td(sel(i,'sc',[['',''],['CC','CC ◆ วิกฤต'],['SC','SC ▲ สำคัญ']],84))
+     +td(ta(i,'pa',140))+td(ta(i,'da',140))+td(ta(i,'resp',90))+td(dt(i,'due'))+td(sel(i,'ast',FMEA_ST.map(function(x){ return [x[0],x[1]]; }),104))
+     +td(ta(i,'act',150))+td(dt(i,'cdate'))+td(num(i,'S2'))+td(num(i,'O2'))+td(num(i,'D2'))
+     +'<td id="fm_ap2_'+i+'" style="border:1px solid #ddd;text-align:center;vertical-align:middle">'+fmeaApTag(fmeaAP(r.S2,r.O2,r.D2))+'</td>'+td(ta(i,'rm',130))
+     +td('<div style="display:flex;flex-direction:column;gap:2px"><button class="btn sm" style="padding:0 5px" title="คัดลอกแถว (สาเหตุ/ผลกระทบเพิ่มของลักษณะความล้มเหลวเดียวกัน)" onclick="fmeaRowOp('+i+',\'copy\')">⧉</button><button class="btn sm" style="padding:0 5px" title="เลื่อนขึ้น" onclick="fmeaRowOp('+i+',\'up\')">↑</button><button class="btn sm danger" style="padding:0 5px" title="ลบแถว" onclick="fmeaRowOp('+i+',\'del\')">✕</button></div>')
+     +'</tr>'; }).join('');
+  return h+'</tbody></table>';
+}
+function fmeaReTbl(){ var w=document.getElementById('fm_tbl'); if(!w)return; var sl=w.scrollLeft, st=w.scrollTop; w.innerHTML=fmeaTblHTML(); w.scrollLeft=sl; w.scrollTop=st; fmeaSumLive(); }
+function fmeaRowOp(i,op){ var a=_fmD.rows; if(!a[i])return;
+  if(op==='copy'){ var c=JSON.parse(JSON.stringify(a[i])); c.id=uid(); ['fc','pc','O','dc','D','pa','da','resp','due','act','cdate','S2','O2','D2','rm'].forEach(function(f){ c[f]=''; }); c.ast='open'; a.splice(i+1,0,c); }
+  else if(op==='up'){ if(i>0){ var t=a[i-1]; a[i-1]=a[i]; a[i]=t; } }
+  else if(op==='del'){ if(!confirm('ลบแถวที่ '+(i+1)+' ?'))return; a.splice(i,1); }
+  fmeaReTbl(); }
+function fmeaAddRow(){ var a=_fmD.rows, l=a[a.length-1]||{}; a.push(fmeaRow({s1:l.s1||'',f1:l.f1||'',s2:_fmD.kind==='D'?(l.s2||''):''})); fmeaReTbl();
+  setTimeout(function(){ var w=document.getElementById('fm_tbl'); if(w)w.scrollTop=w.scrollHeight; },20); }
+function fmeaForm(){
+  var D=_fmD; if(!D)return; var K=FMEA_K[D.kind], code=fmCode(K.key,K.def);
+  var F=function(f){ var o=FMEA_HF.find(function(x){ return x[0]===f; }); var lb=f==='resp'?K.resp:o[1];
+    return '<div class="field"><label style="font-size:11px">'+lb+'</label><input id="fm_h_'+f+'" '+(o[2]?'type="'+o[2]+'" ':'')+'value="'+esc(D[f]||'')+'" style="padding:5px 7px;font-size:12px"></div>'; };
+  var S=function(f,lb){ return '<div class="field"><label style="font-size:11px">'+lb+'</label><input id="fm_sg_'+f+'" value="'+esc((D.sg||{})[f]||'')+'" '+(/D$/.test(f)?'type="date" ':'')+'style="padding:5px 7px;font-size:12px"></div>'; };
+  var body='<div class="hint" style="margin-bottom:8px"><span class="i">📐</span><div><b>'+K.t+' — '+K.th+'</b> ('+esc(code)+' Rev.00)<br>'
+   +'<span style="font-size:11.5px">ตามแนวทาง AIAG-VDA 7 ขั้นตอน : 1 วางแผน (หัวเอกสาร/ทีม) → 2 โครงสร้าง → 3 หน้าที่ → 4 ความล้มเหลว (ผลกระทบ–ลักษณะ–สาเหตุ) → 5 ความเสี่ยง (S/O/D → AP) → 6 ปรับปรุง → 7 สรุปผลและสื่อสาร<br>'
+   +'AP คำนวณอัตโนมัติตามตาราง Action Priority · <b>AP = H ต้องมีมาตรการ</b> หรือเหตุผลที่ไม่ทำ · คุณลักษณะพิเศษ (CC/SC) ส่งต่อไปยัง Control Plan · '+esc(K.ref)+'</span></div></div>'
+   +'<div class="apsec">ขั้นที่ 1 วางแผนและเตรียมการ / Planning &amp; preparation</div>'
+   +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px 10px">'+FMEA_HF.map(function(f){ return F(f[0]); }).join('')
+   +'<div class="field"><label style="font-size:11px">สถานะเอกสาร / Status</label><select id="fm_h_status" style="padding:5px 7px;font-size:12px">'+FMEA_DST.map(function(x){ return '<option value="'+x[0]+'"'+(D.status===x[0]?' selected':'')+'>'+x[1]+'</option>'; }).join('')+'</select></div></div>'
+   +'<div class="field" style="margin-top:6px"><label style="font-size:11px">ทีมข้ามสายงาน / Cross-functional team (ชื่อ – หน่วยงาน)</label><textarea id="fm_h_team" rows="2" style="font-size:12px" placeholder="เช่น ธีรสิทธิ์ – QA · ชนัญพร – Sale · พัฒนเดช – ENG · ผู้ผลิต – PD">'+esc(D.team||'')+'</textarea></div>'
+   +'<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:10px 0 6px"><div class="apsec" style="margin:0">ขั้นที่ 2–6 ตารางวิเคราะห์ ('+(D.rows||[]).length+' แถวตั้งต้น · แก้ไขได้ทุกช่อง)</div>'
+   +'<button class="btn sm pri" onclick="fmeaAddRow()">+ เพิ่มแถว</button><span id="fm_sum" style="font-size:11.5px">'+fmeaSumHTML()+'</span></div>'
+   +'<div id="fm_tbl" class="tbl-wrap" style="max-height:52vh;overflow:auto;border:1px solid var(--line)">'+fmeaTblHTML()+'</div>'
+   +'<div class="apsec" style="margin-top:10px">ขั้นที่ 7 สรุปผลและการสื่อสาร / Results documentation</div>'
+   +'<div class="field"><label style="font-size:11px">สรุปผล · การสื่อสารถึงลูกค้า/ผู้ผลิต · การส่งต่อไป Control Plan / Process Flow / WI</label><textarea id="fm_h_note" rows="2" style="font-size:12px">'+esc(D.note||'')+'</textarea></div>'
+   +'<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px 10px">'+S('prep','จัดทำโดย / Prepared')+S('prepD','วันที่')+S('chk','ทบทวนโดย / Reviewed')+S('chkD','วันที่')+S('app','อนุมัติโดย / Approved')+S('appD','วันที่')+'</div>'
+   +'<div style="margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span style="font-size:12px;font-weight:700">📎 ไฟล์แนบ (FMEA ฉบับลูกค้า / Excel)</span>'
+   +(D.link?'<a href="javascript:void 0" onclick="mnLinkOpen(_fmD.link)" style="font-size:12px">'+esc(lnkLabel(D.link,D.linkName||''))+'</a> <button class="btn sm danger" onclick="fmeaLinkDel()">ลบลิงก์</button>':'<span class="muted" style="font-size:11.5px">ยังไม่มี</span>')
+   +' <button class="btn sm" onclick="fmeaLinkPick()">📂 เลือกไฟล์</button></div>';
+  modal({title:'📐 '+K.t+' '+esc(code)+' — '+esc(D.pn||D.pname||'')+(D._new?' <span style="font-size:12px;color:#7c3aed">(ใหม่ ยังไม่บันทึก)</span>':''),size:'full',body:body,
+    footer:'<button class="btn" onclick="closeModal()">ปิด</button>'+(D._new?'':'<button class="btn danger" onclick="fmeaCancel()">ยกเลิกเอกสาร</button>')
+      +'<button class="btn" onclick="fmeaPrint()">🖨️ พิมพ์ / PDF</button><button class="btn pri" onclick="fmeaSave()">💾 บันทึก</button>'});
+  try{ var _ov=document.querySelector('#modalRoot .overlay'); if(_ov)_ov.removeAttribute('onclick'); }catch(e){}
+}
+function fmeaLinkPick(){ fmeaHdrRead(); var D=_fmD; filePicker(function(rel,name){ D.link=rel; D.linkName=name; _fmD=D; fmeaForm(); toast('แนบไฟล์แล้ว — กด 💾 บันทึก','ok'); },function(){ _fmD=D; fmeaForm(); }); }
+function fmeaLinkDel(){ fmeaHdrRead(); delete _fmD.link; delete _fmD.linkName; fmeaForm(); }
+function fmeaSave(){
+  fmeaHdrRead(); var D=_fmD; if(!D)return;
+  if(!String(D.no||'').trim()){ toast('กรุณากรอกเลขที่ FMEA','err'); return; }
+  var dup=fmeaList().find(function(x){ return x.id!==D.id&&!x.cancel&&String(x.no||'').trim()===String(D.no).trim(); }); if(dup){ toast('เลขที่ '+D.no+' ซ้ำกับเอกสารอื่น','err'); return; }
+  D.rows=(D.rows||[]).filter(function(r){ return ['s2','s3','fe','fm','fc','pc','dc'].some(function(f){ return String(r[f]||'').trim(); }); });
+  var miss=D.rows.filter(function(r){ return fmeaAP(r.S,r.O,r.D)==='H'&&!String(r.pa||'').trim()&&!String(r.da||'').trim()&&!String(r.rm||'').trim(); }).length;
+  if(D.status==='approved'&&miss){ toast('อนุมัติไม่ได้ : AP สูง (H) ยังไม่มีมาตรการ '+miss+' รายการ','err'); return; }
+  delete D._new; D.ts=Date.now(); D._ts=D.ts;
+  var a=fmeaList(), ix=a.findIndex(function(x){ return x.id===D.id; }), cp=JSON.parse(JSON.stringify(D));
+  if(ix>=0)a[ix]=cp; else a.push(cp);
+  __fmMap=null; saveDB(); try{ render(); }catch(e){}
+  fmeaForm(); var h=document.querySelector('#modalRoot .modal-h h3'); if(h)h.innerHTML+=' <span style="font-size:12px;color:#16a34a">✅ บันทึกแล้ว</span>';
+  toast(FMEA_K[D.kind].t+' '+D.no+' บันทึกแล้ว'+(miss?' · ⚠️ AP สูงยังไม่มีมาตรการ '+miss+' รายการ':''),'ok');
+}
+function fmeaCancel(){ var D=_fmD; if(!D)return; var why=prompt('เหตุผลที่ยกเลิก '+D.no+' (เอกสารยังเก็บไว้ ไม่ลบ)',''); if(why===null)return;
+  var r=fmeaList().find(function(x){ return x.id===D.id; }); if(!r)return; r.cancel=1; r.cancelWhy=why; r.cancelAt=new Date().toISOString(); r.ts=Date.now(); r._ts=r.ts;
+  __fmMap=null; saveDB(); closeModal(); render(); toast('ยกเลิก '+D.no+' แล้ว','ok'); }
+/* ---------- ใบพิมพ์ A4 แนวนอน ---------- */
+function fmeaPrint(id,mode){
+  var D; if(id){ D=fmeaList().find(function(x){ return x.id===id; }); } else { fmeaHdrRead(); D=_fmD; }
+  if(!D){ toast('ไม่พบเอกสาร','err'); return; }
+  ensureSettings(); var co=DB.settings.company||{}, K=FMEA_K[D.kind], P=D.kind==='P', code=fmCode(K.key,K.def)+' Rev.00', sg=D.sg||{};
+  var e=function(v){ return esc(v==null?'':String(v)).replace(/\n/g,'<br>'); };
+  var hc=function(t,en,x){ return '<th'+(x||'')+'>'+t+(en?'<div class="en">'+en+'</div>':'')+'</th>'; };
+  var gp=function(t,n,c){ return '<th colspan="'+n+'" class="grp" style="background:'+c+'">'+t+'</th>'; };
+  var rows=(D.rows||[]).map(function(r,i){ var ap=fmeaAP(r.S,r.O,r.D), ap2=fmeaAP(r.S2,r.O2,r.D2), st=FMEA_ST.find(function(x){ return x[0]===r.ast; });
+    var c=function(v,x){ return '<td'+(x||'')+'>'+v+'</td>'; };
+    return '<tr>'+c(i+1,' class="c"')+c(e(r.s1))+c(e(r.s2))+(P?c(e(r.m4),' class="c"'):'')+c(e(r.s3))+c(e(r.f1))+c(e(r.f2))+c(e(r.f3))
+      +c(e(r.fe))+c('<b>'+e(r.S)+'</b>',' class="c"')+c(e(r.fm))+c(e(r.fc))+c(e(r.pc))+c('<b>'+e(r.O)+'</b>',' class="c"')+c(e(r.dc))+c('<b>'+e(r.D)+'</b>',' class="c"')
+      +c(fmeaApTag(ap),' class="c"')+c(r.sc?('<b>'+(r.sc==='CC'?'◆ CC':'▲ SC')+'</b>'):'',' class="c"')
+      +c(e(r.pa))+c(e(r.da))+c(e(r.resp))+c(e(r.due),' class="c"')+c((st&&(r.pa||r.da||r.ast!=='open'))?st[1]:'',' class="c"')+c(e(r.act))+c(e(r.cdate),' class="c"')
+      +c(e(r.S2),' class="c"')+c(e(r.O2),' class="c"')+c(e(r.D2),' class="c"')+c(fmeaApTag(ap2),' class="c"')+c(e(r.rm))+'</tr>'; }).join('');
+  var b=fmeaCount(D.rows,0), a=fmeaCount(D.rows,1);
+  var crit=function(t,arr,lbl){ return '<table class="cr"><thead><tr><th colspan="2">'+t+'</th></tr></thead><tbody>'+arr.map(function(x){ return '<tr><td class="c" style="width:34px"><b>'+x[0]+'</b></td><td>'+esc(x[1])+'<div class="en">'+esc(x[2])+'</div></td></tr>'; }).join('')+'</tbody></table>'; };
+  var sig=function(lab,en,nm,dt){ var im=''; try{ im=nm?clmSigImg(nm):''; }catch(x){}
+    return '<div class="sg"><div class="sbox">'+(im?'<img src="'+im+'">':'')+'</div><div class="snm">'+(nm?esc(nm):'&nbsp;')+'</div><div>'+lab+'<div class="en">'+en+'</div></div><div class="en">Date : '+esc(dt||'')+'</div></div>'; };
+  var hd=function(l,v){ return '<td class="hl">'+l+'</td><td>'+esc(v||'')+'</td>'; };
+  var html='<!DOCTYPE html><html lang="th"><head><meta charset="utf-8"><title>'+esc(K.t+' '+(D.no||''))+'</title><style>'
+   +"*{font-family:Tahoma,'Microsoft YaHei',sans-serif;box-sizing:border-box}@page{size:A4 landscape;margin:7mm}body{margin:0;color:#111;font-size:7.6px}"
+   +".top{display:flex;align-items:center;border-bottom:2px solid #111;padding-bottom:3px;margin-bottom:4px}.top .lg{font-size:20px;font-weight:800;width:22mm}.top .co{flex:1;text-align:center}.top h1{font-size:12px;margin:0}.top .ti{font-size:12.5px;font-weight:700;margin-top:2px}.top .fm{width:34mm;text-align:right;font-size:9px;font-weight:700}"
+   +"table{border-collapse:collapse;width:100%}th,td{border:1px solid #777;padding:2px 3px;vertical-align:top}th{background:#eef;font-size:7.2px;text-align:center}th.grp{color:#fff;font-size:8px;-webkit-print-color-adjust:exact;print-color-adjust:exact}.en{font-weight:400;font-size:6.3px;color:#555}td.c{text-align:center;vertical-align:middle}"
+   +".hd td{font-size:8px;padding:2px 4px}.hd td.hl{background:#f3f4f6;font-weight:700;width:12%;-webkit-print-color-adjust:exact;print-color-adjust:exact}"
+   +"thead{display:table-header-group}tr{page-break-inside:avoid}.pg2{page-break-before:always}.crs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:5px}.cr td,.cr th{font-size:7.4px}"
+   +".sgs{display:flex;justify-content:space-around;margin-top:10px;text-align:center;font-size:8.5px}.sg{width:24%}.sbox{height:26px;display:flex;align-items:flex-end;justify-content:center}.sbox img{max-height:25px;max-width:90%}.snm{font-weight:700;border-top:1px dotted #555;padding-top:1px}"
+   +".ft{display:flex;justify-content:space-between;margin-top:6px;font-size:7.5px;color:#444}@media print{.noprint{display:none}}</style></head><body>"
+   +'<div class="top"><div class="lg">RTK</div><div class="co"><h1>'+esc(co.name||'')+'</h1><div>'+esc(co.address||'')+'</div><div class="ti">'+esc(K.th)+'<div class="en" style="font-size:9px">'+esc(K.en)+'</div></div></div><div class="fm">'+esc(code)+'</div></div>'
+   +'<table class="hd"><tr>'+hd('เลขที่ FMEA / FMEA ID',(D.no||'')+'  Rev.'+(D.rev||'00'))+hd('ลูกค้า / Customer',D.cust)+hd('PART NUMBER',D.pn)+hd('วันที่เริ่ม / Start date',D.date)+'</tr>'
+   +'<tr>'+hd('บริษัท / สถานที่',D.loc||co.name)+hd('MODEL / Program',D.model)+hd('PART NAME / Subject',D.pname)+hd('วันที่แก้ไข / Revision',D.revDate)+'</tr>'
+   +'<tr>'+hd(K.resp.split(' / ')[0],D.resp)+hd('วัสดุ / Material',D.material)+hd('ชุบแข็ง / ชุบผิว',[D.harden,D.plating].filter(fmeaHasVal).join(' / '))+hd('SOP / Key date',D.sop)+'</tr>'
+   +'<tr>'+hd('ทีมข้ามสายงาน / Team',D.team)+hd('Drawing Rev.',D.drawRev)+hd('ความลับ / Confidentiality',D.conf)+hd('สถานะ / Status',(FMEA_DST.find(function(x){ return x[0]===D.status; })||FMEA_DST[0])[1]+(D.cancel?' · ยกเลิก':''))+'</tr></table>'
+   +'<table style="margin-top:4px"><thead><tr><th rowspan="2">#</th>'
+   +gp('ขั้นที่ 2 วิเคราะห์โครงสร้าง / Structure analysis',P?4:3,'#475569')+gp('ขั้นที่ 3 วิเคราะห์หน้าที่ / Function analysis',3,'#0f766e')+gp('ขั้นที่ 4 วิเคราะห์ความล้มเหลว / Failure analysis',4,'#b45309')
+   +gp('ขั้นที่ 5 วิเคราะห์ความเสี่ยง / Risk analysis',6,'#b91c1c')+gp('ขั้นที่ 6 ปรับปรุง / Optimization',12,'#1d4ed8')+'</tr><tr>'
+   +hc(K.st[0][1],K.st[0][2])+hc(K.st[1][1],K.st[1][2])+(P?hc('4M',''):'')+hc(K.st[2][1],K.st[2][2])
+   +K.fn.map(function(x){ return hc(x[1],x[2]); }).join('')
+   +hc(K.fe[0],K.fe[1])+hc('S','')+hc(K.fm[0],K.fm[1])+hc(K.fc[0],K.fc[1])
+   +hc(K.pc[0],K.pc[1])+hc('O','')+hc(K.dc[0],K.dc[1])+hc('D','')+hc('AP','')+hc('คุณลักษณะพิเศษ','Special char.')
+   +hc('มาตรการป้องกัน','Prevention action')+hc('มาตรการตรวจจับ','Detection action')+hc('ผู้รับผิดชอบ','Responsible')+hc('กำหนดเสร็จ','Target date')+hc('สถานะ','Status')
+   +hc('ผลการดำเนินการ & หลักฐาน','Action taken & evidence')+hc('วันที่เสร็จ','Completion')+hc('S','')+hc('O','')+hc('D','')+hc('AP','')+hc('หมายเหตุ','Remarks')
+   +'</tr></thead><tbody>'+(rows||'<tr><td colspan="30" class="c">-</td></tr>')+'</tbody></table>'
+   +'<div class="pg2"></div>'
+   +'<table class="hd"><tr><td class="hl" style="width:18%">ขั้นที่ 7 สรุปผล / Results documentation</td><td>จำนวนรายการ '+(D.rows||[]).length+' · AP ก่อนปรับปรุง H '+b.H+' / M '+b.M+' / L '+b.L+' · หลังปรับปรุง H '+a.H+' / M '+a.M+' / L '+a.L
+   +'<br>'+e(D.note||'')+'</td></tr><tr><td class="hl">อ้างอิง / Reference</td><td>'+esc(K.ref)+' · คุณลักษณะพิเศษ ◆ CC = วิกฤต (ความปลอดภัย/กฎหมาย) · ▲ SC = สำคัญ (หน้าที่/การประกอบ) → ส่งต่อ Control Plan</td></tr></table>'
+   +'<div class="crs">'+crit('ความรุนแรง (S) / Severity',FMEA_SC[D.kind])+crit('โอกาสเกิด (O) / Occurrence',FMEA_OC[D.kind])+crit('ความสามารถตรวจจับ (D) / Detection',FMEA_DC[D.kind])+'</div>'
+   +'<div style="margin-top:5px;font-size:7.6px"><b>Action Priority (AP)</b> ตามตาราง AIAG-VDA : '+fmeaApTag('H')+' สูง — ต้องกำหนดมาตรการ หรือระบุเหตุผลที่เพียงพอ · '+fmeaApTag('M')+' กลาง — ควรกำหนดมาตรการ · '+fmeaApTag('L')+' ต่ำ — อาจกำหนดมาตรการ</div>'
+   +'<div class="sgs">'+sig('จัดทำโดย','Prepared by',sg.prep,sg.prepD)+sig('ทบทวนโดย','Reviewed by',sg.chk,sg.chkD)+sig('อนุมัติโดย','Approved by',sg.app,sg.appD)+'</div>'
+   +'<div class="ft"><span>พิมพ์ / Printed '+esc(new Date().toLocaleString('th-TH'))+'</span><span><b>'+esc(code)+'</b></span></div>'
+   +'<div class="noprint" style="text-align:center;margin:12px"><button onclick="window.print()" style="padding:8px 22px;font-size:14px;cursor:pointer">🖨️ พิมพ์ / บันทึก PDF</button></div>'
+   +(mode==='html'?'':'<scr'+'ipt>setTimeout(function(){window.print()},600)</scr'+'ipt>')+'</body></html>';
+  if(mode==='html')return html.replace(/<div class="noprint"[\s\S]*?<\/div>/,'');
+  var w=window.open('','_blank'); if(!w){ toast('เบราว์เซอร์บล็อก popup','err'); return; } w.document.write(html); w.document.close();
+}
+
 function mk19HTML(){
   var open=mk19Open(); var data=mk19Rows();
   var hdr='<div style="margin-top:14px;border-top:2px solid var(--brand);padding-top:10px"><div style="font-weight:700;cursor:pointer;user-select:none" onclick="mk19Toggle()">'+(open?'▼':'▶')+' 📝 รายการเสนอราคา ('+fmCodeChip('mk.fm19','FM-MK-19')+') <span class="muted" style="font-weight:400;font-size:11px">('+data.length+' รายการ · '+(open?'คลิกเพื่อซ่อน':'คลิกเพื่อแสดง')+')</span></div>'
@@ -25887,8 +26170,8 @@ function mk19HTML(){
    +' <span class="muted" style="font-size:11px">· ประชุมความคืบหน้าการเสนอราคา '+fmCodeChip(QM_CODE_KEY,QM_CODE_DEF)+' — กดปุ่ม 📋 ที่ท้ายแถวของชิ้นงาน</span></div>';
   if(!open) return hdr+'</div>';
   var rnum={12:1,13:1,14:1,15:1,16:1,17:1,19:1,20:1};
-  var th=MK19_COLS.map(function(c,ci){if(!mk19C(ci))return '';var _dw=(ci===18)?'<th style="position:sticky;top:0;background:#f1f1f7;white-space:nowrap;font-size:10px;padding:3px 5px;border:1px solid #ddd">DRAWING</th><th style="position:sticky;top:0;background:#f1f1f7;white-space:nowrap;font-size:10px;padding:3px 5px;border:1px solid #ddd">FEASIBILITY</th>':'';var _lbl=(ci===18)?'QUOTATION':(ci===21?'APQP':esc(c));return _dw+'<th style="position:sticky;top:0;background:#f1f1f7;white-space:nowrap;font-size:10px;padding:3px 5px;border:1px solid #ddd">'+_lbl+'</th>';}).join('')+'<th style="position:sticky;top:0;background:#f1f1f7;font-size:10px;padding:3px 5px;border:1px solid #ddd">จัดการ</th>';
-  var body=data.map(function(r){ return '<tr>'+MK19_COLS.map(function(c,i){ if(!mk19C(i))return ''; if(i===18){ return '<td style="white-space:nowrap;padding:1px 3px;border:1px solid #eee"><input value="'+esc(r.drawing||'')+'" onchange="mk19DrawSet(\''+r.id+'\',this.value)" placeholder="DRAWING" style="width:70px;padding:2px 4px;font-size:10px"> '+mk19DLBtn(r.id)+'</td><td style="white-space:nowrap;padding:1px 3px;border:1px solid #eee"><input value="'+esc(r.feas||'')+'" onchange="mk19FeasSet(\''+r.id+'\',this.value)" placeholder="FM-RD-01" style="width:70px;padding:2px 4px;font-size:10px"> '+mk19FLBtn(r.id)+'</td><td style="white-space:nowrap;padding:1px 3px;border:1px solid #eee"><input value="'+esc(r.c[18]||'')+'" onchange="mk19SetCell(\''+r.id+'\',18,this.value)" placeholder="FM-MK-01" style="width:70px;padding:2px 4px;font-size:10px"> '+mk19LinkBtn(r.id)+'</td>'; } if(i===21){ return '<td style="white-space:nowrap;padding:1px 3px;border:1px solid #eee"><input value="'+esc(r.c[21]||'')+'" onchange="mk19SetCell(\''+r.id+'\',21,this.value)" placeholder="APQP" style="width:70px;padding:2px 4px;font-size:10px"> '+mk19ALBtn(r.id)+'</td>'; } var v=r.c[i]!=null?r.c[i]:''; return '<td style="white-space:nowrap;font-size:10.5px;padding:2px 5px;border:1px solid #eee'+(rnum[i]?';text-align:right':'')+'">'+esc(v)+'</td>'; }).join('')+'<td style="white-space:nowrap;padding:1px 4px;border:1px solid #eee">'+qmBtn(r.id)+' <button class="btn sm" onclick="mk19View(\''+r.id+'\')">ดู</button> <button class="btn sm" onclick="mk19Edit(\''+r.id+'\')">✏️</button> <button class="btn sm" onclick="mk19Print(\''+r.id+'\')">🖨️</button> <button class="btn sm danger" onclick="mk19Del(\''+r.id+'\')">ยกเลิก</button></td></tr>'; }).join('');
+  var th=MK19_COLS.map(function(c,ci){if(!mk19C(ci))return '';var _dw=(ci===18)?'<th style="position:sticky;top:0;background:#f1f1f7;white-space:nowrap;font-size:10px;padding:3px 5px;border:1px solid #ddd">DRAWING</th><th style="position:sticky;top:0;background:#f1f1f7;white-space:nowrap;font-size:10px;padding:3px 5px;border:1px solid #ddd">FEASIBILITY</th>':'';var _lbl=(ci===18)?'QUOTATION':(ci===21?'APQP':esc(c));return _dw+'<th style="position:sticky;top:0;background:#f1f1f7;white-space:nowrap;font-size:10px;padding:3px 5px;border:1px solid #ddd">'+_lbl+'</th>'+(ci===21?fmeaTh():'');}).join('')+'<th style="position:sticky;top:0;background:#f1f1f7;font-size:10px;padding:3px 5px;border:1px solid #ddd">จัดการ</th>';
+  var body=data.map(function(r){ return '<tr>'+MK19_COLS.map(function(c,i){ if(!mk19C(i))return ''; if(i===18){ return '<td style="white-space:nowrap;padding:1px 3px;border:1px solid #eee"><input value="'+esc(r.drawing||'')+'" onchange="mk19DrawSet(\''+r.id+'\',this.value)" placeholder="DRAWING" style="width:70px;padding:2px 4px;font-size:10px"> '+mk19DLBtn(r.id)+'</td><td style="white-space:nowrap;padding:1px 3px;border:1px solid #eee"><input value="'+esc(r.feas||'')+'" onchange="mk19FeasSet(\''+r.id+'\',this.value)" placeholder="FM-RD-01" style="width:70px;padding:2px 4px;font-size:10px"> '+mk19FLBtn(r.id)+'</td><td style="white-space:nowrap;padding:1px 3px;border:1px solid #eee"><input value="'+esc(r.c[18]||'')+'" onchange="mk19SetCell(\''+r.id+'\',18,this.value)" placeholder="FM-MK-01" style="width:70px;padding:2px 4px;font-size:10px"> '+mk19LinkBtn(r.id)+'</td>'; } if(i===21){ return apqpCell(r)+fmeaCells(r.id); } if(i===19){ return '<td style="white-space:nowrap;font-size:10.5px;padding:1px 4px;border:1px solid #eee">'+koMkBtn(r.id)+(r.c[19]?' '+esc(r.c[19]):'')+'</td>'; } var v=r.c[i]!=null?r.c[i]:''; return '<td style="white-space:nowrap;font-size:10.5px;padding:2px 5px;border:1px solid #eee'+(rnum[i]?';text-align:right':'')+'">'+esc(v)+'</td>'; }).join('')+'<td style="white-space:nowrap;padding:1px 4px;border:1px solid #eee">'+qmBtn(r.id)+' <button class="btn sm" onclick="mk19View(\''+r.id+'\')">ดู</button> <button class="btn sm" onclick="mk19Edit(\''+r.id+'\')">✏️</button> <button class="btn sm" onclick="mk19Print(\''+r.id+'\')">🖨️</button> <button class="btn sm danger" onclick="mk19Del(\''+r.id+'\')">ยกเลิก</button></td></tr>'; }).join('');
   return hdr
     +'<div style="margin:6px 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><input id="mk19Q" placeholder="🔍 ค้นหา (Part / ชื่อ / ลูกค้า / Model / วันที่)" oninput="mk19Filter()" style="flex:1;min-width:240px;max-width:440px;padding:6px 10px;border:1px solid var(--line);border-radius:8px"><span class="muted" style="font-size:11px">แสดง <b id="mk19Cnt">'+data.length+'</b> รายการ</span><button class="btn sm" onclick="openMk19ColMenu()" title="ซ่อน/แสดงคอลัมน์">👁 คอลัมน์</button> <button class="btn sm pri" onclick="mk19Add()">+ เพิ่มรายการ</button></div>'
     +'<div class="tbl-wrap" style="max-height:62vh;overflow:auto"><table style="border-collapse:collapse;font-size:10.5px"><thead><tr>'+th+'</tr></thead><tbody id="mk19Body">'+body+'</tbody></table></div>'
