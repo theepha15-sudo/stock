@@ -1101,9 +1101,11 @@ const SEED={
 
 /* ---------- State ---------- */
 let DB=null;
-const APP_BUILD='DPIPC-2026.11.02d';
+const APP_BUILD='WDPCT-2026.11.04a';
 /* บันทึกการแก้ไขล่าสุด (แสดงเมื่อเอาเมาส์ชี้ที่ build — ไม่เอาไปต่อท้าย APP_BUILD เพราะทำให้แถบบนล้นจอ) */
 const APP_NOTE=[
+  '🖨️ สรุปเบิกวัตถุดิบรายเดือน : (1) ช่อง ปรับราคา +% (ใส่อิสระ เช่น 10 = บวก 10% · ติดลบได้) คูณทุกรายการที่มีราคา (ไม่รวมแมทลูกค้า) ราคา/มูลค่า/ยอดรวม/ใบพิมพ์เปลี่ยนทันที · จำค่าไว้ (settings.wdPrPct ซิงก์ทุกเครื่อง) · ชี้ที่ราคาเห็นราคาฐานก่อนบวก · หัวใบพิมพ์ระบุ ราคารวมบวก X% (2) บรรทัดเบิกเหล็ก/โลหะเป็นชิ้น (เช่น WD-69100096 เหล็กเส้นกลม 70 มม. 110 ชิ้น) เดิมราคา 0 หรือเอาราคาต่อ กก. คูณจำนวนชิ้น → แปลงเป็น กก. = ชิ้น ÷ ชิ้นต่อเส้น × กก.ต่อเส้น (110 ÷ 93 × 90.699 ≈ 107.278 กก.) แล้วคูณราคาต่อ กก. · แสดง ≈ กก. ชี้ดูวิธีคิด',
+  '🖨️ เบิกวัตถุดิบ → พิมพ์สรุปเบิกวัตถุดิบรายเดือน : คอลัมน์ MAKER (เดิมเป็นรหัสตัวเลข 1/2/10) → ผู้ผลิต = ชื่อย่อ (RTK-K · RTK-V · VS4 · SM · AKE · JARUN …) ทั้งหน้าต่างและใบพิมพ์ · ราคาอัตโนมัติ (wdAutoPrice) : แมทลูกค้า = 0 → ราคาในใบ/ราคาผลิตในสินค้าคงคลัง → ราคาซื้อล่าสุดจาก PO/IP/SP ของวัตถุดิบนั้น (บาท/กก. สำหรับเบิกเป็น กก. · บาท/ชิ้น หรือ บาท/กก. × กก.ต่อชิ้น สำหรับเบิกเป็นชิ้น) ตัวเอียงสีเขียว ชี้ดูที่มา · ไม่พบราคา = สีส้ม · เพิ่มตัวกรองผู้ผลิตในหน้าต่าง (ยอดรวม/ใบพิมพ์ตามตัวกรอง · หัวใบพิมพ์มีชื่อผู้ผลิต) · จำนวนแสดงหน่วย กก./ชิ้น',
   '🧪 รายงานผลิตประจำวัน : เพิ่มปุ่ม IN-PROCESS CHECK (FM-QC-11) ในทุกแถว ทุกผู้ผลิต (ก่อนปุ่ม TAG) · ยังไม่มีใบตรวจ = กดแล้วสร้างใบตรวจให้อัตโนมัติจากรายการนั้น (Part · ชื่อ · ลูกค้า · ผู้ผลิต · เลข PO · กระบวนการย่อยทุกขั้น + ยอด OK/NG) แล้วเปิดใบทันที · มีใบแล้ว = ปุ่มสีตามสถานะ (รออนุมัติ SET UP / พบ NG / หยุดผลิต / อนุมัติครบ) กดเปิดใบเดิม',
   '🐢 แก้เครื่องช้า/ค้าง : (1) ตรวจข้อมูลใหม่จากแม่ข่ายด้วย "เวลาประทับของแม่ข่ายเปลี่ยน" แทนการเทียบกับนาฬิกาเครื่อง — เดิมเครื่องที่นาฬิกาช้า (พบ 1 เครื่องช้าราว 2 นาที) เขียนเวลาย้อนหลัง เครื่องอื่นมองไม่เห็นงานของเครื่องนั้น แล้วดันข้อมูลชน (409) วนดึง-รวม-ส่ง 10 MB ซ้ำหลายรอบ (2) เตือนบนจอเมื่อนาฬิกาเครื่องคลาดจากแม่ข่ายเกิน 1 นาที + ใช้เวลาที่ชดเชยแล้วตอนส่ง (3) เครื่องที่รวมข้อมูล+วาดจอช้า ดึงข้อมูลห่างขึ้นอัตโนมัติ (5 เท่าของเวลาที่ใช้ ไม่เกิน 60 วิ) · หน้าโปรแกรมที่ถูกย่อ/อยู่แท็บหลัง ดึงทุก 60 วิ และไม่วาดจอจนกว่าจะกลับมาเปิด (การบันทึกขึ้นแม่ข่ายยังทำทันทีเหมือนเดิม) · server.js ใช้เวลาของแม่ข่ายเองเป็นเวลาประทับ (เพิ่มขึ้นเสมอ)',
   '🛠️ NC ปุ่ม + 8D : คลิกแล้วสร้างรายการ CORRECTIVE ACTION PLAN (8D) ให้ทันที (เลขที่ AP-<เลข NC> · ปัญหา/ที่พบ/วันที่/จำนวน NG/มาตรการชั่วคราว/ผู้จัดทำ เติมจากใบ NC) แล้วไปหน้า 8D แสดงรายการนั้น · เดิมเปิดฟอร์มเปล่าและยังไม่ขึ้นในทะเบียนจนกว่าจะกดบันทึก · กด ✏️ ในหน้า 8D เพื่อกรอกสาเหตุ/การแก้ไขต่อ',
@@ -35977,36 +35979,121 @@ function applySalePriceImport(input){
   };r.readAsText(f);
 }
 var wdPrintRows=[];
+/* ★ 2/11e ราคาอัตโนมัติของบรรทัดใบเบิก (สรุปเบิกวัตถุดิบรายเดือน)
+   ลำดับ : แมทลูกค้า = 0 → ราคาในใบ/ราคาผลิตในสินค้าคงคลัง (wdUnitPrice) → ราคาซื้อล่าสุดจาก PO/IP/SP ของวัตถุดิบนั้น
+   (บาท/กก. สำหรับบรรทัดเบิกเป็น กก. · บาท/ชิ้น หรือ บาท/กก. × กก.ต่อชิ้น สำหรับบรรทัดเบิกเป็นชิ้น) */
+function wdBuyIdx(){
+  var c=window.__wdBuyC; if(c&&c.db===DB&&Date.now()-c.t<5000)return c.a;
+  var a=[];
+  (DB.docs||[]).forEach(function(d){
+    if(!d||d.status==='cancelled'||['PO','IP','SP'].indexOf(d.type)<0)return;
+    (d.lines||[]).forEach(function(l){
+      var pr=Number(l&&l.price)||0; if(!(pr>0))return;
+      var u=String(l.unit||'').toLowerCase(), um=String(l.umode||'').toLowerCase();
+      var kind=(um==='kg'||/kg|กก|กิโล/.test(u))?'kg':((um==='pcs'||/pc|ชิ้น|ea/.test(u))?'pcs':((um==='m'||/^m\.?$|เมตร/.test(u))?'m':''));
+      if(!kind)return;
+      var nm=String(l.name||''); if(!nm&&l.productId){ var q=P(l.productId); if(q)nm=(q.pn||'')+' '+(q.name||''); }
+      var sk=''; try{ sk=matSpecKey(nm); }catch(e){}
+      a.push({pid:l.productId||'',nk:String(nm).toUpperCase().replace(/[\s\-_.,\/()+]+/g,''),sk:sk,kind:kind,price:pr,
+        dt:String(d.date||''),ts:d.ts||0,no:d.no||''});
+    });
+  });
+  window.__wdBuyC={db:DB,t:Date.now(),a:a}; return a;
+}
+function wdBuyRef(l,kind){
+  var p=null; try{ p=wdPriceProd(l); }catch(e){}
+  var kk=function(t){ return String(t||'').toUpperCase().replace(/[\s\-_.,\/()+]+/g,''); };
+  var pk=p?kk(p.pn):'', sk='';
+  try{ sk=matSpecKey(String(l.matName||'')+' '+(p?((p.steelUse||'')+' '+(p.pn||'')):'')); }catch(e){}
+  var best=null;
+  wdBuyIdx().forEach(function(x){
+    if(x.kind!==kind)return;
+    var hit=(p&&(x.pid===p.id||(pk&&pk.length>=4&&x.nk.indexOf(pk)===0)))||(kind==='kg'&&sk&&x.sk===sk);
+    if(!hit)return;
+    if(!best||x.dt>best.dt||(x.dt===best.dt&&x.ts>best.ts))best=x;
+  });
+  return best;
+}
+function wdAutoPrice(l){
+  try{
+    if(wdIsCustMat(l))return {price:0,src:'แมทลูกค้า (ไม่คิดค่าวัตถุดิบ)',cm:1};
+    var v=wdUnitPrice(l); if(v>0)return {price:v,src:(Number(l.price)>0?'ราคาในใบเบิก':'ราคาผลิตในสินค้าคงคลัง')};
+    var u=wdLineUnits(l);
+    if(u.byWeight){ var k=wdBuyRef(l,'kg'); if(k){
+      /* เหล็กราคาเกิน 150 บ./กก. = ใบสั่งซื้อใส่หน่วย Kgs. แต่เป็นราคาต่อแผ่น/เส้น (เช่น PO 69137 เหล็กแผ่น 550.80) → แปลงด้วย กก.ต่อแผ่น/เส้น ของบรรทัดเบิก */
+      if(k.price>150&&/เหล็ก/.test(String(l.matName||''))&&u.pcs>0&&u.kgs>0){ var kpu2=u.kgs/u.pcs; return {price:Math.round(k.price/kpu2*1e4)/1e4,src:'PO '+k.no+' ('+k.dt+') '+fmt2(k.price)+' บ./แผ่น-เส้น ÷ '+(Math.round(kpu2*1e3)/1e3)+' กก. (ใบสั่งซื้อติดหน่วย Kgs.)',auto:1}; }
+      return {price:k.price,src:'PO '+k.no+' ('+k.dt+') '+fmt2(k.price)+' บ./กก.',auto:1}; } }
+    else {
+      var pc=wdBuyRef(l,'pcs'); if(pc)return {price:pc.price,src:'PO '+pc.no+' ('+pc.dt+') '+fmt2(pc.price)+' บ./ชิ้น',auto:1};
+      var kg=wdBuyRef(l,'kg'), per=0, kpu=0; try{ per=wdPerOf(l); kpu=wdKgPerUnit(l); }catch(e){}
+      if(kg&&per>0&&kpu>0){ var kpc=kpu/per; return {price:Math.round(kg.price*kpc*1e4)/1e4,src:'PO '+kg.no+' ('+kg.dt+') '+fmt2(kg.price)+' บ./กก. × '+(Math.round(kpc*1e4)/1e4)+' กก./ชิ้น',auto:1}; }
+    }
+  }catch(e){}
+  return {price:0,src:'ไม่พบราคา (ยังไม่มีราคาผลิต/ใบสั่งซื้อของวัตถุดิบนี้)'};
+}
+/* ★ 4/11a บรรทัดเบิกเหล็ก/โลหะเป็น "ชิ้น" → แปลงเป็น กก. (ชิ้น ÷ ชิ้นต่อเส้น × กก.ต่อเส้น) ราคาต่อ กก. — ราคาเหล็กในระบบเป็นต่อ กก. เสมอ */
+function wdKgConv(l,u){ try{ u=u||wdLineUnits(l); if(u.byWeight||!(u.pcs>0))return null; if(wdIsCustMat(l))return null;
+  var nm=String(l.matName||''); if(!/เหล็ก|ทองเหลือง|อลูมิเนียม|สแตนเลส|ทองแดง/.test(nm))return null;
+  var per=wdPerOf(l), kpu=wdKgPerUnit(l); if(!(per>0&&kpu>0))return null;
+  var kgs=Math.round(u.pcs/per*kpu*1000)/1000, conv=fmt(u.pcs)+' ชิ้น ÷ '+fmt(per)+' ชิ้น/เส้น × '+(Math.round(kpu*1000)/1000)+' กก./เส้น = '+kgs+' กก.';
+  var v=wdUnitPrice(l); if(v>0)return {price:v,kgs:kgs,conv:conv,src:(Number(l.price)>0?'ราคาในใบเบิก':'ราคาผลิตในสินค้าคงคลัง')+' '+fmt2(v)+' บ./กก. · '+conv};
+  var k=wdBuyRef(l,'kg'); if(k)return {price:k.price,kgs:kgs,conv:conv,auto:1,src:'PO '+k.no+' ('+k.dt+') '+fmt2(k.price)+' บ./กก. · '+conv};
+  return {price:0,kgs:kgs,conv:conv,src:'ไม่พบราคา · '+conv};
+}catch(e){ return null; } }
+/* ★ 4/11a ปรับราคา +% (อิสระ) ในสรุปเบิกวัตถุดิบ — จำไว้ที่ settings.wdPrPct */
+function wdPctGet(){ try{ var v=Number((DB.settings||{}).wdPrPct); return isFinite(v)?v:0; }catch(e){ return 0; } }
+function wdPctApply(pct,quiet){ pct=Number(pct); if(!isFinite(pct))pct=0; if(pct<-100)pct=-100; window.__wdPct=pct;
+  wdPrintRows.forEach(function(r,i){ r.price=r.cm?0:Math.round((r.bp||0)*(1+pct/100)*1e4)/1e4;
+    var tr=document.querySelector('tr[data-wdi="'+i+'"]'); if(!tr)return; var pc=tr.querySelector('.wdpc'), vc=tr.querySelector('.wdvc');
+    if(pc){ pc.textContent=fmt2(r.price); pc.title=r.psrc+(pct&&r.bp?' · ราคาฐาน '+fmt2(r.bp)+' + '+pct+'%':''); } if(vc)vc.textContent=fmt2(r.price*r.qty); });
+  if(!quiet){ try{ ensureSettings(); if(Number(DB.settings.wdPrPct||0)!==pct){ DB.settings.wdPrPct=pct; saveDB(); } }catch(e){} wdPrintTotals(); } }
+function wdMkKeyOf(v){ var s=''; try{ s=makerShort(v); }catch(e){ s=String(v||''); } return (s&&s!=='-')?s:String(v||'-'); }
 function printWDMonth(){
   const mon=((document.getElementById('wdMon')||{}).value||'').trim();
-  const mk=((document.getElementById('docMaker')||{}).value||'').trim().toLowerCase();
+  const mk=((document.getElementById('docMaker')||{}).value||'').trim();
   let docs=DB.docs.filter(d=>d.type==='WD'&&d.status!=='cancelled');
   if(mon)docs=docs.filter(d=>(d.date||'').indexOf(mon)>=0);
   docs=docs.slice().sort((a,b)=>(a.date||'').localeCompare(b.date||'')||(a.no||'').localeCompare(b.no||''));
   wdPrintRows=[];
-  docs.forEach(d=>{(d.lines||[]).forEach(l=>{const mkr=(l.maker||d.supplier||'');if(mk&&mkr.toLowerCase().indexOf(mk)<0)return;const p=l.productId?P(l.productId):null;const nm=l.matName||(p?p.pn:'');const pr=Number(l.price)||0;var _u=wdLineUnits(l), _up=wdUnitPrice(l);
-    wdPrintRows.push({date:l.date||d.date||'',no:d.no||'',po:l.poNo||'',maker:mkr,name:nm,
-      price:(_up||pr),qty:(_u.byWeight?_u.kgs:_u.pcs)||Number(l.qty)||0,on:true});});});
-  if(!wdPrintRows.length){toast('ไม่มีรายการตามเงื่อนไข (เดือน/MAKER)','err');return;}
+  docs.forEach(d=>{(d.lines||[]).forEach(l=>{const raw=(l.maker||d.supplier||'');const p=l.productId?P(l.productId):null;const nm=l.matName||(p?p.pn:'');var _u=wdLineUnits(l), A=wdAutoPrice(l), C=wdKgConv(l,_u);
+    if(C)A=C;
+    wdPrintRows.push({date:l.date||d.date||'',no:d.no||'',po:l.poNo||'',raw:String(raw),maker:wdMkKeyOf(raw),name:nm,
+      bp:A.price,price:A.price,psrc:A.src,pauto:!!A.auto,cm:!!A.cm,conv:C?C.conv:'',unit:(_u.byWeight||C)?'กก.':'ชิ้น',qty:C?C.kgs:((_u.byWeight?_u.kgs:_u.pcs)||Number(l.qty)||0),on:true,hide:false});});});
+  wdPctApply(wdPctGet(),1);
+  if(!wdPrintRows.length){toast('ไม่มีรายการตามเงื่อนไข (เดือน)','err');return;}
+  const mks=[...new Set(wdPrintRows.map(r=>r.maker))].sort((a,b)=>a.localeCompare(b));
+  /* ค่าตั้งต้นของตัวกรอง = ตัวกรองผู้ผลิตบนหน้า (ถ้ามี) */
+  let pre=''; if(mk){ const lo=mk.toLowerCase(); pre=mks.find(m=>m.toLowerCase()===lo)||(wdPrintRows.find(r=>r.raw.toLowerCase().indexOf(lo)>=0||r.maker.toLowerCase().indexOf(lo)>=0)||{}).maker||''; }
+  window.__wdPrMk=pre;
   const bd='1px solid var(--line)';
+  const nAuto=wdPrintRows.filter(r=>r.pauto).length, nZero=wdPrintRows.filter(r=>!r.bp&&!r.cm).length;
   modal({title:'🖨️ พิมพ์สรุปเบิกวัตถุดิบรายเดือน',size:'xl',body:`
-    <div class="hint"><span class="i">ℹ️</span><div>เดือน <b>${esc(mon||'ทั้งหมด')}</b> · MAKER <b>${esc(mk||'ทั้งหมด')}</b> · ติ๊กออกเพื่อ <b>ซ่อน</b> รายการที่ไม่ต้องการพิมพ์</div></div>
-    <div style="max-height:48vh;overflow:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">
-      <thead><tr style="background:var(--panel2)"><th style="padding:5px;border:${bd}"><input type="checkbox" id="wdAllChk" checked onchange="wdToggleAll(this.checked)"></th><th style="padding:5px;border:${bd}">วันที่</th><th style="padding:5px;border:${bd}">เลขที่</th><th style="padding:5px;border:${bd}">PO</th><th style="padding:5px;border:${bd}">MAKER</th><th style="padding:5px;border:${bd}">รายการ</th><th class="num" style="padding:5px;border:${bd}">ราคา</th><th class="num" style="padding:5px;border:${bd}">จำนวน</th><th class="num" style="padding:5px;border:${bd}">มูลค่า</th></tr></thead>
-      <tbody>${wdPrintRows.map((r,i)=>`<tr><td style="text-align:center;border:${bd}"><input type="checkbox" class="wdchk" ${r.on?'checked':''} onchange="wdPrintRows[${i}].on=this.checked;wdPrintTotals()"></td><td style="border:${bd};padding:4px">${esc(r.date)}</td><td style="border:${bd};padding:4px">${esc(r.no)}</td><td style="border:${bd};padding:4px">${esc(r.po)}</td><td style="border:${bd};padding:4px">${esc(r.maker)}</td><td style="border:${bd};padding:4px">${esc(r.name)}</td><td class="num" style="border:${bd};padding:4px">${fmt2(r.price)}</td><td class="num" style="border:${bd};padding:4px">${fmt(r.qty)}</td><td class="num" style="border:${bd};padding:4px">${fmt2(r.price*r.qty)}</td></tr>`).join('')}</tbody>
+    <div class="hint"><span class="i">ℹ️</span><div>เดือน <b>${esc(mon||'ทั้งหมด')}</b> · ติ๊กออกเพื่อ <b>ซ่อน</b> รายการที่ไม่ต้องการพิมพ์ · ราคา <i style="color:#0f766e">ตัวเอียงสีเขียว</i> = ราคาซื้อล่าสุดจากใบสั่งซื้อ (อัตโนมัติ) · ชี้ที่ราคาเพื่อดูที่มา${nZero?` · <span style="color:#b45309">ไม่พบราคา ${fmt(nZero)} รายการ</span>`:''}</div></div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0 8px">
+      <span style="font-weight:700">🏭 ผู้ผลิต</span>
+      <select id="wdPrMk" class="fchip" onchange="wdPrMkSet(this.value)" style="min-width:160px"><option value="">ทั้งหมด (${mks.length} ราย)</option>${mks.map(m=>`<option value="${esc(m)}" ${m===pre?'selected':''}>${esc(m)} (${wdPrintRows.filter(r=>r.maker===m).length})</option>`).join('')}</select>
+      <span style="font-weight:700;margin-left:10px">💹 ปรับราคา +</span><input id="wdPrPct" type="number" step="0.5" value="${window.__wdPct||0}" oninput="wdPctApply(this.value)" style="width:76px;text-align:right;padding:4px 6px;font-weight:700" title="บวกเพิ่มจากราคาฐานเป็น % (ติดลบ = ลด) · ไม่รวมแมทลูกค้า · จำไว้ทุกเครื่อง"><b>%</b>
+      <span class="muted" style="font-size:11.5px">ราคาอัตโนมัติ ${fmt(nAuto)} รายการ</span>
+    </div>
+    <div style="max-height:46vh;overflow:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead><tr style="background:var(--panel2)"><th style="padding:5px;border:${bd}"><input type="checkbox" id="wdAllChk" checked onchange="wdToggleAll(this.checked)"></th><th style="padding:5px;border:${bd}">วันที่</th><th style="padding:5px;border:${bd}">เลขที่</th><th style="padding:5px;border:${bd}">PO</th><th style="padding:5px;border:${bd}">ผู้ผลิต</th><th style="padding:5px;border:${bd}">รายการ</th><th class="num" style="padding:5px;border:${bd}">ราคา</th><th class="num" style="padding:5px;border:${bd}">จำนวน</th><th class="num" style="padding:5px;border:${bd}">มูลค่า</th></tr></thead>
+      <tbody>${wdPrintRows.map((r,i)=>`<tr data-wdi="${i}"><td style="text-align:center;border:${bd}"><input type="checkbox" class="wdchk" ${r.on?'checked':''} onchange="wdPrintRows[${i}].on=this.checked;wdPrintTotals()"></td><td style="border:${bd};padding:4px">${esc(r.date)}</td><td style="border:${bd};padding:4px">${esc(r.no)}</td><td style="border:${bd};padding:4px">${esc(r.po)}</td><td style="border:${bd};padding:4px;font-weight:700" title="${esc('รหัส '+r.raw)}">${esc(r.maker)}</td><td style="border:${bd};padding:4px">${esc(r.name)}</td><td class="num wdpc" style="border:${bd};padding:4px;${r.pauto?'color:#0f766e;font-style:italic;':''}${(!r.bp&&!r.cm)?'color:#b45309;':''}" title="${esc(r.psrc)}">${fmt2(r.price)}</td><td class="num" style="border:${bd};padding:4px" title="${esc(r.conv||'')}">${r.conv?'≈ ':''}${fmt(r.qty)} <span class="muted" style="font-size:10px">${r.unit}</span></td><td class="num wdvc" style="border:${bd};padding:4px">${fmt2(r.price*r.qty)}</td></tr>`).join('')}</tbody>
     </table></div>
     <div id="wdPrintTotals" style="margin-top:10px"></div>
   `,footer:`<button class="btn" onclick="closeModal()">ยกเลิก</button><button class="btn pri" onclick="doPrintWDMonth('${esc(mon)}')">🖨️ พิมพ์ / PDF</button>`});
-  setTimeout(wdPrintTotals,20);
+  setTimeout(function(){ wdPrMkSet(pre); wdPctApply(window.__wdPct||0,1); },20);
 }
-function wdToggleAll(on){wdPrintRows.forEach(r=>r.on=on);document.querySelectorAll('.wdchk').forEach(c=>c.checked=on);wdPrintTotals();}
-function wdPrintTotals(){let q=0,amt=0,n=0;wdPrintRows.forEach(r=>{if(r.on){q+=r.qty;amt+=r.price*r.qty;n++;}});const el=document.getElementById('wdPrintTotals');if(!el)return;el.innerHTML=`<div class="panel" style="box-shadow:none;margin:0;border:1px solid var(--line)"><div class="panel-b" style="padding:10px 14px"><div class="kv"><span class="k">เลือกพิมพ์</span><b>${fmt(n)} รายการ</b></div><div class="kv"><span class="k">รวมจำนวน</span><b>${fmt(q)}</b></div><div class="kv"><span class="k">รวมมูลค่า (SUBTOTAL)</span><b style="color:var(--teal);font-size:15px">${fmt2(amt)} บาท</b></div></div></div>`;}
+function wdPrMkSet(v){ window.__wdPrMk=v||'';
+  wdPrintRows.forEach(function(r,i){ r.hide=!!(v&&r.maker!==v); var tr=document.querySelector('tr[data-wdi="'+i+'"]'); if(tr)tr.style.display=r.hide?'none':''; });
+  wdPrintTotals(); }
+function wdToggleAll(on){wdPrintRows.forEach(r=>{if(!r.hide)r.on=on;});document.querySelectorAll('.wdchk').forEach((c,i)=>{if(!wdPrintRows[i].hide)c.checked=on;});wdPrintTotals();}
+function wdPrintTotals(){let q=0,amt=0,n=0;wdPrintRows.forEach(r=>{if(r.on&&!r.hide){q+=r.qty;amt+=r.price*r.qty;n++;}});const el=document.getElementById('wdPrintTotals');if(!el)return;el.innerHTML=`<div class="panel" style="box-shadow:none;margin:0;border:1px solid var(--line)"><div class="panel-b" style="padding:10px 14px"><div class="kv"><span class="k">เลือกพิมพ์${window.__wdPrMk?' · ผู้ผลิต '+esc(window.__wdPrMk):''}</span><b>${fmt(n)} รายการ</b></div><div class="kv"><span class="k">รวมจำนวน</span><b>${fmt(q)}</b></div><div class="kv"><span class="k">รวมมูลค่า (SUBTOTAL)${window.__wdPct?' · ราคาบวก '+window.__wdPct+'%':''}</span><b style="color:var(--teal);font-size:15px">${fmt2(amt)} บาท</b></div></div></div>`;}
 function doPrintWDMonth(mon){
-  const rows=wdPrintRows.filter(r=>r.on);if(!rows.length){toast('ไม่มีรายการที่เลือก','err');return;}
-  ensureSettings();const co=DB.settings.company||{};
+  const rows=wdPrintRows.filter(r=>r.on&&!r.hide);if(!rows.length){toast('ไม่มีรายการที่เลือก','err');return;}
+  ensureSettings();const co=DB.settings.company||{};const fm=window.__wdPrMk||'';
   let body='',tQty=0,tAmt=0;
-  rows.forEach(r=>{const amt=r.price*r.qty;tQty+=r.qty;tAmt+=amt;body+='<tr><td class="c">'+esc(r.date)+'</td><td class="c">'+esc(r.no)+'</td><td class="c">'+esc(r.po)+'</td><td class="c">'+esc(r.maker)+'</td><td>'+esc(r.name)+'</td><td class="r">'+fmt2(r.price)+'</td><td class="r">'+fmt(r.qty)+'</td><td class="r">'+fmt2(amt)+'</td></tr>';});
-  const html='<!DOCTYPE html><html lang="th"><head><meta charset="utf-8"><title>WD '+esc(mon||'ทั้งหมด')+'</title><style>'
+  rows.forEach(r=>{const amt=r.price*r.qty;tQty+=r.qty;tAmt+=amt;body+='<tr><td class="c">'+esc(r.date)+'</td><td class="c">'+esc(r.no)+'</td><td class="c">'+esc(r.po)+'</td><td class="c"><b>'+esc(r.maker)+'</b></td><td>'+esc(r.name)+'</td><td class="r">'+fmt2(r.price)+'</td><td class="r">'+(r.conv?'≈ ':'')+fmt(r.qty)+' <span style="font-size:9px;color:#555">'+r.unit+'</span></td><td class="r">'+fmt2(amt)+'</td></tr>';});
+  const html='<!DOCTYPE html><html lang="th"><head><meta charset="utf-8"><title>WD '+esc(mon||'ทั้งหมด')+(fm?' '+esc(fm):'')+'</title><style>'
    +"*{font-family:'Tahoma',sans-serif;box-sizing:border-box}body{margin:0;padding:10mm 8mm;color:#111;font-size:11px}"
    +".hd{text-align:center;border-bottom:2px solid #111;padding-bottom:5px}.hd h1{font-size:14px;margin:0}.hd div{font-size:10px;color:#333}"
    +".ttl{text-align:center;font-size:16px;font-weight:700;margin:7px 0}"
@@ -36014,9 +36101,9 @@ function doPrintWDMonth(mon){
    +"tfoot td{font-weight:700;background:#f3f3f3}"
    +"@media print{.noprint{display:none}}</style></head><body>"
    +'<div class="hd"><h1>'+esc(co.name||'')+'</h1><div>'+esc(co.address||'')+'</div></div>'
-   +'<div class="ttl">สรุปเบิกวัตถุดิบ — เดือน '+esc(mon||'ทั้งหมด')+'</div>'
+   +'<div class="ttl">สรุปเบิกวัตถุดิบ — เดือน '+esc(mon||'ทั้งหมด')+(fm?' · ผู้ผลิต '+esc(fm):'')+'</div>'+(window.__wdPct?'<div style="text-align:center;font-size:11px;margin:-4px 0 4px">ราคารวมบวก '+window.__wdPct+'%</div>':'')
    +'<div style="font-size:11px;margin-bottom:5px">'+fmt(rows.length)+' รายการ · พิมพ์ '+new Date().toLocaleString('th-TH')+'</div>'
-   +'<table><thead><tr><th style="width:74px">วันที่</th><th style="width:96px">เลขที่</th><th style="width:84px">PO</th><th style="width:60px">MAKER</th><th>รายการ</th><th style="width:56px">ราคา</th><th style="width:64px">จำนวน</th><th style="width:80px">มูลค่า</th></tr></thead>'
+   +'<table><thead><tr><th style="width:74px">วันที่</th><th style="width:96px">เลขที่</th><th style="width:84px">PO</th><th style="width:70px">ผู้ผลิต</th><th>รายการ</th><th style="width:60px">ราคา</th><th style="width:78px">จำนวน</th><th style="width:84px">มูลค่า</th></tr></thead>'
    +'<tbody>'+body+'</tbody>'
    +'<tfoot><tr><td colspan="6" style="text-align:right">รวมมูลค่า (SUBTOTAL)</td><td class="r">'+fmt(tQty)+'</td><td class="r">'+fmt2(tAmt)+'</td></tr></tfoot></table>'
    +'<div class="noprint" style="text-align:center;margin-top:16px"><button onclick="window.print()" style="padding:8px 22px;font-size:14px;cursor:pointer">🖨️ พิมพ์ / บันทึก PDF</button></div>'
