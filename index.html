@@ -1101,9 +1101,11 @@ const SEED={
 
 /* ---------- State ---------- */
 let DB=null;
-const APP_BUILD='WDPIPE-2026.11.05a';
+const APP_BUILD='CPOMPP-2026.11.05c';
 /* บันทึกการแก้ไขล่าสุด (แสดงเมื่อเอาเมาส์ชี้ที่ build — ไม่เอาไปต่อท้าย APP_BUILD เพราะทำให้แถบบนล้นจอ) */
 const APP_NOTE=[
+  '📄 สแกน Customer PO ลูกค้า MPP (M.U.I PLASTIC · ภาพสแกน FR-PH-003) : เดิมอ่านแล้วจับคู่ผิด (NUT → MB8037AFA · ลูกค้าเป็น RTK · ไม่มีเลข PO) เพราะ OCR อ่าน AM1T053S00 เป็น AM1T053500 และ AM1T033F0 เป็น AM1TO33F0 · ตัวอ่านใหม่ cpoMppParse : แถว = วันที่ส่ง · จำนวน · Pcs · ราคา · จำนวนเงิน (ตรวจ จำนวน×ราคา = จำนวนเงิน) · จับคู่รหัสทน OCR (S/5 O/0 I/1) ทั้ง FG/RM/RMC · ซ้ำหลายตัว = ตัวที่ CPO ของลูกค้าเดียวกันเคยใช้มากสุด · เลข PO = เลขก่อนวันที่หัวเอกสาร (2611012) · ลูกค้า MPP',
+  '🖨️ ใบเบิกวัตถุดิบ FM-ST-02 : บรรทัดเหล็กแป๊ป (ซื้อ/ขายเป็นเมตร) เพิ่มคอลัมน์ จำนวน ม. (= เส้น × ความยาวต่อเส้นจากชื่อ) · @ = ราคาต่อเมตร (ราคาในใบเบิก/สินค้าคงคลัง → ใบสั่งซื้อหน่วยเมตรล่าสุดไม่เกินวันที่เบิก) · รวมเงิน = @ × จำนวน ม. · ท้ายใบมี รวม X ม. · คอลัมน์แสดงเฉพาะใบที่มีเหล็กแป๊ป · บรรทัดอื่นคิดเหมือนเดิม',
   '🖨️ สรุปเบิกวัตถุดิบรายเดือน : เหล็กแป๊ป (ซื้อ/ขายเป็นเมตร) เพิ่มคอลัมน์ จำนวน ม. = จำนวนเส้น × ความยาวต่อเส้นจากชื่อ (x 2.5 ม. / x 2 ม. / L.1,900) · มูลค่า = ราคา × จำนวน ม. (เฉพาะเหล็กแป๊ป · รายการอื่นคิดเหมือนเดิม) · ราคาต่อเมตร = ใบสั่งซื้อหน่วยเมตรล่าสุดที่ไม่เกินวันที่เบิก (ไม่มี = ใช้ราคาเดิม · ราคาในใบเบิก/สินค้าคงคลังใช้ก่อน) · ใบพิมพ์มีคอลัมน์ จำนวน ม. + ยอดรวมเมตร เมื่อมีเหล็กแป๊ป',
   '🧭 8.2 SALE รายการเสนอราคา คอลัมน์ APQP = ปุ่มเปิดแผน APQP (ACTION PLAN FM-MK-22) ของแถวนั้นได้ทันที : ยังไม่มี = กด APQP สร้างโครงการ Kick-off จากแถวแล้วเลื่อนไปหัวข้อ I) ACTION PLAN · มีแล้ว = APQP เสร็จ/ทั้งหมด สีตามสถานะ (เขียวครบ · ส้มกำลังทำ · แดงเกินกำหนด) + 🖨️ พิมพ์ FM-MK-22 · วันที่เดิมในช่อง (107 แถว) ยังแสดงอยู่ (แก้ได้ที่ ✏️) · ปุ่มแนบไฟล์ APQP เดิมยังใช้ได้',
   '📐 8.2 SALE รายการเสนอราคา (FM-MK-19) : เพิ่ม KICK OFF (ในช่อง สรุป · ยังไม่มี = + KICK OFF สร้างจากแถว · มีแล้ว = % ความคืบหน้าแผน APQP) และคอลัมน์ DFMEA / PFMEA ต่อจาก APQP · เอกสารใหม่ DFMEA FM-RD-24 Rev.00 และ PFMEA FM-RD-02 Rev.00 ตาม AIAG-VDA FMEA 7 ขั้นตอน (IATF 16949 8.3.3.1 · 8.3.5.1 · 8.3.5.2 · 9.1.1.1) : หัวเอกสาร/ทีม · โครงสร้าง (PFMEA มี 4M) · หน้าที่ · ผลกระทบ–ลักษณะ–สาเหตุ · S/O/D → Action Priority อัตโนมัติ (H/M/L) · คุณลักษณะพิเศษ CC/SC · มาตรการ/ผู้รับผิดชอบ/สถานะ/ค่าหลังปรับปรุง · สรุปผล · ผู้ลงนาม · แถวตั้งต้นตามบริบทงาน (วัสดุ ชุบแข็ง ชุบผิว จากแถวเสนอราคา/Kick-off) · ใบพิมพ์ A4 แนวนอน + เกณฑ์ให้คะแนน · ยกเลิก = ไม่ลบ · AP สูงไม่มีมาตรการ = อนุมัติไม่ได้',
@@ -22904,7 +22906,7 @@ function wdSteelCalc(l,ord){
   }catch(e){}
   return out;
 }
-function wdCopyHTML(d,co,sup,rows,blanks,barsTot,label,fmno,kgTot,amtTot,pcsTot,unitTot){
+function wdCopyHTML(d,co,sup,rows,blanks,barsTot,label,fmno,kgTot,amtTot,pcsTot,unitTot,mTot){
   return '<div class="copy">'
    +'<div class="hd"><div class="lg">RTK</div>'
    +'<div class="co"><h1>'+esc(co.name||'')+'</h1><div>'+esc(co.address||'')+'</div><div>TEL : '+esc(co.tel||'')+'  E-Mail : '+esc(co.email||'')+'</div></div>'
@@ -22912,8 +22914,8 @@ function wdCopyHTML(d,co,sup,rows,blanks,barsTot,label,fmno,kgTot,amtTot,pcsTot,
    +'<div class="ttl">ใบเบิกวัตถุดิบ</div>'
    +'<div class="sup"><div><b>Supplier :</b> '+esc(sup.name||makerShort(d.supplier)||d.supplier||'')+'<br><b>Address :</b> '+esc(sup.address||'')+'<br><b>Tax ID :</b> '+esc(sup.taxId||'')+(sup.email?'<br><b>Email :</b> '+esc(sup.email):'')+'</div>'
    +'<div style="text-align:right"><b>เลขที่ :</b> '+esc(d.no)+'<br><b>วันที่ :</b> '+esc(d.date)+'<br><b>Tel :</b> '+esc(sup.tel||'')+'</div></div>'
-   +'<table><thead><tr><th style="width:24px">ลำดับ</th><th style="width:54px">วันที่</th><th>รายการเบิก</th><th style="width:52px">เส้น/แผ่น</th><th style="width:60px">ได้งาน (ชิ้น)</th><th style="width:52px">Kgs.</th><th style="width:42px">@</th><th style="width:62px">รวมเงิน</th><th style="width:52px">PO</th><th style="width:80px">PART NUMBER</th><th style="width:54px">สั่งผลิต</th></tr></thead><tbody>'+rows+blanks+'</tbody></table>'
-   +'<div class="tot"><div>รวมเบิก '+fmt(barsTot)+' '+esc(unitTot||'PCS.')+'</div><div>ได้งาน '+fmt(pcsTot||0)+' ชิ้น</div><div>รวมน้ำหนัก '+fmt2(kgTot||0)+' Kgs.</div><div>รวมเงิน '+fmt2((amtTot!=null?amtTot:(d.subtotal||0)))+' บาท</div></div>'
+   +'<table><thead><tr><th style="width:24px">ลำดับ</th><th style="width:54px">วันที่</th><th>รายการเบิก</th><th style="width:52px">เส้น/แผ่น</th><th style="width:60px">ได้งาน (ชิ้น)</th><th style="width:52px">Kgs.</th><th style="width:42px">@</th>'+(mTot!=null?'<th style="width:56px">จำนวน ม.</th>':'')+'<th style="width:62px">รวมเงิน</th><th style="width:52px">PO</th><th style="width:80px">PART NUMBER</th><th style="width:54px">สั่งผลิต</th></tr></thead><tbody>'+rows+blanks+'</tbody></table>'
+   +'<div class="tot"><div>รวมเบิก '+fmt(barsTot)+' '+esc(unitTot||'PCS.')+'</div><div>ได้งาน '+fmt(pcsTot||0)+' ชิ้น</div><div>รวมน้ำหนัก '+fmt2(kgTot||0)+' Kgs.</div>'+(mTot!=null?'<div>รวม '+fmt(Math.round(mTot*1000)/1000)+' ม.</div>':'')+'<div>รวมเงิน '+fmt2((amtTot!=null?amtTot:(d.subtotal||0)))+' บาท</div></div>'
    +(function(){ var g=poSignWDGet();
       var cell=function(lab,nm,withSig){ var im=withSig?sigImgOf(nm):'';
         return '<div><div class="sbox">'+(im?'<img src="'+im+'">':'')+'</div><div class="sline"></div>'
@@ -22939,21 +22941,27 @@ function printWD(id,mode){
   /* ★ รวมน้ำหนัก = ผลรวมของคอลัมน์ Kgs. จริง (ถ้าบรรทัดเป็น 0.00 ยอดรวมต้องเป็น 0.00) */
   const kgTot=(d.lines||[]).reduce((s,l)=>{const u=wdLineUnits(l);if(!u.byWeight)return s;
     const sc=wdSteelCalc(l,_ordOf(l)); return s+((sc.kgs>0)?sc.kgs:(u.kgs||0));},0);
-  const amtTot=(d.lines||[]).reduce((s,l)=>{const u=wdLineUnits(l);const sc=u.byWeight?wdSteelCalc(l,_ordOf(l)):{amt:0};
+  /* ★ 5/11b เหล็กแป๊ป : จำนวน ม. · @ ต่อเมตร · รวมเงิน = @ × ม. */
+  const _pm=l=>{ try{ const M=wdPipeM(l,wdLineUnits(l)); if(!M)return null; const cm=(typeof wdIsCustMat==='function')&&wdIsCustMat(l);
+      let pr=cm?0:wdUnitPrice(l); if(!cm&&!(pr>0)){ const b=wdBuyRef(l,'m',l.date||d.date); pr=b?b.price:0; }
+      return {m:M.m,price:pr,amt:Math.round(pr*M.m*100)/100}; }catch(e){ return null; } };
+  const _hasM=(d.lines||[]).some(l=>!!_pm(l)); const mTot=_hasM?(d.lines||[]).reduce((s,l)=>{const q=_pm(l);return s+(q?q.m:0);},0):null;
+  const amtTot=(d.lines||[]).reduce((s,l)=>{const _q=_pm(l); if(_q)return s+_q.amt; const u=wdLineUnits(l);const sc=u.byWeight?wdSteelCalc(l,_ordOf(l)):{amt:0};
     return s+((sc.amt>0)?sc.amt:(wdUnitPrice(l)*(u.byWeight?u.kgs:u.pcs)));},0);
   const rows=(d.lines||[]).map((l,i)=>{const u=wdLineUnits(l);const _o=_ordOf(l);
     const sc=u.byWeight?wdSteelCalc(l,_o):{kgs:0,price:0,amt:0};
     const kg=(sc.kgs>0)?sc.kgs:(u.byWeight?u.kgs:0);
     const _cm=(typeof wdIsCustMat==='function')?wdIsCustMat(l):false;
     const up=_cm?0:((sc.price>0)?sc.price:wdUnitPrice(l));
-    const amt=_cm?0:((sc.amt>0)?sc.amt:(up*(u.byWeight?u.kgs:u.pcs)));
+    let amt=_cm?0:((sc.amt>0)?sc.amt:(up*(u.byWeight?u.kgs:u.pcs)));
+    const _q=_pm(l); let _up=up; if(_q){ _up=_q.price; amt=_q.amt; }
     const _per=wdPerOf(l), _pcs=wdPcsOf(l), _uT=wdUnitTH(l);
     return '<tr><td class="c">'+(i+1)+'</td><td class="c">'+(l.date||'')+'</td><td>'+esc(l.matName||'')
       +(_per?'<div style="font-size:8.5px;color:#555">1 '+_uT+' ได้งาน '+fmt(_per)+' ชิ้น</div>':'')
       +'</td><td class="r">'+fmt(u.pcs||0)+(u.pcs?('<div style="font-size:8.5px;color:#555">'+_uT+'</div>'):'')+'</td>'
       +'<td class="r b">'+(_pcs?fmt(_pcs):'-')+'</td>'
-      +'<td class="r">'+(u.byWeight?fmt2(kg):'-')+'</td><td class="r">'+fmt2(up)+'</td><td class="r">'+fmt2(amt)+'</td><td class="c">'+esc(l.poNo||'')+'</td><td>'+esc(l.fgPn||'')+'</td><td class="r">'+(_ordOf(l)?fmt(_ordOf(l)):'-')+'</td></tr>';}).join('');
-  const blanks=Array.from({length:Math.max(0,5-(d.lines||[]).length)}).map(()=>'<tr><td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>').join('');
+      +'<td class="r">'+(u.byWeight?fmt2(kg):'-')+'</td><td class="r">'+fmt2(_up)+'</td>'+(_hasM?'<td class="r"><b>'+(_q?fmt(_q.m):'-')+'</b></td>':'')+'<td class="r">'+fmt2(amt)+'</td><td class="c">'+esc(l.poNo||'')+'</td><td>'+esc(l.fgPn||'')+'</td><td class="r">'+(_ordOf(l)?fmt(_ordOf(l)):'-')+'</td></tr>';}).join('');
+  const blanks=Array.from({length:Math.max(0,5-(d.lines||[]).length)}).map(()=>'<tr><td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>'+(_hasM?'<td></td>':'')+'</tr>').join('');
   const pcsTot=(d.lines||[]).reduce((s,l)=>s+(wdPcsOf(l)||0),0);
   const unitTot=(()=>{try{ return (d.lines||[]).some(l=>Number(l.bars)>0)?((d.lines||[]).some(l=>wdPlateOf(l))?'แผ่น':'เส้น'):'PCS.'; }catch(e){ return 'PCS.'; }})();
   const fmno=fmCode('st.fm02','FM-ST-02')+'  Rev.00';
@@ -22962,8 +22970,8 @@ function printWD(id,mode){
    +".sign .sline{border-top:1px dotted #555;margin:0 4px}"
    +".sign .snm{font-size:10px;font-weight:700;min-height:12px;padding-top:1px}"
    +".sign .slab{font-size:8.5px;color:#333}.sign .sdt{font-size:7.5px;color:#666}"+".fm{position:absolute;right:10mm;bottom:3mm;font-size:10px;font-weight:700}"+"@media print{.noprint{display:none}}"+'</style></head><body>'
-   +wdCopyHTML(d,co,sup,rows,blanks,barsTot,'ต้นฉบับ',fmno,kgTot,amtTot,pcsTot,unitTot)
-   +wdCopyHTML(d,co,sup,rows,blanks,barsTot,'สำเนา',fmno,kgTot,amtTot,pcsTot,unitTot)
+   +wdCopyHTML(d,co,sup,rows,blanks,barsTot,'ต้นฉบับ',fmno,kgTot,amtTot,pcsTot,unitTot,mTot)
+   +wdCopyHTML(d,co,sup,rows,blanks,barsTot,'สำเนา',fmno,kgTot,amtTot,pcsTot,unitTot,mTot)
    +'<div class="noprint" style="text-align:center;margin:10px 0"><button onclick="window.print()" style="padding:8px 22px;font-size:14px;cursor:pointer">🖨️ พิมพ์ / บันทึก PDF</button></div>'
    +'<scr'+'ipt>setTimeout(function(){window.print()},500)</scr'+'ipt></body></html>';
   /* ★ โหมด 'html' : คืนเนื้อเอกสารสำหรับแปลงเป็น PDF ที่เครื่องแม่ข่าย */
@@ -38874,7 +38882,28 @@ function cpoBvsParse(raw){ raw=String(raw||''); if(!/Supplier\s*Delivery\s*Sheet
     out.push({fgId:p?p.id:'',name:p?(String(p.saleName||'').trim()||(p.pn+(p.name&&p.name!=='-'?' '+p.name:''))):m[3],qty:q,due:due,price:0}); });
   var po=/P\s*\/\s*O[^\n:]*:\s*([A-Z]{1,4}\d{5,})/i.exec(raw); if(po)window.__cpoHdrPO=po[1];
   return out.length?out:null; }
+/* ★ 5/11c Customer PO MPP (M.U.I PLASTIC PRODUCTS · ภาพสแกน) : รหัสสินค้า | รายการ | วันที่ส่งของ | จำนวน | หน่วย | ราคาต่อหน่วย | จำนวนเงิน */
+function cpoUseCnt(custRx){ var m={}; (DB.docs||[]).forEach(function(d){ if(!d||d.type!=='CPO'||d.status==='cancelled')return; if(custRx&&!custRx.test(String(d.customer||'')))return; (d.lines||[]).forEach(function(l){ if(l&&l.fgId)m[l.fgId]=(m[l.fgId]||0)+1; }); }); return m; }
+function cpoOcrProd(tok,use){ try{ var k=calOcrKey(tok); if(k.length<6||!/\d/.test(k))return null;
+  var L=(DB.products||[]).filter(function(p){ if(!p||p.inactive||p.stockOf||['FG','RM','RMC'].indexOf(p.type)<0)return false; if(calOcrKey(p.pn)===k)return true;
+    return String(p.saleName||'').split(/\s+/).some(function(t){ return t.length>=6&&calOcrKey(t)===k; }); });
+  if(!L.length)L=(DB.products||[]).filter(function(p){ if(!p||p.inactive||p.stockOf||['FG','RM','RMC'].indexOf(p.type)<0)return false; var q=calOcrKey(p.pn); return q.length===k.length&&calLevD(q,k)<=1; });
+  if(!L.length)return null; use=use||{}; L.sort(function(a,b){ return (use[b.id]||0)-(use[a.id]||0)||((b.type==='FG')-(a.type==='FG')); }); return L[0]; }catch(e){ return null; } }
+function cpoMppParse(raw){ raw=String(raw||''); if(!/M\.?\s?U\.?\s?[IL1|]\.?\s*PLASTIC|FR-?\s?PH-?\s?[O0]{0,2}3/i.test(raw))return null;
+  var n=function(v){ return Number(String(v||'').replace(/[,\s]/g,''))||0; }, out=[], use=cpoUseCnt(/MPP|M\.?U\.?I|เอ็ม\.?ยู/i);
+  var RE=/^(.*?)(\d{1,2})[\/.](\d{1,2})[\/.](\d{4})\s+([\d,]+\.\d{2})\s+P\w{1,3}\.?\b(.*?)([\d,]+(?:\.\d{1,4})?)\s+([\d,]+\.\d{2})\W*$/i;
+  raw.split(/\r?\n/).forEach(function(line){ var m=RE.exec(line); if(!m)return; var q=n(m[5]), pr=n(m[7]), amt=n(m[8]); if(!(q>0))return;
+    var fit=function(x){ return amt>0&&Math.abs(q*x-amt)<=Math.max(0.05,amt*0.01); };
+    if(!fit(pr)){ var ok2=[10,100,1000].map(function(dv){ return pr/dv; }).find(fit); pr=ok2!=null?ok2:(amt>0?Math.round(amt/q*1e4)/1e4:pr); }   /* จุดทศนิยมหาย (240 = 2.40) */
+    var y=Number(m[4]); if(y>2400)y-=543; var due=y+'-'+('0'+m[3]).slice(-2)+'-'+('0'+m[2]).slice(-2);
+    var head=m[1].replace(/^[^A-Za-z0-9]+/,'').trim(), tok=head.split(/\s+/).filter(Boolean), p=null;
+    for(var i=0;i<tok.length&&!p;i++){ if(/^RM-?\d+$/i.test(tok[i]))continue; p=cpoOcrProd(tok[i],use); }
+    if(!p){ try{ p=cpoMatchTok(tok)||cpoProdAny(tok[0],head); }catch(e){} }
+    out.push({fgId:p?p.id:'',name:p?(String(p.saleName||'').trim()||(p.pn+(p.name&&p.name!=='-'?' '+p.name:''))):head,qty:Math.round(q*1000)/1000,due:due,price:pr}); });
+  var po=/\b(\d{6,8})\s*[^\w\s]{0,3}\s*\d{1,2}\/\d{1,2}\/\d{4}/.exec(raw); if(po)window.__cpoHdrPO=po[1];
+  return out.length?out:null; }
 function fillPlanFromText(type,raw){
+  if(type==='CPO'){ var _mpp=null; try{ _mpp=cpoMppParse(raw); }catch(e){} if(_mpp){ planLines=_mpp; renderPlanLines(type); toast('อ่าน PO MPP '+_mpp.length+' รายการ (จับคู่ PN ได้ '+_mpp.filter(function(o){ return o.fgId; }).length+')'+(window.__cpoHdrPO?(' · PO '+window.__cpoHdrPO):''),'ok'); return true; } }
   if(type==='CPO'){ var _bvs=null; try{ _bvs=cpoBvsParse(raw); }catch(e){} if(_bvs){ planLines=_bvs; renderPlanLines(type); toast('อ่านใบเรียก BVS '+_bvs.length+' รายการ (จับคู่ PN ได้ '+_bvs.filter(function(o){ return o.fgId; }).length+')'+(window.__cpoHdrPO?(' · PO '+window.__cpoHdrPO):''),'ok'); return true; } }
   if(type==='CPO'){ var _ens=null; try{ _ens=cpoEnshuParse(raw); }catch(e){} if(_ens){ planLines=_ens; renderPlanLines(type); toast('อ่าน PO ENSHU '+_ens.length+' รายการ (จับคู่ PN ได้ '+_ens.filter(function(o){ return o.fgId; }).length+')'+(window.__cpoHdrPO?(' · PO '+window.__cpoHdrPO):''),'ok'); return true; } }
   if(type==='CPO'){ var _cnn=null; try{ _cnn=cpoCnnParse(raw); }catch(e){} if(_cnn){ planLines=_cnn; renderPlanLines(type); toast('อ่าน PO '+_cnn.length+' รายการ (จับคู่ PN ได้ '+_cnn.filter(function(o){ return o.fgId; }).length+')'+(window.__cpoHdrPO?(' · PO '+window.__cpoHdrPO):'')+' — ภาพสแกน ตรวจทานตัวเลขก่อนบันทึก','ok'); return true; } }
