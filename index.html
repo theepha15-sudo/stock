@@ -1101,9 +1101,10 @@ const SEED={
 
 /* ---------- State ---------- */
 let DB=null;
-const APP_BUILD='CPOMPP-2026.11.05c';
+const APP_BUILD='KOMOD-2026.11.06a';
 /* บันทึกการแก้ไขล่าสุด (แสดงเมื่อเอาเมาส์ชี้ที่ build — ไม่เอาไปต่อท้าย APP_BUILD เพราะทำให้แถบบนล้นจอ) */
 const APP_NOTE=[
+  '🚀 เมนูใหม่ KICK OFF / ACTION PLAN (ต่อจาก MANAGEMENT REVIEW) = ข้อมูลชุดเดียวกับ 8 การปฏิบัติงาน → 8.2 SALE : การ์ดสรุปโครงการ (ทั้งหมด/กำลังทำ/เกินกำหนด/ครบ) · ตารางโครงการ Kick-off (FM-MK-21) + แผน APQP (FM-MK-22) · รายการเสนอราคา FM-MK-19 (KICK OFF · APQP · DFMEA · PFMEA) แสดงกางเสมอ · แก้ที่ไหนก็เห็นทั้งสองที่ · ปุ่ม ← รายการ / ลบโครงการ ในเมนูนี้กลับมาที่หน้าเมนูแทนหน้าต่างรายการ',
   '📄 สแกน Customer PO ลูกค้า MPP (M.U.I PLASTIC · ภาพสแกน FR-PH-003) : เดิมอ่านแล้วจับคู่ผิด (NUT → MB8037AFA · ลูกค้าเป็น RTK · ไม่มีเลข PO) เพราะ OCR อ่าน AM1T053S00 เป็น AM1T053500 และ AM1T033F0 เป็น AM1TO33F0 · ตัวอ่านใหม่ cpoMppParse : แถว = วันที่ส่ง · จำนวน · Pcs · ราคา · จำนวนเงิน (ตรวจ จำนวน×ราคา = จำนวนเงิน) · จับคู่รหัสทน OCR (S/5 O/0 I/1) ทั้ง FG/RM/RMC · ซ้ำหลายตัว = ตัวที่ CPO ของลูกค้าเดียวกันเคยใช้มากสุด · เลข PO = เลขก่อนวันที่หัวเอกสาร (2611012) · ลูกค้า MPP',
   '🖨️ ใบเบิกวัตถุดิบ FM-ST-02 : บรรทัดเหล็กแป๊ป (ซื้อ/ขายเป็นเมตร) เพิ่มคอลัมน์ จำนวน ม. (= เส้น × ความยาวต่อเส้นจากชื่อ) · @ = ราคาต่อเมตร (ราคาในใบเบิก/สินค้าคงคลัง → ใบสั่งซื้อหน่วยเมตรล่าสุดไม่เกินวันที่เบิก) · รวมเงิน = @ × จำนวน ม. · ท้ายใบมี รวม X ม. · คอลัมน์แสดงเฉพาะใบที่มีเหล็กแป๊ป · บรรทัดอื่นคิดเหมือนเดิม',
   '🖨️ สรุปเบิกวัตถุดิบรายเดือน : เหล็กแป๊ป (ซื้อ/ขายเป็นเมตร) เพิ่มคอลัมน์ จำนวน ม. = จำนวนเส้น × ความยาวต่อเส้นจากชื่อ (x 2.5 ม. / x 2 ม. / L.1,900) · มูลค่า = ราคา × จำนวน ม. (เฉพาะเหล็กแป๊ป · รายการอื่นคิดเหมือนเดิม) · ราคาต่อเมตร = ใบสั่งซื้อหน่วยเมตรล่าสุดที่ไม่เกินวันที่เบิก (ไม่มี = ใช้ราคาเดิม · ราคาในใบเบิก/สินค้าคงคลังใช้ก่อน) · ใบพิมพ์มีคอลัมน์ จำนวน ม. + ยอดรวมเมตร เมื่อมีเหล็กแป๊ป',
@@ -5317,6 +5318,7 @@ const NAV=[
   {id:'kpireg',ico:'📊',label:'KPI'},
   {id:'iaudit',ico:'🔍',label:'INTERNAL AUDIT'},
   {id:'mreview',ico:'🏛️',label:'MANAGEMENT REVIEW'},
+  {id:'kickoff',ico:'🚀',label:'KICK OFF / ACTION PLAN'},
   {g:'ISO 9001 / IATF 16949'},
   {id:'context',ico:'📘',label:'4 บริบทองค์กร'},
   {id:'topmgmt',ico:'👔',label:'5 ภาวะผู้นำ'},
@@ -5467,7 +5469,7 @@ function render(){
   const map={dashboard:viewDashboard,inventory:viewInventory,track:viewJobTrack,approvals:viewApprovals,monitor:viewMonitor,
     po:()=>viewDocs('PO'),ip:()=>viewDocs('IP'),sp:()=>viewDocs('SP'),gr:()=>viewDocs('GR'),prd:()=>viewDocs('PRD'),wd:()=>viewDocs('WD'),
     dp:()=>{window.__dpMaker='RTK-K';viewDocs('DP')},vs4:viewVS4,rw:()=>viewDocs('RW'),plate:()=>viewDocs('PL'),qc:()=>viewDocs('QC'),si:()=>viewDocs('SI'),rmc:viewRMC,fgi:viewFGI,sup:viewSUP,ws:viewWS,recvip:()=>viewRcv('GI'),recvsp:()=>viewRcv('GS'),qcip:()=>viewQck('QI'),qcsp:()=>viewQck('QS'),qcsemi:()=>viewQck('QSE'),stkip:()=>viewStk('SII'),stksp:()=>viewStk('SIS'),stksemi:()=>viewStk('SSE'),
-    inv:()=>viewDocs('INV'),iv2:()=>viewDocs('IV2'),bill:viewBill,billc:viewBillC,adj:()=>viewDocs('ADJ'),moves:viewMoves,report:viewReport,tax:viewTax,taxsale:viewTaxSale,wht:viewWHT,nc:viewNC,ncsrt:viewNCSRT,ncrwk:viewNCRWK,ncscr:viewNCSCR,claim:viewClaims,ncr:viewNCR,cap:viewCAP,sar:viewSAR,ecr:viewECR,risk:viewRisk,kpireg:viewKpiReg,iaudit:viewIAudit,mreview:viewMReview,ccp:viewCCP,comm:viewComm,safety:viewSafety,context:viewContext,topmgmt:viewTopMgmt,planning:viewPlanning,support:viewSupport,operation:viewOperation,performance:viewPerformance,improvement:viewImprovement,settings:viewSettings,
+    inv:()=>viewDocs('INV'),iv2:()=>viewDocs('IV2'),bill:viewBill,billc:viewBillC,adj:()=>viewDocs('ADJ'),moves:viewMoves,report:viewReport,tax:viewTax,taxsale:viewTaxSale,wht:viewWHT,nc:viewNC,ncsrt:viewNCSRT,ncrwk:viewNCRWK,ncscr:viewNCSCR,claim:viewClaims,ncr:viewNCR,cap:viewCAP,sar:viewSAR,ecr:viewECR,risk:viewRisk,kpireg:viewKpiReg,iaudit:viewIAudit,mreview:viewMReview,kickoff:viewKickoff,ccp:viewCCP,comm:viewComm,safety:viewSafety,context:viewContext,topmgmt:viewTopMgmt,planning:viewPlanning,support:viewSupport,operation:viewOperation,performance:viewPerformance,improvement:viewImprovement,settings:viewSettings,
     demand:viewDemand,mrp:viewMRP,pdn:viewPDN,prq:viewPRQ,mrq:viewMRQ,tdb:viewTDB,crx:viewCRXList};
   try{PROD_MK.forEach(function(m){if(!map[m[0]])map[m[0]]=function(){viewProdMk(m[1]);};});}catch(e){}
   (map[route]||viewDashboard)(el);
@@ -25058,7 +25060,7 @@ function koStat(k){
   return {code:'open',th:'กำลังดำเนินการ',en:'In progress',bg:'#f59e0b',pct:pct};
 }
 function koChip(k){ var s=koStat(k); return '<span class="tag" style="background:'+s.bg+';color:#fff">'+esc(s.th)+' '+s.pct+'%</span>'; }
-function koListOpen(){
+function koListHTML(){
   var ls=ensureKO().slice().sort(function(a,b){ return String(b.date||'').localeCompare(String(a.date||'')); });
   var bd='1px solid var(--line)';
   var body=''
@@ -25084,6 +25086,8 @@ function koListOpen(){
        +'<td style="padding:4px 7px;border-bottom:'+bd+';text-align:right"><button class="btn sm" onclick="koOpen(\''+k.id+'\')">เปิด</button> <span class="rm-x" onclick="koDel(\''+k.id+'\')">✕</span></td></tr>';
     }).join('')+'</tbody></table></div>')
    :'<div class="muted" style="padding:24px;text-align:center">ยังไม่มีโครงการงานใหม่ / No project yet</div>');
+  return body; }
+function koListOpen(){ if(route==='kickoff'){ closeModal(); render(); return; } var body=koListHTML();
   modal({title:'🚀 งานใหม่ — KICK OFF & ACTION PLAN ('+KO_CODE+' / '+AP2_CODE+')',size:'full',body:body,
     footer:'<button class="btn" onclick="closeModal()">ปิด / Close</button>'});
 }
@@ -26172,8 +26176,8 @@ function fmeaPrint(id,mode){
   var w=window.open('','_blank'); if(!w){ toast('เบราว์เซอร์บล็อก popup','err'); return; } w.document.write(html); w.document.close();
 }
 
-function mk19HTML(){
-  var open=mk19Open(); var data=mk19Rows();
+function mk19HTML(force){
+  var open=force||mk19Open(); var data=mk19Rows();
   var hdr='<div style="margin-top:14px;border-top:2px solid var(--brand);padding-top:10px"><div style="font-weight:700;cursor:pointer;user-select:none" onclick="mk19Toggle()">'+(open?'▼':'▶')+' 📝 รายการเสนอราคา ('+fmCodeChip('mk.fm19','FM-MK-19')+') <span class="muted" style="font-weight:400;font-size:11px">('+data.length+' รายการ · '+(open?'คลิกเพื่อซ่อน':'คลิกเพื่อแสดง')+')</span></div>'
    +'<div style="margin:7px 0"><button class="btn sm pri" onclick="koListOpen()" title="ประชุมเปิดงานใหม่ + แผน APQP">🚀 KICK OFF / ACTION PLAN ('+KO_CODE.split(' ')[0]+' · '+AP2_CODE.split(' ')[0]+')</button>'
    +' <span class="muted" style="font-size:11px">· ประชุมความคืบหน้าการเสนอราคา '+fmCodeChip(QM_CODE_KEY,QM_CODE_DEF)+' — กดปุ่ม 📋 ที่ท้ายแถวของชิ้นงาน</span></div>';
@@ -31382,6 +31386,18 @@ function mrAuto(k,pf,pt,mid){ var docs=DB.docs||[], inR=function(d){ var s=Strin
   }catch(e){ return ''; }
   return ''; }
 var _mrF={q:'',can:''};
+/* ★ 6/11a โมดูล KICK OFF / ACTION PLAN = 8.2 SALE (ข้อมูลชุดเดียวกัน : DB.operation.kickoff + DB.operation.mk19) */
+function viewKickoff(el){
+  setTitle('🚀 KICK OFF / ACTION PLAN — งานใหม่ (New Model)','KICK OFF '+KO_CODE+' · ACTION PLAN (APQP) '+AP2_CODE+' · รายการเสนอราคา FM-MK-19 · ISO 9001 ข้อ 8.2 / 8.3 · IATF 16949 ข้อ 8.2.3.1 · 8.3.2.1 · 8.3.4.4 · ข้อมูลชุดเดียวกับ 8 การปฏิบัติงาน → 8.2 SALE');
+  var ls=ensureKO(), st=ls.map(koStat), n=function(c){ return st.filter(function(x){ return x.code===c; }).length; };
+  var sop=ls.filter(function(k){ var s=koStat(k); return k.sopDate&&k.sopDate<todayISO()&&s.pct<100; }).length;
+  var card=function(ic,t,v,c){ return '<div class="card"><div class="lbl"><span class="dot '+c+'">'+ic+'</span>'+t+'</div><div class="val">'+v+'</div></div>'; };
+  var html='<div class="hint" style="margin-bottom:10px"><span class="i">🚀</span><div>เป็น<b>ข้อมูลชุดเดียวกับ</b> <b class="linkish" onclick="window.__opTab=\'82\';go(\'operation\')">8 การปฏิบัติงาน → 8.2 SALE</b> · ลูกค้าอนุมัติราคา → <b>ประชุม Kick-off</b> ('+KO_CODE+') → <b>แผน APQP 5 เฟส</b> ('+AP2_CODE+') ติดตามถึงวันผลิตจริง (SOP) · ในตารางเสนอราคากด <b>+ KICK OFF</b> / <b>APQP</b> / <b>DFMEA</b> / <b>PFMEA</b> ของชิ้นงานนั้นได้เลย</div></div>'
+   +'<div class="cards" style="margin-bottom:10px">'+card('🚀','โครงการทั้งหมด',fmt(ls.length),'blue')+card('⏳','กำลังดำเนินการ',fmt(n('open')),'amber')+card('⚠️','มีงานเกินกำหนด',fmt(n('late'))+(sop?' <span style="font-size:12px;color:var(--red)">· เลย SOP '+sop+'</span>':''),'red')+card('✅','ครบทุกขั้นตอน',fmt(n('done')),'green')+'</div>'
+   +'<div class="panel"><div class="panel-h"><h3>🚀 โครงการ KICK OFF &amp; ACTION PLAN ('+KO_CODE+' · '+AP2_CODE+')</h3></div><div class="panel-b">'+koListHTML()+'</div></div>'
+   +'<div class="panel" style="margin-top:12px"><div class="panel-b">'+mk19HTML(true)+'</div></div>';
+  el.innerHTML=html;
+}
 function viewMReview(el){
   ensureSettings(); var rows=mrList(), F=_mrF, q=String(F.q||'').toLowerCase();
   setTitle('🏛️ MANAGEMENT REVIEW — การประชุมทบทวนฝ่ายบริหาร','MANAGEMENT REVIEW '+MR_SD+' Rev.'+MR_REV+' · ISO 9001 ข้อ 9.3 · IATF 16949 ข้อ 9.3.1.1 / 9.3.2.1 / 9.3.3.1 · ข้อมูลชุดเดียวกับ 9 การประเมินสมรรถนะ → 9.3');
