@@ -511,7 +511,16 @@ var _lastAct=Date.now();
 try{['pointerdown','keydown','input','change'].forEach(function(ev){document.addEventListener(ev,function(){_lastAct=Date.now();},true);});}catch(e){}
 /* ★ 23/10c การแก้ไขของผู้ใช้ (พิมพ์ · เลือก · กดปุ่ม/ช่องในเนื้อหาหรือหน้าต่าง) — ใช้ตัดสินว่าต้องเตือนก่อนปิดหรือไม่ */
 var _lastEditAct=0;
-try{ ['input','change'].forEach(function(ev){ document.addEventListener(ev,function(){ _lastEditAct=Date.now(); },true); });
+/* ★ 7/11b ช่องค้นหา/ตัวกรอง ไม่ใช่การแก้ข้อมูล — ไม่นับ (เดิมพิมพ์ค้นหาแล้วโหลดใหม่ = เตือน "ยังไม่ได้บันทึก")
+   ช่องที่คำสั่งมีการบันทึก (saveDB / setXxx( ) = ช่องแก้ข้อมูลเสมอ */
+function _isFilterEl(t){ try{ if(!t||!t.getAttribute)return false;
+  var h=String(t.getAttribute('oninput')||'')+' '+String(t.getAttribute('onchange')||'');
+  if(/saveDB|set[A-Z]\w*\(|Set\w*\(|Save\(|save\w*\(/.test(h))return false;
+  if(String(t.type||'').toLowerCase()==='search')return true;
+  if(/🔍|ค้นหา|search/i.test(String(t.getAttribute('placeholder')||'')))return true;
+  if(/(^|_)(q|search|flt|filter)$|Q$|Mon$/i.test(String(t.id||'')))return true;
+  return /[Ff]ilter|render\w*Table\(|\bflt/.test(h); }catch(e){ return false; } }
+try{ ['input','change'].forEach(function(ev){ document.addEventListener(ev,function(e){ if(_isFilterEl(e&&e.target))return; _lastEditAct=Date.now(); },true); });
   document.addEventListener('pointerdown',function(e){ try{ var t=e.target; if(!t||!t.closest)return; if(!t.closest('#content,#modalRoot'))return; if(t.closest('button,input,select,textarea,label,[contenteditable],.linkish,[onclick]'))_lastEditAct=Date.now(); }catch(_e){} },true); }catch(e){}
 function actCooldown(){return (Date.now()-_lastAct)<6000;}
 function lanOrigin(){ try{ return !(/github\.io$/i.test(location.hostname)||location.protocol==='file:'); }catch(e){ return false; } }
@@ -1101,9 +1110,10 @@ const SEED={
 
 /* ---------- State ---------- */
 let DB=null;
-const APP_BUILD='INVSUM-2026.11.07a';
+const APP_BUILD='RELOAD-2026.11.07b';
 /* บันทึกการแก้ไขล่าสุด (แสดงเมื่อเอาเมาส์ชี้ที่ build — ไม่เอาไปต่อท้าย APP_BUILD เพราะทำให้แถบบนล้นจอ) */
 const APP_NOTE=[
+  '🔄 หน้าต่างเบราว์เซอร์ "โหลดแอปซ้ำไหม / ระบบอาจไม่ได้บันทึกการเปลี่ยนแปลง" เด้งเมื่อกด Ctrl+F5 : เป็นตัวเตือนของระบบ (23/10c) แต่เตือนผิด 2 กรณี (1) พิมพ์ในช่องค้นหา/ตัวกรองถูกนับเป็น "แก้ข้อมูล" → ตอนนี้ช่องค้นหา/กรองไม่นับ (2) กดโหลดใหม่ (F5 / Ctrl+F5 / Ctrl+R) ข้อมูลอยู่ในเครื่องแล้วและรวมขึ้นแม่ข่ายทันทีที่เปิดใหม่ → ไม่เตือนแล้ว (ยังสั่งบันทึก+ส่งขึ้นแม่ข่ายก่อนโหลดเหมือนเดิม) · ปิดหน้าต่างขณะมีงานแก้จริงยังไม่ถึงแม่ข่าย ยังเตือนเหมือนเดิม',
   'Σ สินค้าคงคลัง รายการรวมยอด : สินค้าที่ชื่อขึ้นต้นด้วย "รวม" (เช่น SIS-03-W713729-S รวมเหล็กตี R680701) แสดงผลรวมของทุกรายการที่ชื่อขาย (saleName) ขึ้นต้นด้วย PART NUMBER นี้ (R680701- NEWTOP · R680701 NINGBO · R680701. 5RICH) : FG คงเหลือ · WIP · Q-TIME · รอชุบ · รอคัด · รอชั่ง · ปรับยอด/รับ/จ่าย/NG · เป็นยอดแสดงผลเท่านั้น ไม่ตัด/ไม่ลงสต๊อคที่รายการรวม (ยอดจริงยังอยู่ที่แต่ละผู้ขาย) · ยอดรวมท้ายตารางไม่นับซ้ำ · คลิก PART/ดู = หน้าต่างแยกยอดรายผู้ขาย + ปุ่มเปิดบัญชีคุมของแต่ละตัว · ช่องรอคัด/รอชั่งของรายการรวมไม่ให้ปรับยอด (ปรับที่รายการย่อย)',
   '🚀 เมนูใหม่ KICK OFF / ACTION PLAN (ต่อจาก MANAGEMENT REVIEW) = ข้อมูลชุดเดียวกับ 8 การปฏิบัติงาน → 8.2 SALE : การ์ดสรุปโครงการ (ทั้งหมด/กำลังทำ/เกินกำหนด/ครบ) · ตารางโครงการ Kick-off (FM-MK-21) + แผน APQP (FM-MK-22) · รายการเสนอราคา FM-MK-19 (KICK OFF · APQP · DFMEA · PFMEA) แสดงกางเสมอ · แก้ที่ไหนก็เห็นทั้งสองที่ · ปุ่ม ← รายการ / ลบโครงการ ในเมนูนี้กลับมาที่หน้าเมนูแทนหน้าต่างรายการ',
   '📄 สแกน Customer PO ลูกค้า MPP (M.U.I PLASTIC · ภาพสแกน FR-PH-003) : เดิมอ่านแล้วจับคู่ผิด (NUT → MB8037AFA · ลูกค้าเป็น RTK · ไม่มีเลข PO) เพราะ OCR อ่าน AM1T053S00 เป็น AM1T053500 และ AM1T033F0 เป็น AM1TO33F0 · ตัวอ่านใหม่ cpoMppParse : แถว = วันที่ส่ง · จำนวน · Pcs · ราคา · จำนวนเงิน (ตรวจ จำนวน×ราคา = จำนวนเงิน) · จับคู่รหัสทน OCR (S/5 O/0 I/1) ทั้ง FG/RM/RMC · ซ้ำหลายตัว = ตัวที่ CPO ของลูกค้าเดียวกันเคยใช้มากสุด · เลข PO = เลขก่อนวันที่หัวเอกสาร (2611012) · ลูกค้า MPP',
@@ -46357,10 +46367,14 @@ async function lanEnter(){
   try{ if(!window.__sigPollT)window.__sigPollT=setInterval(function(){ try{ sigPullServer(); }catch(e){} },180000); }catch(e){}
   try{ toast('🖧 โหมด LAN (เครื่องแม่ข่ายในออฟฟิศ)','ok'); }catch(e){}
 }
+/* ★ 7/11b จำว่ากำลังกดโหลดใหม่ (F5 / Ctrl+F5 / Ctrl+R / Cmd+R) */
+try{ window.addEventListener('keydown',function(e){ try{ var k=String(e.key||''); if(k==='F5'||((e.ctrlKey||e.metaKey)&&/^r$/i.test(k)))window.__reloadAt=Date.now(); }catch(_e){} },true); }catch(e){}
 /* ★ ปิดหน้าต่าง/ปิดเครื่อง ขณะยังมีงานที่ยังไม่ถึงเครื่องแม่ข่าย → เตือนก่อน */
 try{ window.addEventListener('beforeunload',function(ev){ try{
   /* ★ 23/10c เตือนเฉพาะงานที่ผู้ใช้แก้เองแล้วยังไม่ถึงแม่ข่าย · บันทึกอัตโนมัติของระบบ = ไม่เตือน (เก็บในเครื่องแล้ว · รวมขึ้นแม่ข่ายเมื่อเปิดครั้งถัดไป) */
-  if(lanMode&&window.__userEditPending&&localDirty()&&['pending','saving','offline'].indexOf(window.__syncState)>=0){ try{ lanPush(true); }catch(_p){} ev.preventDefault(); ev.returnValue='ยังมีงานที่ยังไม่ถึงเครื่องแม่ข่าย'; return ev.returnValue; }
+  if(lanMode&&window.__userEditPending&&localDirty()&&['pending','saving','offline'].indexOf(window.__syncState)>=0){ try{ lanPush(true); }catch(_p){}
+    if(Date.now()-(window.__reloadAt||0)<4000)return;   /* ★ 7/11b โหลดใหม่ (F5/Ctrl+F5/Ctrl+R) : ข้อมูลอยู่ในเครื่องแล้ว · เปิดใหม่รวมขึ้นแม่ข่ายทันที → ไม่ต้องเตือน */
+    ev.preventDefault(); ev.returnValue='ยังมีงานที่ยังไม่ถึงเครื่องแม่ข่าย'; return ev.returnValue; }
 }catch(e){} }); }catch(e){}
 /* ---------- boot ---------- */
 (async function(){
