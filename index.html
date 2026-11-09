@@ -1110,9 +1110,11 @@ const SEED={
 
 /* ---------- State ---------- */
 let DB=null;
-const APP_BUILD='IBFC-2026.11.09a';
+const APP_BUILD='FGIPO-2026.11.09c';
 /* บันทึกการแก้ไขล่าสุด (แสดงเมื่อเอาเมาส์ชี้ที่ build — ไม่เอาไปต่อท้าย APP_BUILD เพราะทำให้แถบบนล้นจอ) */
 const APP_NOTE=[
+  '🔧 ใบเบิกจ่ายสำเร็จรูป : พิมพ์เลขที่ PO ของใบสั่งซื้อต่างประเทศ (เช่น 260004) แล้วได้ PART / ลูกค้าผิด (BUSH 20.6) — ต้นเหตุ : บรรทัดใบสั่งซื้อต่างประเทศเก็บรหัสไว้ในช่อง code (R680701-) ไม่มีรหัสสินค้า ระบบเดาจากชื่อ "BUSH" ซึ่งตรงกับสินค้าอื่น · แก้ : จับคู่ตามรหัส code ตรงตัวก่อน → ใบรับเข้า (รับเข้าสต๊อคต่างประเทศ / รับวัตถุดิบ) ที่อ้าง PO เดียวกัน → ชื่อเต็มเท่านั้น (ชื่อสั้น/กว้างเช่น BUSH ไม่เดา) · ใช้กับใบสั่งซื้อต่างประเทศทุกใบ (บรรทัดไม่มีรหัสสินค้า 259 บรรทัด) · ใบเบิกจ่ายเดิมไม่แก้ย้อนหลัง',
+  '📄 ผลิตประจำวัน → Forecast 3 เดือน (FM-PL-02) : ทุกวันที่ 15 ช่วงเก็บ PDF อัตโนมัติ (17:00–18:00) แปลงใบ FORECAST ของผู้ผลิตทุกรายที่มีรายการต้องผลิต (RTK-K · VS4 · AKE · JARUN · JH · KDK · ROOT · ไถเฉิงเทค · RTK-V · RTK-N · SOM · SM ฯลฯ) เป็นไฟล์ PDF ผู้ผลิตละ 1 ไฟล์ พร้อมลายเซ็น เก็บที่โฟลเดอร์ 8.1 PLANING PRODUCTION / FM-PL-03 Production Request (โฟลเดอร์เดียวกับ PR ใบขอผลิต) ชื่อไฟล์ FORECAST FM-PL-02 <ผู้ผลิต> <ปี-เดือน>.pdf · ทำครั้งเดียวต่อเดือน (เครื่องปิดวันที่ 15 = ทำวันถัดไปที่เปิด) · ไม่สร้างทับไฟล์เดิม · ปุ่ม 📄 เก็บ PDF ทุกผู้ผลิต ในหน้าต่าง Forecast 3 เดือน = ทำเดี๋ยวนี้ (สร้างทับเป็นฉบับล่าสุด)',
   '📈 รายการดำเนินการในชื่อ (สินค้าคงคลังทุกรายการ) เพิ่มคอลัมน์ FC ก่อน CPO : ใบ Forecast ลูกค้า (+ สร้าง Forecast ลูกค้า) ที่มีชิ้นงานนี้ขึ้นเป็นแถว "Forecast" อัตโนมัติ · ยอด = ผลรวมทุกเดือนในใบนั้น (ใต้เลขที่แสดงรายเดือน เช่น พ.ย. 69 1,000 · ธ.ค. 69 1,200) · เป็นข้อมูลอ้างอิงเหมือน CPO ไม่กระทบยอดคงเหลือ/ยอดค้าง',
   '⚡ เครื่องหน่วง (วัดความช้า : render ~0.8 วิ/ครั้ง · ibMatRows/ibLedger 898 ครั้ง) : ยอดค้าง Q-TIME/รอชุบ/รอคัด/รอชั่ง (procPend) เดิมล้างแคชทั้งหมด ~900 รายการทุกครั้งที่จำนวนเอกสารเปลี่ยน (ทุกเครื่องเพิ่มเอกสาร = ทุกเครื่องคำนวณใหม่ทั้งหมด ~2 วิ) → ตอนนี้เทียบรายใบ (id + เวลาแก้ไข + สถานะ) แล้วล้างเฉพาะสินค้าที่เอกสาร/สินค้า/ความเคลื่อนไหวเปลี่ยนจริง (+ กลุ่มรหัสเดียวกัน/สต๊อกร่วม/รายการรวม) · เอกสารบรรทัดไม่ผูกรหัส หรือเปลี่ยนเกิน 150 ใบ = ล้างทั้งหมดเหมือนเดิม · ไม่แตะข้อมูล (คำนวณแสดงผลเท่านั้น) · ผลพลอยได้ : แก้/อนุมัติเอกสารเดิม (จำนวนใบเท่าเดิม) ยอดค้างอัปเดตทันที (เดิมค้างค่าเก่าจนจำนวนใบเปลี่ยน)',
   '🔄 หน้าต่างเบราว์เซอร์ "โหลดแอปซ้ำไหม / ระบบอาจไม่ได้บันทึกการเปลี่ยนแปลง" เด้งเมื่อกด Ctrl+F5 : เป็นตัวเตือนของระบบ (23/10c) แต่เตือนผิด 2 กรณี (1) พิมพ์ในช่องค้นหา/ตัวกรองถูกนับเป็น "แก้ข้อมูล" → ตอนนี้ช่องค้นหา/กรองไม่นับ (2) กดโหลดใหม่ (F5 / Ctrl+F5 / Ctrl+R) ข้อมูลอยู่ในเครื่องแล้วและรวมขึ้นแม่ข่ายทันทีที่เปิดใหม่ → ไม่เตือนแล้ว (ยังสั่งบันทึก+ส่งขึ้นแม่ข่ายก่อนโหลดเหมือนเดิม) · ปิดหน้าต่างขณะมีงานแก้จริงยังไม่ถึงแม่ข่าย ยังเตือนเหมือนเดิม',
@@ -35386,7 +35388,42 @@ function evPdfRun(kind,opt){
 }
 function csPdfRun(opt){ return evPdfRun('cust',opt); }
 /* รอบอัตโนมัติ : วันสุดท้ายของเดือน · ทำครั้งเดียวต่อเดือนต่อหมวด (ไม่สำเร็จ = ลองใหม่รอบ 5 นาทีถัดไป) · ลูกค้าก่อน แล้วผู้ขาย */
+/* ★ 9/11b FORECAST 3 เดือน (FM-PL-02) → PDF ทุกวันที่ 15 · ผู้ผลิตละ 1 ไฟล์ · เก็บโฟลเดอร์ FM-PL-03 (dirPRQ) */
+var FCMK_PDF_DAY=15, _fcMkPdfBusy=false;
+function fcMkPdfHtml(mk){ ensureSettings(); var co=(DB.settings&&DB.settings.company)||{}, sh='';
+  try{ _sigForPdf=true; sh=fcMkSheet(mk,co,0); }catch(e){ sh=''; } _sigForPdf=false;
+  return sh?('<!DOCTYPE html><html lang="th"><head><meta charset="utf-8"><title>FORECAST '+esc(mk)+'</title><style>'+fcMkCss()+'html{zoom:.94}.sheet{page-break-after:auto}</style></head><body>'+sh+'</body></html>'):''; }
+/* ผู้ผลิตที่เก็บ PDF : RTK-K + โมดูลผู้ผลิต (PROD_MK : VS4 AKE JARUN JH KDK ROOT ไถเฉิงเทค RTK-V RTK-N SOM SM) · เพิ่มได้ที่ settings.fcMkPdfMk */
+function fcMkPdfAllow(){ var a=['RTK-K']; try{ PROD_MK.forEach(function(x){ a.push(x[1]); }); }catch(e){} try{ var x=DB.settings&&DB.settings.fcMkPdfMk; if(Array.isArray(x))a=a.concat(x); }catch(e){} return a; }
+function fcMkPdfMakers(){ var kk=function(v){ return String(v||'').toUpperCase().replace(/[^A-Z0-9฀-๿]/g,''); }, ok={}; fcMkPdfAllow().forEach(function(m){ ok[kk(m)]=1; });
+  var out=[]; try{ fcMkList().forEach(function(m){ if(!ok[kk(m)])return; try{ if(fcMkRows(m).rows.some(fcMkHasQty))out.push(m); }catch(e){} }); }catch(e){} return out; }
+function fcMkPdfRun(opt){ opt=opt||{};
+  if(_fcMkPdfBusy){ if(!opt.quiet)toast('กำลังเก็บ PDF Forecast อยู่ — รอรอบนี้เสร็จก่อน','err'); return Promise.resolve(null); }
+  var c=pdfCfg(), dir=String(c.dirPRQ||'').trim(); if(!dir){ if(!opt.quiet)toast('ยังไม่ได้ตั้งโฟลเดอร์ FM-PL-03 (PR ใบขอผลิต) ในระบบเก็บ PDF','err'); return Promise.resolve(null); }
+  var ym=todayISO().slice(0,7), ms=fcMkPdfMakers(), n=0, skip=0, fail=0, errs=[], k=0, done=[];
+  if(!ms.length){ if(!opt.quiet)toast('ไม่มีผู้ผลิตที่มีรายการต้องผลิตเพิ่ม','err'); return Promise.resolve({n:0,skip:0,fail:0}); }
+  _fcMkPdfBusy=true;
+  var step=function(){
+    if(k>=ms.length){ _fcMkPdfBusy=false;
+      try{ var c2=pdfCfg(); if(!fail&&opt.mark)c2.fcMkDoneYm=ym; c2.fcMkLast=todayISO()+' '+new Date().toTimeString().slice(0,5)+' · '+ym+' · สร้าง '+n+(skip?(' · มีอยู่แล้ว '+skip):'')+(fail?(' · ไม่สำเร็จ '+fail):'');
+        c2.log=c2.log||[]; c2.log.unshift({t:Date.now(),n:n,fail:fail,err:errs[0]||'',job:'FORECAST 3 เดือน FM-PL-02'}); c2.log=c2.log.slice(0,20); pdfCfgSave(); }catch(e){}
+      if(!opt.quiet)toast('FORECAST 3 เดือน '+ym+' — สร้าง PDF '+fmt(n)+' ไฟล์ ('+done.join(', ')+')'+(skip?(' · มีอยู่แล้ว '+fmt(skip)):'')+(fail?(' · ไม่สำเร็จ '+fmt(fail)+' : '+errs[0]):''),fail?'err':'ok');
+      return Promise.resolve({n:n,skip:skip,fail:fail,makers:done}); }
+    var mk=ms[k++], html=fcMkPdfHtml(mk);
+    if(!html){ fail++; if(errs.length<3)errs.push('สร้างเนื้อเอกสารไม่ได้ : '+mk); return step(); }
+    return fetch(fpBase()+'/api/pdf',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({dir:dir,name:'FORECAST FM-PL-02 '+csFileSafe(mk)+' '+ym+'.pdf',html:html,overwrite:!!opt.overwrite})})
+      .then(function(rr){ return rr.json(); })
+      .then(function(j){ if(j&&j.ok){ if(j.skipped)skip++; else { n++; done.push(mk); } } else { fail++; var m=(j&&(j.msg||j.error))||'เครื่องแม่ข่ายสร้างไฟล์ไม่สำเร็จ'; if(errs.indexOf(m)<0)errs.push(m); } })
+      .catch(function(){ fail++; var m='ติดต่อเครื่องแม่ข่ายไม่ได้'; if(errs.indexOf(m)<0)errs.push(m); })
+      .then(function(){ return new Promise(function(rs){ setTimeout(rs,150); }); })
+      .then(step); };
+  return step(); }
+/* รอบอัตโนมัติ : ตั้งแต่วันที่ 15 ของเดือน · ทำครั้งเดียวต่อเดือน (ไม่สำเร็จ = ลองรอบถัดไป) · เฉพาะเครื่องออฟฟิศ */
+function fcMkPdfAuto(){ try{ var c=pdfCfg(); if(!c.on||c.fcMkAuto===false)return; if(typeof MK_MODE!=='undefined'&&MK_MODE)return;
+  if(new Date().getDate()<FCMK_PDF_DAY)return; if(c.fcMkDoneYm===todayISO().slice(0,7))return; fcMkPdfRun({quiet:true,mark:true}); }catch(e){} }
 function csAutoCheck(){
+  try{ fcMkPdfAuto(); }catch(e){}
   try{
     var c=pdfCfg(); if(!c.on)return;
     if(!csIsMonthEnd(new Date()))return;
@@ -41282,11 +41319,22 @@ function filterFgiRows(){
 function fgiPoKey(x){ return String(x||'').toUpperCase().replace(/^PO/,'').replace(/[\s\-_.\/]+/g,''); }
 function fgiPoDocOf(v){ var k=fgiPoKey(v); if(!k)return null; var L=(DB.docs||[]).filter(function(d){ return d&&['PRD','PO','IP','SP'].indexOf(d.type)>=0&&fgiPoKey(d.no)===k; });
   if(!L.length)return null; L.sort(function(a,b){ return ((a.status==='cancelled')-(b.status==='cancelled'))||((Number(b.ts)||0)-(Number(a.ts)||0)); }); return L[0]; }
+/* ★ 9/11c หาสินค้าของบรรทัดใบสั่ง : รหัส (productId/fgId) → code/pn ตรงตัว → ใบรับที่อ้าง PO เดียวกัน → ชื่อเต็ม (ห้ามเดาจากชื่อสั้น) */
+function fgiPoLineProd(d,l){ var pid=l&&(l.productId||l.fgId)||''; if(pid&&P(pid))return P(pid);
+  var code=String(l&&(l.code||l.pn||l.partNo)||'').trim(), all=DB.products||[];
+  if(code){ var ex=all.filter(function(p){ return p&&String(p.pn||'').trim()===code; }); if(ex.length===1)return ex[0];
+    var cu=code.toUpperCase(), ci=all.filter(function(p){ return p&&String(p.pn||'').trim().toUpperCase()===cu; }); if(ci.length===1)return ci[0]; }
+  try{ var k=fgiPoKey(d.no), got={}; (DB.docs||[]).forEach(function(x){ if(!x||x===d||x.status==='cancelled'||['SII','GI','GR','GS','RW'].indexOf(x.type)<0)return;
+      var hk=fgiPoKey(x.poNo||x.po||''); (x.lines||[]).forEach(function(y){ if(!y||!y.productId)return; var lk=fgiPoKey(y.po||y.poNo||''); if((lk||hk)===k)got[y.productId]=1; }); });
+    var ids=Object.keys(got).filter(function(id){ return P(id); }); if(ids.length===1)return P(ids[0]);
+    if(ids.length>1&&code){ var m=ids.filter(function(id){ return normPN(P(id).pn)===normPN(code); }); if(m.length===1)return P(m[0]); } }catch(e){}
+  var nm=String(l&&l.name||'').trim(); if(nm.length>=8&&/\d/.test(nm)){ try{ return fgiFindProd(nm)||null; }catch(e){} }
+  return null; }
 function fgiPoFill(){ var el=document.getElementById('fgi_prodpo'); if(!el)return; var v=String(el.value||'').trim(); if(!v)return;
   var d=fgiPoDocOf(v); if(!d){ toast('ไม่พบใบสั่งผลิต/สั่งซื้อเลขที่ '+v+' — รายการเดิมไม่เปลี่ยน','warn'); return; }
   var due=''; try{ due=(fgiLines.find(function(l){ return l&&l.due; })||{}).due||(document.getElementById('fgi_date')||{}).value||''; }catch(e){}
-  var nl=(d.lines||[]).map(function(l){ var pid=l.productId||l.fgId||''; var p=pid?P(pid):null; if(!p&&l.name){ try{ p=fgiFindProd(l.name)||null; if(p)pid=p.id; }catch(e){} }
-      var q=(l.order!=null&&l.order!=='')?l.order:(l.qty!=null?l.qty:''); return {productId:pid,name:p?fgiOptName(p):(l.name||''),qty:q,poNo:'',due:due}; })
+  var nl=(d.lines||[]).map(function(l){ var p=fgiPoLineProd(d,l), pid=p?p.id:''; var raw=((l.code?l.code+' ':'')+(l.name||'')).trim();
+      var q=(l.order!=null&&l.order!=='')?l.order:(l.qty!=null?l.qty:''); return {productId:pid,name:p?fgiOptName(p):raw,qty:q,poNo:'',due:due}; })
     .filter(function(l){ return l.productId||l.name; });
   if(!nl.length){ toast(d.no+' ไม่มีรายการชิ้นงาน','warn'); return; }
   var has=fgiLines.some(function(l){ return l&&(l.productId||String(l.name||'').trim()); });
@@ -46185,6 +46233,7 @@ function fcMkOpen(mk){
       +'<td class="num" style="padding:6px 7px">'+fmt(T.need)+'</td><td></td></tr></tfoot></table></div>')
      :'<div class="empty" style="padding:26px"><div class="big">📈</div><div class="t">ยังไม่มี Forecast ของผู้ผลิตรายนี้</div><div>บันทึก Forecast ลูกค้าที่เมนู <b>Forecast / PO (แผนจัดส่ง)</b> และระบุ <b>ผู้ผลิต</b> ในแต่ละบรรทัดก่อน</div></div>'),
     footer:'<button class="btn" onclick="closeModal()">ปิด</button>'
+      +((!fcMkLock()&&rows.length)?'<button class="btn" onclick="fcMkPdfRun({overwrite:true})" title="แปลง FORECAST ของผู้ผลิตทุกรายเป็น PDF เก็บที่โฟลเดอร์ FM-PL-03 Production Request (ระบบทำเองทุกวันที่ 15)">📄 เก็บ PDF ทุกผู้ผลิต</button>':'')
       +(rows.length?('<button class="btn pri" onclick="fcMkPrint(\''+esc(mk)+'\')">🖨️ พิมพ์ FORECAST</button>'):'')});
 }
 function fcMkPrint(mk){
