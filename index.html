@@ -1110,9 +1110,11 @@ const SEED={
 
 /* ---------- State ---------- */
 let DB=null;
-const APP_BUILD='RELOAD-2026.11.07b';
+const APP_BUILD='IBFC-2026.11.09a';
 /* บันทึกการแก้ไขล่าสุด (แสดงเมื่อเอาเมาส์ชี้ที่ build — ไม่เอาไปต่อท้าย APP_BUILD เพราะทำให้แถบบนล้นจอ) */
 const APP_NOTE=[
+  '📈 รายการดำเนินการในชื่อ (สินค้าคงคลังทุกรายการ) เพิ่มคอลัมน์ FC ก่อน CPO : ใบ Forecast ลูกค้า (+ สร้าง Forecast ลูกค้า) ที่มีชิ้นงานนี้ขึ้นเป็นแถว "Forecast" อัตโนมัติ · ยอด = ผลรวมทุกเดือนในใบนั้น (ใต้เลขที่แสดงรายเดือน เช่น พ.ย. 69 1,000 · ธ.ค. 69 1,200) · เป็นข้อมูลอ้างอิงเหมือน CPO ไม่กระทบยอดคงเหลือ/ยอดค้าง',
+  '⚡ เครื่องหน่วง (วัดความช้า : render ~0.8 วิ/ครั้ง · ibMatRows/ibLedger 898 ครั้ง) : ยอดค้าง Q-TIME/รอชุบ/รอคัด/รอชั่ง (procPend) เดิมล้างแคชทั้งหมด ~900 รายการทุกครั้งที่จำนวนเอกสารเปลี่ยน (ทุกเครื่องเพิ่มเอกสาร = ทุกเครื่องคำนวณใหม่ทั้งหมด ~2 วิ) → ตอนนี้เทียบรายใบ (id + เวลาแก้ไข + สถานะ) แล้วล้างเฉพาะสินค้าที่เอกสาร/สินค้า/ความเคลื่อนไหวเปลี่ยนจริง (+ กลุ่มรหัสเดียวกัน/สต๊อกร่วม/รายการรวม) · เอกสารบรรทัดไม่ผูกรหัส หรือเปลี่ยนเกิน 150 ใบ = ล้างทั้งหมดเหมือนเดิม · ไม่แตะข้อมูล (คำนวณแสดงผลเท่านั้น) · ผลพลอยได้ : แก้/อนุมัติเอกสารเดิม (จำนวนใบเท่าเดิม) ยอดค้างอัปเดตทันที (เดิมค้างค่าเก่าจนจำนวนใบเปลี่ยน)',
   '🔄 หน้าต่างเบราว์เซอร์ "โหลดแอปซ้ำไหม / ระบบอาจไม่ได้บันทึกการเปลี่ยนแปลง" เด้งเมื่อกด Ctrl+F5 : เป็นตัวเตือนของระบบ (23/10c) แต่เตือนผิด 2 กรณี (1) พิมพ์ในช่องค้นหา/ตัวกรองถูกนับเป็น "แก้ข้อมูล" → ตอนนี้ช่องค้นหา/กรองไม่นับ (2) กดโหลดใหม่ (F5 / Ctrl+F5 / Ctrl+R) ข้อมูลอยู่ในเครื่องแล้วและรวมขึ้นแม่ข่ายทันทีที่เปิดใหม่ → ไม่เตือนแล้ว (ยังสั่งบันทึก+ส่งขึ้นแม่ข่ายก่อนโหลดเหมือนเดิม) · ปิดหน้าต่างขณะมีงานแก้จริงยังไม่ถึงแม่ข่าย ยังเตือนเหมือนเดิม',
   'Σ สินค้าคงคลัง รายการรวมยอด : สินค้าที่ชื่อขึ้นต้นด้วย "รวม" (เช่น SIS-03-W713729-S รวมเหล็กตี R680701) แสดงผลรวมของทุกรายการที่ชื่อขาย (saleName) ขึ้นต้นด้วย PART NUMBER นี้ (R680701- NEWTOP · R680701 NINGBO · R680701. 5RICH) : FG คงเหลือ · WIP · Q-TIME · รอชุบ · รอคัด · รอชั่ง · ปรับยอด/รับ/จ่าย/NG · เป็นยอดแสดงผลเท่านั้น ไม่ตัด/ไม่ลงสต๊อคที่รายการรวม (ยอดจริงยังอยู่ที่แต่ละผู้ขาย) · ยอดรวมท้ายตารางไม่นับซ้ำ · คลิก PART/ดู = หน้าต่างแยกยอดรายผู้ขาย + ปุ่มเปิดบัญชีคุมของแต่ละตัว · ช่องรอคัด/รอชั่งของรายการรวมไม่ให้ปรับยอด (ปรับที่รายการย่อย)',
   '🚀 เมนูใหม่ KICK OFF / ACTION PLAN (ต่อจาก MANAGEMENT REVIEW) = ข้อมูลชุดเดียวกับ 8 การปฏิบัติงาน → 8.2 SALE : การ์ดสรุปโครงการ (ทั้งหมด/กำลังทำ/เกินกำหนด/ครบ) · ตารางโครงการ Kick-off (FM-MK-21) + แผน APQP (FM-MK-22) · รายการเสนอราคา FM-MK-19 (KICK OFF · APQP · DFMEA · PFMEA) แสดงกางเสมอ · แก้ที่ไหนก็เห็นทั้งสองที่ · ปุ่ม ← รายการ / ลบโครงการ ในเมนูนี้กลับมาที่หน้าเมนูแทนหน้าต่างรายการ',
@@ -6781,6 +6783,31 @@ function ibFillTotOf(p){
   }catch(e){ return null; }
 }
 var _ppRes={},_ppResKey='';
+/* ★ 7/11c แคชยอดค้างแบบล้างเฉพาะที่เปลี่ยน — เดิม key = จำนวนเอกสาร/สินค้า (เปลี่ยน 1 ใบ = ล้างทั้งหมด ~900 รายการ ≈ 2 วิ) */
+var _ppSig=null,_ppSigGen=-1,_ppSigT=0;
+function _ppDocSig(d){ var ps=[], nm=false; if(d.productId)ps.push(d.productId); (d.lines||[]).forEach(function(l){ var x=l&&(l.productId||l.fgId); if(x)ps.push(x); else if(l)nm=true; });
+  return {t:String(d.ts||0)+'|'+(d.status||'')+'|'+((d.lines||[]).length)+'|'+(d.date||''),p:ps,nm:nm}; }
+function ppCacheCheck(){
+  var gen=(typeof _rxGen!=='undefined')?_rxGen:0, now=Date.now();
+  if(_ppSig&&gen===_ppSigGen&&now-_ppSigT<1500&&_ppResKey!=='')return;   /* ตรวจครั้งเดียวต่อรอบวาด */
+  _ppSigGen=gen; _ppSigT=now;
+  var D={}, PR={}, MV={}, full=(_ppResKey===''||!_ppSig), aff={}, nChg=0;
+  (DB.docs||[]).forEach(function(d){ if(d&&d.id)D[d.id]=_ppDocSig(d); });
+  (DB.products||[]).forEach(function(p){ if(p&&p.id)PR[p.id]=String(p.ts||p._ts||0)+'|'+(p.flow||'')+'|'+(p.stockOf||'')+'|'+(p.pn||'')+'|'+JSON.stringify(p.pendAdj||'')+'|'+(p.type||''); });
+  (DB.movements||[]).forEach(function(m){ if(m&&m.id)MV[m.id]=m.productId||''; });
+  if(!full){ var o=_ppSig, mark=function(ps){ (ps||[]).forEach(function(x){ if(x)aff[x]=1; }); };
+    Object.keys(D).forEach(function(k){ var a=D[k], b=o.D[k]; if(b&&b.t===a.t)return; nChg++; if(a.nm||(b&&b.nm))full=true; mark(a.p); if(b)mark(b.p); });
+    Object.keys(o.D).forEach(function(k){ if(D[k])return; nChg++; if(o.D[k].nm)full=true; mark(o.D[k].p); });
+    Object.keys(PR).forEach(function(k){ if(o.PR[k]!==PR[k]){ nChg++; aff[k]=1; } }); Object.keys(o.PR).forEach(function(k){ if(PR[k]==null){ nChg++; aff[k]=1; } });
+    Object.keys(MV).forEach(function(k){ if(o.MV[k]==null&&MV[k])aff[MV[k]]=1; }); Object.keys(o.MV).forEach(function(k){ if(MV[k]==null&&o.MV[k])aff[o.MV[k]]=1; });
+    if(nChg>150)full=true; }
+  _ppSig={D:D,PR:PR,MV:MV};
+  if(full){ _ppRes={}; _ppResKey='ok'; return; }
+  var ids=Object.keys(aff); if(!ids.length)return;
+  var kill={}; ids.forEach(function(id){ kill[id]=1; try{ Object.keys(ibIdGroup(id)).forEach(function(g){ kill[g]=1; }); }catch(e){}
+    try{ var p=P(id); if(p){ if(p.stockOf)kill[p.stockOf]=1; stockKids(id).forEach(function(k){ kill[k.id]=1; }); } }catch(e){} });
+  Object.keys(kill).forEach(function(k){ delete _ppRes[k]; });
+}
 /* ★ 22/10j ยอดรอคัดในตารางคัดแยก = รอคัด ของสินค้าคงคลัง (เดิม p.wip ค่าเก่าสะสม) */
 function qcStgOf(pr){ try{ if(!pr)return 0; var fl=prodFlow(pr); if(fl!=='ไม่ชุบ-QC'&&fl!=='ชุบ-QC')return 0; var q=procPend(stockSrc(pr)||pr); return (q&&!q.na)?(Number(q.sort)||0):0; }catch(e){ return 0; } }
 function procPend(p){
@@ -6788,8 +6815,7 @@ function procPend(p){
   try{
     if(!p||p.stockOf)return z;
     /* แคชผลต่อการวาดหนึ่งรอบ — กันช้าเวลาตารางมีหลายร้อยแถว */
-    var ck=((DB.docs||[]).length)+'/'+((DB.products||[]).length);
-    if(_ppResKey!==ck){ _ppRes={}; _ppResKey=ck; }
+    ppCacheCheck();
     if(_ppRes[p.id])return _ppRes[p.id];
     if(isMatProd(p))return z;
     if(isDirectFlow(prodFlow(p)))return z;       /* เข้าคงเหลือทันที — ไม่มีขั้นค้าง */
@@ -7208,7 +7234,7 @@ function issueBarsDo(id){
    =================================================================== */
 var IB_LABEL={PO:'สั่งซื้อวัตถุดิบ',SUP:'วัสดุสิ้นเปลือง',IP:'สั่งซื้อต่างประเทศ',SP:'สั่งซื้อพิเศษ',
  GR:'รับวัตถุดิบ',GI:'รับเข้าต่างประเทศ',GS:'รับเข้าพิเศษ',WD:'เบิกวัตถุดิบ',WS:'เบิกวัสดุสิ้นเปลือง',
- CPO:'CPO',PRD:'ใบสั่งผลิต',RW:'รับชิ้นงาน',QC:'คัดแยก',QI:'คัดแยก',QS:'คัดแยก',QSE:'คัดแยก',
+ CPO:'CPO',FC:'Forecast',PRD:'ใบสั่งผลิต',RW:'รับชิ้นงาน',QC:'คัดแยก',QI:'คัดแยก',QS:'คัดแยก',QSE:'คัดแยก',
  PS:'PL ส่งชุบ',PR:'PL รับชุบ',PL:'PL ส่งชุบ',DP:'ผลิตประจำวัน',
  SI:'รับเข้าสต๊อค',SII:'รับเข้าสต๊อค',SIS:'รับเข้าสต๊อค',SSE:'รับเข้าสต๊อค',RC:'ตรวจซ้ำ 100%',
  FGI:'เบิกจ่ายสำเร็จรูป',INV:'Invoice',IV2:'ขายพิเศษ',RMC:'รับแมทลูกค้า',ADJ:'ปรับยอด',CRX:'แลกเปลี่ยนกับลูกค้า'};
@@ -7434,7 +7460,7 @@ function ibLedger(id){
       (d.lines||[]).forEach(function(l){ var _x=l.productId||l.fgId; if(_x&&G[_x]&&!_bx[_x])_own=true; });
       if(!_own)return;
     }
-    var q=0,hit=false,line=null;
+    var q=0,hit=false,line=null,_fcM=null;
     if(d.productId&&G[d.productId]){ hit=true; q=Number(d.qty)||0; }
     (d.lines||[]).forEach(function(l){
       var _lid=l.productId||l.fgId;
@@ -7451,6 +7477,7 @@ function ibLedger(id){
           if(_os&&!Object.keys(_os).some(function(x){ if(G[x])return true; var _sx=stockSrc(P(x)); return !!(_sx&&G[_sx.id]); }))_ok=false; }catch(e){} }
       }
       if(!_ok)return; hit=true; if(!line)line=l;
+      if(d.type==='FC'){ var _fq=0; try{ fcDocK(d).forEach(function(k){ var v=fcValK(l,k); if(v){ _fq+=v; _fcM=_fcM||{}; _fcM[k]=(_fcM[k]||0)+v; } }); }catch(e){} q+=_fq; return; }   /* ★ 9/11a Forecast */
       var _q=(l.weighed!=null)?l.weighed:(l.qty!=null?l.qty:(l.receivedQty!=null?l.receivedQty:(l.recvQty!=null?l.recvQty:(l.sentQty!=null?l.sentQty:(l.ok!=null?((Number(l.ok)||0)+(Number(l.ng)||0)):(l.bars||0))))));
       if(_fpk&&PN_BUY_T[d.type]&&d.type!=='SUP'){ try{ var _pc=(d.type==='PO'||d.type==='IP'||d.type==='SP')?poLinePcs(l):grLinePcs(l); if(_pc>0)_q=_pc; }catch(e){} }
       q+=Number(_q)||0;
@@ -7472,7 +7499,7 @@ function ibLedger(id){
     }
     rows.push({id:d.id,type:t,label:IB_LABEL[t]||t,no:d.no||'',date:d.date||'',ts:d.ts||0,posted:posted,
       qty:(t==='ADJ'?(Number(d.qty)||0):q),eff:(posted?eff:0),setTo:(posted&&t==='ADJ'&&d.mode==='set')?(Number(d.qty)||0):null,
-      actor:ibActor(d,line),vendor:ibVendor(d,line),order:ibOrderNo(d,line),ext:ibExtNo(d,line),status:d.status});
+      actor:ibActor(d,line),vendor:ibVendor(d,line),order:ibOrderNo(d,line),ext:(t==='FC'&&_fcM)?Object.keys(_fcM).map(Number).sort(function(a,b){return a-b;}).map(function(k){ return fcKLbl(k)+' '+fmt(_fcM[k]); }).join(' · '):ibExtNo(d,line),status:d.status});
   });
   /* ★ ใบส่งของชั่วคราว (FM-ST-25) : บรรทัด "สินค้าคงคลัง" = ส่งออก (−) · รับคืนแต่ละรอบ (+) */
   try{ (DB.docs||[]).forEach(function(d){ if(!d||d.type!=='TDB'||!(d.status==='sent'||d.status==='closed')||tdbNoCut(d))return;
@@ -7497,6 +7524,7 @@ function ibLedger(id){
 }
 /* ปุ่มจัดการรายเอกสารในหน้ารายการดำเนินการ */
 function ibActBtn(r,pid){
+  if(r&&r.type==='FC')return '<span class="tag gray" style="font-size:9px" title="Forecast ลูกค้า — แก้ไข/ยกเลิกที่หน้า Forecast / PO">อ้างอิง</span>';   /* ★ 9/11a ไม่ให้ลบใบ Forecast จากหน้านี้ */
   if(r&&r.type==='PADJ')return '<button class="btn sm" onclick="pendAdjOpen(\''+r.padjPid+'\',\''+r.padjK+'\')" title="แก้ / ยกเลิกการปรับยอดค้าง">⚖️ แก้ไข</button>';
   var st=r.status||'';
   var _id=r.id||(r.d&&r.d.id)||'';
@@ -8285,18 +8313,18 @@ function ibPrint(id){
    แสดงเป็นตารางแยกคอลัมน์ตามชนิดกิจกรรม + แถว SUBTOTAL
    ใช้เฉพาะสินค้าหมวดรับแมทลูกค้าเท่านั้น หมวดอื่นใช้โครงสร้างเดิม
    =================================================================== */
-var IB_COL_DEF={bf:'ยอดยกมา',adj:'ปรับยอด',cpo:'CPO',rmc:'รับแมทลูกค้า',prd:'สั่งผลิต',wd:'เบิกวัตถุดิบ',
+var IB_COL_DEF={bf:'ยอดยกมา',adj:'ปรับยอด',fc:'FC',cpo:'CPO',rmc:'รับแมทลูกค้า',prd:'สั่งผลิต',wd:'เบิกวัตถุดิบ',
  pok:'ผลิต OK',png:'ผลิต NG',ps:'ส่งชุบ',pr:'รับชุบ',ok:'คัดแยก OK',ng:'คัดแยก NG',rwk:'แก้ไข-ซ่อม OK',rw:'รับชิ้นงาน',si:'รับเข้าสต๊อค',
  fgi:'เบิกจ่าย',inv:'ส่งลูกค้า',crb:'รับคืนจากลูกค้า',cex:'จ่ายแลกเปลี่ยน',tdo:'ส่งของชั่วคราว',tdi:'รับคืนของชั่วคราว',
  po:'สั่งซื้อวัตถุดิบ',gr:'รับวัตถุดิบ',pad:'ปรับยอดค้าง'};
 /* ★ เรียงตามการไหลจริง : รับแมท → สั่งผลิต → เบิกวัตถุดิบ → รับชิ้นงาน → ส่งชุบ → รับชุบ → คัดแยก → รับเข้าสต๊อค → เบิกจ่าย → ส่งลูกค้า */
-var IB_COLS_MAT=['bf','adj','pad','cpo','rmc','prd','wd','rw','ps','pr','ok','ng','rwk','si','fgi','inv','crb','cex'];  /* รับแมทลูกค้า */
-var IB_COLS_FG =['bf','adj','pad','cpo','prd','wd','pok','png','rw','ps','pr','ok','ng','rwk','si','fgi','inv','crb','cex','tdo','tdi'];   /* สำเร็จรูป · ชุดประกอบ */
+var IB_COLS_MAT=['bf','adj','pad','fc','cpo','rmc','prd','wd','rw','ps','pr','ok','ng','rwk','si','fgi','inv','crb','cex'];  /* รับแมทลูกค้า */
+var IB_COLS_FG =['bf','adj','pad','fc','cpo','prd','wd','pok','png','rw','ps','pr','ok','ng','rwk','si','fgi','inv','crb','cex','tdo','tdi'];   /* สำเร็จรูป · ชุดประกอบ */
 /* วัตถุดิบ · วัสดุสิ้นเปลือง : สั่งซื้อ → รับวัตถุดิบ → คัดแยก → รับเข้าสต๊อค → เบิก/เบิกจ่าย → Invoice */
-var IB_COLS_RM =['bf','adj','pad','cpo','po','gr','ok','ng','rwk','si','wd','fgi','inv','crb','cex','tdo','tdi'];
+var IB_COLS_RM =['bf','adj','pad','fc','cpo','po','gr','ok','ng','rwk','si','wd','fgi','inv','crb','cex','tdo','tdi'];
 /* ★ วัตถุดิบ "เข้าคงเหลือทันที" : ใช้เฉพาะหัวข้อที่เป็นขั้นตอนของวัตถุดิบจริง
    ยอดยกมา · ปรับยอด · CPO · สั่งซื้อวัตถุดิบ · รับวัตถุดิบ (+) · เบิกวัตถุดิบ/เบิกจ่าย/ขาย (−) */
-var IB_COLS_RMD=['bf','adj','cpo','po','gr','wd','fgi','inv','crb','cex','tdo','tdi'];
+var IB_COLS_RMD=['bf','adj','fc','cpo','po','gr','wd','fgi','inv','crb','cex','tdo','tdi'];
 function ibMatCols(p){
   var ks;
   if(p&&isMatProd(p))ks=IB_COLS_MAT;
@@ -8335,6 +8363,7 @@ function ibMatCell(r,d,l){
     case 'ADJ': o.adj=(r.setTo!=null?r.setTo:r.qty); break;
     case 'PADJ': o.pad=r.qty; break;                          /* ★ ปรับยอดค้าง (ส่วนต่าง) */
     case 'CPO': o.cpo=r.qty; break;
+    case 'FC': o.fc=r.qty; break;                             /* ★ 9/11a Forecast ลูกค้า (อ้างอิง · ไม่กระทบยอด) */
     case 'PO': case 'IP': case 'SP': o.po=r.qty; break;         /* สั่งซื้อวัตถุดิบ / ต่างประเทศ / พิเศษ */
     case 'GR': case 'GI': case 'GS': case 'SUP': o.gr=r.qty; break;  /* รับวัตถุดิบเข้าคลัง */
     case 'WS': o.wd=r.qty; break;
