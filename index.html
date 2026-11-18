@@ -521,6 +521,16 @@ function _isFilterEl(t){ try{ if(!t||!t.getAttribute)return false;
   if(/(^|_)(q|search|flt|filter)$|Q$|Mon$/i.test(String(t.id||'')))return true;
   return /[Ff]ilter|render\w*Table\(|\bflt/.test(h); }catch(e){ return false; } }
 try{ ['input','change'].forEach(function(ev){ document.addEventListener(ev,function(e){ if(_isFilterEl(e&&e.target))return; _lastEditAct=Date.now(); },true); });
+/* ★ 10/11c ช่องค้นหา/ตัวกรอง : ตัวอักษรขึ้น/ลบทันที แล้วค่อยกรอง (หน่วง 250 ms) — เดิมวาดตารางใหม่ทุกแป้น = Backspace ค้าง 3–5 วิ */
+var TYPE_DEB_MS=250;
+function _typeDebOk(t){ try{ if(!t||t.tagName!=='INPUT'||!t.getAttribute('oninput'))return false; var ty=String(t.type||'text').toLowerCase();
+  if(ty!=='text'&&ty!=='search')return false; if(t.dataset&&t.dataset.nodeb)return false; return _isFilterEl(t); }catch(e){ return false; } }
+function _typeDebFlush(t){ try{ if(!t||!t.__debT)return; clearTimeout(t.__debT); t.__debT=0; var f=t.oninput, ev=t.__debEv; t.__debEv=null; if(typeof f==='function')f.call(t,ev); }catch(e){ console.warn('typeDeb',e); } }
+document.addEventListener('input',function(e){ var t=e&&e.target; if(!_typeDebOk(t))return;
+  e.stopImmediatePropagation(); t.__debEv=e; if(t.__debT)clearTimeout(t.__debT);
+  t.__debT=setTimeout(function(){ _typeDebFlush(t); },TYPE_DEB_MS); },true);
+document.addEventListener('keydown',function(e){ if(e&&e.key==='Enter'&&e.target&&e.target.__debT)_typeDebFlush(e.target); },true);
+document.addEventListener('blur',function(e){ if(e&&e.target&&e.target.__debT)_typeDebFlush(e.target); },true);
   document.addEventListener('pointerdown',function(e){ try{ var t=e.target; if(!t||!t.closest)return; if(!t.closest('#content,#modalRoot'))return; if(t.closest('button,input,select,textarea,label,[contenteditable],.linkish,[onclick]'))_lastEditAct=Date.now(); }catch(_e){} },true); }catch(e){}
 function actCooldown(){return (Date.now()-_lastAct)<6000;}
 function lanOrigin(){ try{ return !(/github\.io$/i.test(location.hostname)||location.protocol==='file:'); }catch(e){ return false; } }
@@ -541,7 +551,7 @@ function lanBanner(on,msg){
     if(!on){ if(el)el.remove(); return; }
     if(!el){ el=document.createElement('div'); el.id='lanWaitBar'; el.style.cssText='position:fixed;left:0;right:0;top:0;z-index:99999;background:#c92a2a;color:#fff;padding:9px 14px;font:600 13.5px Tahoma,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.25);display:flex;gap:10px;align-items:center;flex-wrap:wrap'; document.body.appendChild(el); }
     var sm=saveMarkGet(), seed=false; try{ seed=isUntouchedSeed(DB)||!!(DB&&DB.seedFlag&&!(DB.docs||[]).length); }catch(e){}
-    el.innerHTML='⛔ '+(msg||'ยังเชื่อมต่อเครื่องแม่ข่าย (192.168.1.51:8080) ไม่ได้')+' — '
+    el.innerHTML='⛔ '+(msg||'ยังเชื่อมต่อเครื่องแม่ข่าย (192.168.1.200:8080) ไม่ได้')+' — '
       +(seed?'<b>ยังไม่มีข้อมูลจริงในเครื่องนี้ ห้ามบันทึกงาน</b>':'ข้อมูลที่เห็นเป็น<b>สำเนาในเครื่อง</b>'+(sm&&sm.t?(' (บันทึกล่าสุด '+new Date(sm.t).toLocaleString('th-TH')+')'):'')+' อาจไม่ใช่ล่าสุด · <b>ยังไม่ควรบันทึกงาน</b>')
       +' · ระบบกำลังลองเชื่อมต่อใหม่ทุก 10 วินาที (ตรวจว่าเครื่องแม่ข่ายเปิดแล้ว และหน้าต่าง RTK LAN Server เปิดอยู่)'
       +' <button onclick="lanReconnectNow()" style="margin-left:auto;padding:4px 12px;border-radius:6px;border:0;background:#fff;color:#c92a2a;font-weight:700;cursor:pointer">🔄 ลองเชื่อมต่อเดี๋ยวนี้</button>';
@@ -1110,9 +1120,37 @@ const SEED={
 
 /* ---------- State ---------- */
 let DB=null;
-const APP_BUILD='FGIPO-2026.11.09c';
+const APP_BUILD='DPPRN-2026.11.18a';
 /* บันทึกการแก้ไขล่าสุด (แสดงเมื่อเอาเมาส์ชี้ที่ build — ไม่เอาไปต่อท้าย APP_BUILD เพราะทำให้แถบบนล้นจอ) */
 const APP_NOTE=[
+  '🖨️ รายงานผลิต (FM-PD-02) ใบพิมพ์ : หัวใบเพิ่ม ผู้ผลิต · จำนวนสั่ง = ค่าเดียวกับตาราง (สั่งผลิตจำนวน) · เพิ่มบรรทัด วันที่จัดส่ง + จำนวน (จากช่อง วันที่ผลิตเสร็จ / ผลิตได้) · เบิกวัตถุดิบ แสดงเป็นชิ้น (dpWdPcs · เบิกเป็นเส้น = เส้น × ชิ้นต่อเส้น) · ยอดตั้งต้นสายการผลิต (OK ขั้นแรก) = ยอดเบิกวัตถุดิบเป็นชิ้น (ไม่มีใบเบิก = รับชิ้นงาน/จำนวนสั่งเหมือนเดิม) · แถวรายงานผลิตประจำวันมีปุ่มลิงก์ FM-PD-02 ข้างปุ่มพิมพ์ (ช่องเดียวกับคอลัมน์เสริม)',
+  '🧮 คัดแยก OK/NG เพิ่มคอลัมน์ผลต่าง 2 ช่อง สำหรับทวนสอบยอดขาด/เกิน : ผลต่าง (รับชิ้นงาน − รับชุบ · ต่อจาก รับชุบ · ไม่มีรับชุบ = -) และ ผลต่าง (OK + NG − รับเข้าสต๊อค · ต่อจาก รับเข้าสต๊อค · OK+NG รวมทุกใบคัดแยกของเลขที่ใบสั่งเดียวกัน) · SUBTOTAL แสดงยอด รับชิ้นงาน / รับชุบ / ผลต่าง ตามตัวกรอง (นับต่อเลขที่ใบสั่งครั้งเดียว) · ไม่ใช่ 0 = ตัวส้ม · ซ่อน/แสดงได้ที่ 👁 คอลัมน์',
+  '📦 คัดแยก OK/NG เพิ่มคอลัมน์ รับเข้าสต๊อค (ต่อจาก NG TAG) — ยอดรับเข้าสต๊อคอัตโนมัติของเลขที่ใบสั่งเดียวกัน (ใบรับเข้าสต๊อค/รับเข้าต่างประเทศ/พิเศษ ไม่นับใบยกเลิก · ค่าเดียวกับแถบการไหล) · SUBTOTAL นับต่อเลขที่ใบสั่งครั้งเดียว · แก้แถว SUBTOTAL ให้ตรงคอลัมน์ (เดิม NG อยู่ใต้ TAG และขาด 2 ช่อง) · ซ่อน/แสดงได้ที่ 👁 คอลัมน์',
+  '🔎 คัดแยก OK/NG : หัวคอลัมน์ จำนวน → รับชิ้นงาน · เพิ่มคอลัมน์ รับชุบ (ต่อจาก รับชิ้นงาน) = ยอดรับชุบอัตโนมัติจากใบส่งชุบ/รับชุบ ของเลขที่ใบสั่งเดียวกัน (ชิ้นงานเดียวกัน · ไม่นับใบยกเลิก) · ซ่อน/แสดงได้ที่ 👁 คอลัมน์',
+  '📥 ส่งชุบ/รับชุบ เพิ่มคอลัมน์ รับชิ้นงาน (ต่อจาก Part Name) — ยอดรับชิ้นงานจากผู้ผลิตอัตโนมัติตามเลขที่ใบสั่ง (ใบรับชิ้นงาน RW ที่ไม่ยกเลิก · ค่าเดียวกับช่อง รับ ในใบสั่งผลิต · ไม่พบใบสั่งผลิต = ใบสั่งซื้อ/รับวัตถุดิบ) · SUBTOTAL นับต่อเลขที่ใบสั่งครั้งเดียว (หลายบรรทัดส่งชุบ PO เดียวกันไม่นับซ้ำ)',
+  '📑 เมนูใหม่ ควบคุมเอกสาร (ใต้ เครื่องมือวัด) — แสดง 7.5 เอกสารข้อมูล ทั้งหน้า (ความพร้อม AUDIT ทะเบียนเอกสารทั้งระบบ · 7.5.1–7.5.3 · แบบฟอร์ม FM-DCC · SOP/WI) เป็นข้อมูลชุดเดียวกัน แก้ที่หน้าไหนก็อัปเดตทั้งสองที่',
+  '📏 เมนูใหม่ เครื่องมือวัด (ใต้ ซ่อมบำรุง) — แสดง 7.1.5 เครื่องมือวัด ทั้งหน้า (ความพร้อม AUDIT เครื่องมือวัด · บัญชีเครื่องมือวัด FM-QC-05 · SOP/WI/บันทึกผลสอบเทียบ) เป็นข้อมูลชุดเดียวกัน แก้ที่หน้าไหนก็อัปเดตทั้งสองที่',
+  '🛠️ เมนูใหม่ ซ่อมบำรุง (ใต้ บุคคล) — แสดง 7.1.3 ซ่อมบำรุง ทั้งหน้า (ความพร้อม AUDIT เครื่องจักร & แม่พิมพ์ · บัญชีเครื่องจักร & แม่พิมพ์ · SOP/WI/บันทึก PM/ซ่อม) เป็นข้อมูลชุดเดียวกัน แก้ที่หน้าไหนก็อัปเดตทั้งสองที่',
+  '👥 เมนูใหม่ บุคคล (ใต้ 7 การสนับสนุน) — แสดง 7.1.2 บุคคล ทั้งหน้า (ความพร้อม AUDIT แฟ้มประวัติพนักงาน · บัญชีรายชื่อพนักงาน · SOP/WI/ใบบันทึกอบรม) เป็นข้อมูลชุดเดียวกัน แก้ที่หน้าไหนก็อัปเดตทั้งสองที่ · เข้าถึงได้คลิกเดียว',
+  '📐 คอลัมน์ เกณฑ์ตรวจรับ ในตาราง รับชิ้นงาน / รับวัตถุดิบ / รับเข้าต่างประเทศ / รับเข้าพิเศษ (ต่อจากสถานะ) — กดที่แถวเปิดฟอร์มตรวจรับ AQL ของใบนั้นทันที (ไม่ต้องไปหาในรายการ) · ปุ่มแสดงผล : ⚪ ตรวจรับ (ยังไม่ตรวจ) · ✅ ผ่าน · ❌ ไม่ผ่าน · กดหัวคอลัมน์ = รายการเกณฑ์ตรวจรับทั้งหมดของหัวข้อนั้น · ข้อมูลชุดเดียวกับปุ่ม 📐 เกณฑ์ตรวจรับ เดิม',
+  '🧮 ใบสั่งผลิต ช่อง เบิกวัตถุดิบ (ชิ้น) ขึ้น 0 ทั้งที่เบิกเหล็กเป็นเส้นแล้ว (14672-KWBA-6000-H1 PO6900887 / 6900631 / 6900597) — ใบเบิกวัตถุดิบเก่าบันทึกรหัสงานเป็น 14672-KWBA-6000 (ไม่มี -H1) และไม่ได้เก็บ ชิ้นต่อเส้น ระบบจึงหาชิ้นงานไม่เจอ · แก้ : เมื่อหาชิ้นงานจากรหัสในใบเบิกไม่เจอ ใช้ ชิ้นต่อเส้น จากใบสั่งผลิตของเลข PO นั้น (154 ชิ้น/เส้น) → ไม่มีค่อยใช้ชิ้นงานของใบสั่งผลิต · 85 เส้น = 13,090 ชิ้น · ใบเบิกที่คำนวณได้อยู่แล้วไม่เปลี่ยน · ไม่แตะข้อมูล',
+  '👁 รายการดำเนินการในชื่อ (บัญชีคุม) : คอลัมน์ ผู้ผลิต/ผู้ขาย ซ่อน/แสดงได้ — กด 🙈 ที่หัวคอลัมน์เพื่อซ่อน · กด 👁 แสดงผู้ผลิต/ผู้ขาย เพื่อแสดงกลับ · ค่าตั้งต้น = แสดง · จำค่าไว้ที่เครื่อง ใช้กับทุกรายการสินค้า · แสดงผลเท่านั้น',
+  '📝 เปิดไฟล์เพื่อแก้ไข (RTK Open) ขึ้น "ไม่พบไฟล์ (IP 192.168.1.51)" — แม่ข่ายย้ายมาใช้ IP 192.168.1.200 แล้ว แต่ตาราง share-map บนแม่ข่ายยังเป็น IP เก่า · แก้ : ไฟล์ในคลังเอกสารอยู่บนเครื่องแม่ข่ายเสมอ → ที่อยู่ \\IP\… ที่ไม่ตรงกับ IP แม่ข่ายที่เชื่อมอยู่ ระบบเปลี่ยนเป็น IP แม่ข่ายปัจจุบันให้อัตโนมัติ · ตัวช่วย RTK Open แสดงข้อความไทยถูกต้อง (ติดตั้งใหม่ที่เครื่องลูก)',
+  '🛑 แก้ใบรับชิ้นงาน / รับวัตถุดิบ ที่อนุมัติแล้ว แล้วกดบันทึก — เดิมระบบลงยอดเข้าสต๊อคซ้ำทุกครั้งโดยไม่คืนยอดเดิม (RW-69110168 50530-K04-9300-24 แก้ 2 ครั้ง = +3,000 ซ้ำ 2 รอบ) · แก้ : คืนยอดเดิมก่อนแล้วลงยอดตามรายการใหม่ (ไม่สำเร็จ = คืนรายการเดิม) · ด่านกลาง : เอกสารที่อนุมัติและมีความเคลื่อนไหวแล้ว ห้ามอนุมัติซ้ำทุกประเภท · ไม่แก้ยอดย้อนหลังเอง (รอ TEE ตัดสินใจ)',
+  '⚡ เครื่องหน่วง : เวลาเครื่องอื่นแก้เอกสารที่มีบรรทัดยังไม่ผูกรหัสสินค้า (ซิงก์เข้ามา) ระบบล้างผลคำนวณยอดค้างของสินค้าทั้งหมด แล้วคำนวณบัญชีคุมใหม่ 898 รายการ (~2–3 วินาทีต่อครั้ง · วัดได้ ibMatRows 2,736 ครั้ง 13.8 วิ) · แก้ : คำนวณใหม่เฉพาะสินค้าที่รหัส/ชื่อตรงกับบรรทัดนั้น (กติกาจับคู่เดียวกับบัญชีคุม) · ตัวเลขเท่าเดิม (ทดสอบเทียบคำนวณใหม่ทั้งหมด ต่างกัน 0)',
+  '🧾 ใบพิมพ์ใบเบิกวัตถุดิบ (FM-ST-02) : บรรทัดแมทลูกค้าที่เบิกเป็นชิ้น (ไม่มีจำนวนเส้น) ช่อง เส้น/แผ่น แสดงหน่วย "ชิ้น" แทน "เส้น" · ใบที่เป็นแมทลูกค้าเบิกเป็นชิ้นทุกบรรทัด ยอดท้ายใบ รวมเบิก X ชิ้น · แสดงผลเท่านั้น',
+  '➕ ใบสั่งผลิต : แถว SUBTOTAL เพิ่มยอดรวมคอลัมน์ เส้น/แผ่น · เบิกวัตถุดิบ (ชิ้น) · จำนวนรับ — รวมเฉพาะแถวที่แสดงตามการค้นหา/ตัวกรอง (เหมือนยอดจำนวน) · แสดงผลเท่านั้น ไม่แตะข้อมูล',
+  '➕ สินค้าคงคลัง แถว SUBTOTAL : เพิ่มยอดรวมทั้งหมด = FG + WIP + Q-TIME + รอชุบ + รอคัด + รอชั่ง (กรอบสีน้ำเงิน ในช่องถัดจากรอชั่ง · ชี้เมาส์ดูสูตร) รวมตามตัวกรอง/การค้นหาเหมือนยอดอื่นในแถว',
+  '🧮 สินค้าคงคลัง รายการรวม (Σ เช่น SIS-03-W713729-S รวมเหล็กตี R680701) FG คงเหลือ 180,000 ทั้งที่รายการย่อยเป็น 0 — ต้นเหตุ : ใบเบิกจ่าย FGI-69110752 / 69110834 ผูกกับรายการรวม → ตัดสต๊อคติดลบ → ระบบซ่อมยอดติดลบเติม +60,000 สองครั้ง → ยกเลิกใบแล้วคืนยอดอีก = ยอดค้างในรายการรวม · แก้ (1) ช่องตัวเลขรายการรวม = ผลรวมรายการย่อยเท่านั้น (2) ล้างยอดค้างของรายการรวมเป็น 0 ครั้งเดียว (บันทึกความเคลื่อนไหว ADJ SUM0) (3) อนุมัติใบเบิกจ่ายที่เลือกรายการรวมไม่ได้ ให้เลือกรายการย่อย',
+  '🗑️ ใบเบิกจ่ายสำเร็จรูป : ใบที่ยกเลิกแล้ว มีปุ่ม 🗑️ ลบ ออกจากรายการถาวร (ยืนยันก่อน · จดทะเบียนลบ ซิงก์ทุกเครื่องไม่ฟื้นกลับ) · ลบได้เฉพาะใบสถานะ ยกเลิก (ยอดสต๊อคคืนไปแล้วตอนยกเลิก) · ใบที่ยังไม่ยกเลิกต้องกด ยกเลิก ก่อน',
+  '🗑️ ใบเบิกจ่ายสำเร็จรูป ยกเลิกใบที่ทำซ้ำไม่ได้ ("ออก Invoice แล้ว") — เดิมล็อกทุกใบที่ PO ลูกค้าเดียวกับ Invoice แม้ใบนั้นไม่อยู่ใน Invoice (FGI-69110834 / 69110752 SIS-03 60,000 · Invoice IV0032273 มี SIS-03 80,000 = FGI-69100653) · แก้ : ล็อกเฉพาะใบที่ทุกรายการ (ชิ้นงาน+จำนวน) ตรงกับบรรทัดใน Invoice · ใบอื่น = แสดงรายการใน Invoice ให้ตรวจ แล้วยืนยันยกเลิกได้ (คืนยอดสต๊อค · Invoice ไม่ถูกแตะ)',
+  '📋 ใบเบิกจ่ายสำเร็จรูป (ตาราง) : ลูกค้า = ชื่อย่อลูกค้าจากสินค้าคงคลัง · ผู้ผลิต = ผู้ขาย/ผู้ผลิต จากสินค้าคงคลัง · รายการ = ชื่อขาย จากสินค้าคงคลัง (อัตโนมัติ) · สินค้าคงคลังยังไม่กรอก = ใช้ค่าเดิมในใบ (ผู้ผลิตจากเลขที่ PO) · ชี้เมาส์ดูค่าที่บันทึกในใบ · แสดงผลเท่านั้น ไม่แก้ข้อมูลในใบ',
+  '📏 ใบสั่งผลิต : เพิ่มคอลัมน์ เส้น/แผ่น (ก่อน เบิกวัตถุดิบ) = จำนวนเส้น/แผ่นที่เบิกจริงจากใบเบิกวัตถุดิบของใบสั่งผลิตนั้น (อัตโนมัติ) · แก้ตัวเลขได้ → ระบบแก้ใบเบิกวัตถุดิบให้ (จำนวนเส้น/แผ่น + กก. คำนวณใหม่) ใบที่อนุมัติแล้ว = ปรับสต๊อควัตถุดิบเฉพาะส่วนต่าง (กก. + เส้น/บัญชีเส้นตามความยาว) · ช่อง เบิกวัตถุดิบ (ชิ้น) เปลี่ยนตามทันที (ล้างค่าที่เคยพิมพ์ทับไว้) · มีหลายบรรทัด/ยังไม่มีใบเบิก = แสดงอย่างเดียว ให้แก้ที่ใบเบิก',
+  '🏷️ รับวัตถุดิบเข้าสต๊อค (+ ขยายผล รับเข้าต่างประเทศ / รับเข้าพิเศษ) : เพิ่มปุ่ม 🏷️ ชุบ ข้างปุ่ม TAG (เหมือนรับชิ้นงาน) → หน้าต่าง TAG ชุบ FM-ST-16 (เติม PART / PO / ผู้ขาย / จำนวนรับ / น้ำหนักชั่งจริงจากใบรับ) · พิมพ์ TAG · 💾 บันทึกข้อมูล TAG ลงใบรับ · ✅ บันทึกส่งชุบ = สร้างใบส่งชุบ (เมนู ส่งชุบ/รับชุบ · รออนุมัติ) อ้างเลขที่ PO และใบรับวัตถุดิบ',
+  '➕ แถวรวมท้ายตาราง รับเข้าต่างประเทศ / รับเข้าพิเศษ / วัสดุสิ้นเปลือง / เบิกวัสดุสิ้นเปลือง : เปลี่ยนเป็น SUBTOTAL รวมตามตัวกรอง (ค้นหา/ตัวกรองแล้วยอดจำนวน/จำนวนเงินรวมเฉพาะแถวที่แสดง + บอกจำนวนใบ) · เดิมป้าย "รวม" และรวมทุกใบเสมอ (ค้นหา 260004 เห็น 3 ใบ แต่ยอดรวม 4,981,631 ของทั้ง 25 ใบ)',
+  '⌨️ ช่องค้นหา/ตัวกรอง (สินค้าคงคลัง ช่อง 🔍 / ลูกค้า / การชุบ และทุกหน้าที่มีช่องค้นหา) กด Backspace หรือพิมพ์แล้วต้องรอ 3–5 วินาทีตัวอักษรถึงจะหาย — ต้นเหตุ : ทุกการกดแป้น ระบบวาดตารางใหม่ทั้งหมดทันที (สินค้า 1,475 รายการ) ระหว่างวาดหน้าจอค้าง แป้นถัดไปจึงต้องรอคิว · แก้ : ตัวอักษรขึ้น/ลบทันที แล้วค่อยกรองตารางเมื่อหยุดพิมพ์ 0.25 วินาที (กด Enter / ออกจากช่อง = กรองทันที) · ใช้กับช่องค้นหาทุกหน้าในระบบ · ไม่แตะข้อมูล',
+  '🖧 เครื่องแม่ข่ายเปลี่ยน IP เป็น 192.168.1.200 : แก้ข้อความแนะนำในหน้าแจ้งเตือนการเชื่อมต่อ (เดิม 192.168.1.51) · ตัวแอปใช้ที่อยู่ที่เปิดอยู่เสมอ ไม่ได้ฝังเลข IP',
+  '⚡ เครื่องหน่วงตอนพิมพ์ (วัดความช้า : ensureSettings 3,071 ครั้ง รวม 14 วินาที เฉลี่ย 4.6 มิลลิวินาที/ครั้ง — ปกติควรใกล้ 0 เพราะมีที่จำผลไว้แล้ว) : ตัวจำผลเดิมเสียได้ 3 ทาง (1) งานจัดระเบียบทะเบียนลูกค้า/ผู้ขายเกิดข้อผิดพลาดกลางทาง = ไม่ได้จำผล ทำใหม่ทุกครั้ง (2) ข้อมูลจากแม่ข่ายสลับชุดกันไปมา (3) ยอดทะเบียนเปลี่ยนต่อเนื่อง → แก้ : จำผลแยกตามชุดข้อมูล · เกิดข้อผิดพลาดก็จำผล (บันทึกสาเหตุไว้ดูใน window.__ensErr) · ทำซ้ำเกิน 3 ครั้งใน 2 วินาที = พักการทำซ้ำ 2 วินาที · ไม่แตะข้อมูล',
   '🔧 ใบเบิกจ่ายสำเร็จรูป : พิมพ์เลขที่ PO ของใบสั่งซื้อต่างประเทศ (เช่น 260004) แล้วได้ PART / ลูกค้าผิด (BUSH 20.6) — ต้นเหตุ : บรรทัดใบสั่งซื้อต่างประเทศเก็บรหัสไว้ในช่อง code (R680701-) ไม่มีรหัสสินค้า ระบบเดาจากชื่อ "BUSH" ซึ่งตรงกับสินค้าอื่น · แก้ : จับคู่ตามรหัส code ตรงตัวก่อน → ใบรับเข้า (รับเข้าสต๊อคต่างประเทศ / รับวัตถุดิบ) ที่อ้าง PO เดียวกัน → ชื่อเต็มเท่านั้น (ชื่อสั้น/กว้างเช่น BUSH ไม่เดา) · ใช้กับใบสั่งซื้อต่างประเทศทุกใบ (บรรทัดไม่มีรหัสสินค้า 259 บรรทัด) · ใบเบิกจ่ายเดิมไม่แก้ย้อนหลัง',
   '📄 ผลิตประจำวัน → Forecast 3 เดือน (FM-PL-02) : ทุกวันที่ 15 ช่วงเก็บ PDF อัตโนมัติ (17:00–18:00) แปลงใบ FORECAST ของผู้ผลิตทุกรายที่มีรายการต้องผลิต (RTK-K · VS4 · AKE · JARUN · JH · KDK · ROOT · ไถเฉิงเทค · RTK-V · RTK-N · SOM · SM ฯลฯ) เป็นไฟล์ PDF ผู้ผลิตละ 1 ไฟล์ พร้อมลายเซ็น เก็บที่โฟลเดอร์ 8.1 PLANING PRODUCTION / FM-PL-03 Production Request (โฟลเดอร์เดียวกับ PR ใบขอผลิต) ชื่อไฟล์ FORECAST FM-PL-02 <ผู้ผลิต> <ปี-เดือน>.pdf · ทำครั้งเดียวต่อเดือน (เครื่องปิดวันที่ 15 = ทำวันถัดไปที่เปิด) · ไม่สร้างทับไฟล์เดิม · ปุ่ม 📄 เก็บ PDF ทุกผู้ผลิต ในหน้าต่าง Forecast 3 เดือน = ทำเดี๋ยวนี้ (สร้างทับเป็นฉบับล่าสุด)',
   '📈 รายการดำเนินการในชื่อ (สินค้าคงคลังทุกรายการ) เพิ่มคอลัมน์ FC ก่อน CPO : ใบ Forecast ลูกค้า (+ สร้าง Forecast ลูกค้า) ที่มีชิ้นงานนี้ขึ้นเป็นแถว "Forecast" อัตโนมัติ · ยอด = ผลรวมทุกเดือนในใบนั้น (ใต้เลขที่แสดงรายเดือน เช่น พ.ย. 69 1,000 · ธ.ค. 69 1,200) · เป็นข้อมูลอ้างอิงเหมือน CPO ไม่กระทบยอดคงเหลือ/ยอดค้าง',
@@ -2810,11 +2848,18 @@ function ensSettKey(s0){
   try{ return ((s0.custList||[]).length)+'/'+((s0.customers||[]).length)+'/'+((s0.supList||[]).length)+'/'
     +((s0.suppliers||[]).length)+'/'+((s0.makers||[]).length)+'/'+((DB.products||[]).length); }catch(e){ return 'x'; }
 }
+/* ★ 10/11a จำผลแยกตามชุด settings (WeakMap) · ข้อผิดพลาดกลางทางก็จำผล · ทำซ้ำถี่ = พัก 2 วิ */
+var _ensWM=(typeof WeakMap!=='undefined')?new WeakMap():null, _ensRuns=[], _ensHold=0;
 function ensureSettings(){
-  var _s0=DB&&DB.settings;
-  if(_s0&&_ensObj===_s0&&_ensKey===ensSettKey(_s0))return;      /* ★ ทำแล้ว ไม่ต้องทำซ้ำ */
-  ensureSettingsRaw();
-  try{ if(DB&&DB.settings){ _ensObj=DB.settings; _ensKey=ensSettKey(DB.settings); } }catch(e){}
+  var _s0=DB&&DB.settings; if(!_s0){ try{ ensureSettingsRaw(); }catch(e){} return; }
+  var k=ensSettKey(_s0);
+  if(_ensObj===_s0&&_ensKey===k)return;      /* ★ ทำแล้ว ไม่ต้องทำซ้ำ */
+  if(_ensWM&&_ensWM.get(_s0)===k){ _ensObj=_s0; _ensKey=k; return; }
+  var now=Date.now(); if(now<_ensHold&&_ensWM&&_ensWM.has(_s0))return;
+  _ensRuns.push(now); while(_ensRuns.length&&now-_ensRuns[0]>2000)_ensRuns.shift();
+  if(_ensRuns.length>3){ _ensHold=now+2000; window.__ensThrash=(window.__ensThrash||0)+1; }
+  try{ ensureSettingsRaw(); }catch(e){ window.__ensErr=String(e&&e.stack||e).slice(0,400); }
+  try{ if(DB&&DB.settings){ _ensObj=DB.settings; _ensKey=ensSettKey(DB.settings); if(_ensWM)_ensWM.set(DB.settings,_ensKey); } }catch(e){}
 }
 function ensureSettingsRaw(){const s=DB&&DB.settings;if(!s)return;if(!s.company)s.company=DEFAULT_COMPANY();if(s.company&&!s.company.poSign)s.company.poSign=DEFAULT_COMPANY().poSign;if(s.company&&s.company.poSign&&/[ก-๙]/.test(JSON.stringify(s.company.poSign)))s.company.poSign=DEFAULT_COMPANY().poSign;if(!s.poSignFixV1){try{var _ps=s.company&&s.company.poSign;if(_ps){if(/Chananthorn/i.test(_ps.issued||''))_ps.issued='Chananporn Russamitongtrakul';if(/Natchari/i.test(_ps.checked||''))_ps.checked='Nutcharee Russamitongtrakul';}}catch(e){}s.poSignFixV1=true;} /* แก้ชื่อผู้เซ็นใบสั่งซื้อให้ถูกต้อง (ครั้งเดียว) */
 /* ★ สะกดชื่อให้ถูกต้อง : Chananporn → Chanunporn (ครั้งเดียว · ทำให้ทุกเครื่องพร้อมกัน) */
@@ -5339,6 +5384,10 @@ const NAV=[
   {id:'topmgmt',ico:'👔',label:'5 ภาวะผู้นำ'},
   {id:'planning',ico:'🗺️',label:'6 การวางแผน'},
   {id:'support',ico:'🛠️',label:'7 การสนับสนุน'},
+  {id:'hrpeople',ico:'👥',label:'บุคคล'},
+  {id:'mnmaint',ico:'🔧',label:'ซ่อมบำรุง'},
+  {id:'tlmeas',ico:'📏',label:'เครื่องมือวัด'},
+  {id:'dcctl',ico:'📑',label:'ควบคุมเอกสาร'},
   {id:'operation',ico:'🏗️',label:'8 การปฏิบัติงาน'},
   {id:'performance',ico:'🎯',label:'9 การประเมินสมรรถนะ'},
   {id:'improvement',ico:'💡',label:'10 การปรับปรุง'},
@@ -5474,7 +5523,8 @@ function render(){
   try{ if(typeof migrateRTurn==='function')migrateRTurn(); }catch(e){}
   try{ if(typeof lanOK!=='undefined'&&lanOK&&lanLastUpdated)mkRestore1012(); }catch(e){}
   try{ if(typeof lanOK!=='undefined'&&lanOK&&lanLastUpdated)ibFix1016(); }catch(e){}
-  try{ if(typeof lanOK!=='undefined'&&lanOK&&lanLastUpdated)mvFix1031(); }catch(e){}   /* ★ 31/10 ล้างแถว SYNC ซ้ำ 94063-10000 (ครั้งเดียว) */
+  try{ if(typeof lanOK!=='undefined'&&lanOK&&lanLastUpdated)mvFix1031(); }catch(e){}
+  try{ if(typeof lanOK!=='undefined'&&lanOK&&lanLastUpdated)invSumZero(); }catch(e){}   /* ★ 11/11f */   /* ★ 31/10 ล้างแถว SYNC ซ้ำ 94063-10000 (ครั้งเดียว) */
   try{ if(typeof lanOK!=='undefined'&&lanOK&&lanLastUpdated)supRestore1012(); }catch(e){}   /* ★ กู้หมวดระบบคุณภาพที่หาย 12/10 (ครั้งเดียว · ถามก่อน) */   /* ★ หลังดึงข้อมูลแม่ข่ายแล้วเท่านั้น */
   try{ if(typeof migrateDpWorkers==='function')migrateDpWorkers(); }catch(e){}
   try{ if(typeof migrateSncNC==='function')migrateSncNC(); }catch(e){}
@@ -5484,7 +5534,7 @@ function render(){
   const map={dashboard:viewDashboard,inventory:viewInventory,track:viewJobTrack,approvals:viewApprovals,monitor:viewMonitor,
     po:()=>viewDocs('PO'),ip:()=>viewDocs('IP'),sp:()=>viewDocs('SP'),gr:()=>viewDocs('GR'),prd:()=>viewDocs('PRD'),wd:()=>viewDocs('WD'),
     dp:()=>{window.__dpMaker='RTK-K';viewDocs('DP')},vs4:viewVS4,rw:()=>viewDocs('RW'),plate:()=>viewDocs('PL'),qc:()=>viewDocs('QC'),si:()=>viewDocs('SI'),rmc:viewRMC,fgi:viewFGI,sup:viewSUP,ws:viewWS,recvip:()=>viewRcv('GI'),recvsp:()=>viewRcv('GS'),qcip:()=>viewQck('QI'),qcsp:()=>viewQck('QS'),qcsemi:()=>viewQck('QSE'),stkip:()=>viewStk('SII'),stksp:()=>viewStk('SIS'),stksemi:()=>viewStk('SSE'),
-    inv:()=>viewDocs('INV'),iv2:()=>viewDocs('IV2'),bill:viewBill,billc:viewBillC,adj:()=>viewDocs('ADJ'),moves:viewMoves,report:viewReport,tax:viewTax,taxsale:viewTaxSale,wht:viewWHT,nc:viewNC,ncsrt:viewNCSRT,ncrwk:viewNCRWK,ncscr:viewNCSCR,claim:viewClaims,ncr:viewNCR,cap:viewCAP,sar:viewSAR,ecr:viewECR,risk:viewRisk,kpireg:viewKpiReg,iaudit:viewIAudit,mreview:viewMReview,kickoff:viewKickoff,ccp:viewCCP,comm:viewComm,safety:viewSafety,context:viewContext,topmgmt:viewTopMgmt,planning:viewPlanning,support:viewSupport,operation:viewOperation,performance:viewPerformance,improvement:viewImprovement,settings:viewSettings,
+    inv:()=>viewDocs('INV'),iv2:()=>viewDocs('IV2'),bill:viewBill,billc:viewBillC,adj:()=>viewDocs('ADJ'),moves:viewMoves,report:viewReport,tax:viewTax,taxsale:viewTaxSale,wht:viewWHT,nc:viewNC,ncsrt:viewNCSRT,ncrwk:viewNCRWK,ncscr:viewNCSCR,claim:viewClaims,ncr:viewNCR,cap:viewCAP,sar:viewSAR,ecr:viewECR,risk:viewRisk,kpireg:viewKpiReg,iaudit:viewIAudit,mreview:viewMReview,kickoff:viewKickoff,ccp:viewCCP,comm:viewComm,hrpeople:viewHrPeople,mnmaint:viewMnMaint,tlmeas:viewTlMeas,dcctl:viewDccCtl,safety:viewSafety,context:viewContext,topmgmt:viewTopMgmt,planning:viewPlanning,support:viewSupport,operation:viewOperation,performance:viewPerformance,improvement:viewImprovement,settings:viewSettings,
     demand:viewDemand,mrp:viewMRP,pdn:viewPDN,prq:viewPRQ,mrq:viewMRQ,tdb:viewTDB,crx:viewCRXList};
   try{PROD_MK.forEach(function(m){if(!map[m[0]])map[m[0]]=function(){viewProdMk(m[1]);};});}catch(e){}
   (map[route]||viewDashboard)(el);
@@ -6787,8 +6837,10 @@ function ibFillTotOf(p){
 var _ppRes={},_ppResKey='';
 /* ★ 7/11c แคชยอดค้างแบบล้างเฉพาะที่เปลี่ยน — เดิม key = จำนวนเอกสาร/สินค้า (เปลี่ยน 1 ใบ = ล้างทั้งหมด ~900 รายการ ≈ 2 วิ) */
 var _ppSig=null,_ppSigGen=-1,_ppSigT=0;
-function _ppDocSig(d){ var ps=[], nm=false; if(d.productId)ps.push(d.productId); (d.lines||[]).forEach(function(l){ var x=l&&(l.productId||l.fgId); if(x)ps.push(x); else if(l)nm=true; });
-  return {t:String(d.ts||0)+'|'+(d.status||'')+'|'+((d.lines||[]).length)+'|'+(d.date||''),p:ps,nm:nm}; }
+/* ★ 13/11b บรรทัดไม่ผูกรหัส : เก็บคีย์ชื่อ (pnExact ทั้งค่า + คำแรก เหมือน ibLedger) → ล้างเฉพาะสินค้าที่ชื่อตรง แทนล้างทั้งหมด */
+function _ppDocSig(d){ var ps=[], nk=null; if(d.productId)ps.push(d.productId); (d.lines||[]).forEach(function(l){ var x=l&&(l.productId||l.fgId); if(x)ps.push(x); else if(l){ nk=nk||[]; lineKeys(l).forEach(function(v){ if(!v)return; var k=pnExact(v), k1=pnExact(String(v).split(' ')[0]); if(k)nk.push(k); if(k1&&k1!==k)nk.push(k1); }); } });
+  return {t:String(d.ts||0)+'|'+(d.status||'')+'|'+((d.lines||[]).length)+'|'+(d.date||''),p:ps,nm:nk}; }
+function _ppNmIdx(){ var m={}; (DB.products||[]).forEach(function(x){ if(!x||!x.pn)return; var a=[pnExact(x.pn)]; if(x.name&&x.name!=='-')a.push(pnExact(x.pn+' '+x.name)); a.forEach(function(k){ if(k)(m[k]=m[k]||[]).push(x.id); }); }); return m; }
 function ppCacheCheck(){
   var gen=(typeof _rxGen!=='undefined')?_rxGen:0, now=Date.now();
   if(_ppSig&&gen===_ppSigGen&&now-_ppSigT<1500&&_ppResKey!=='')return;   /* ตรวจครั้งเดียวต่อรอบวาด */
@@ -6797,13 +6849,13 @@ function ppCacheCheck(){
   (DB.docs||[]).forEach(function(d){ if(d&&d.id)D[d.id]=_ppDocSig(d); });
   (DB.products||[]).forEach(function(p){ if(p&&p.id)PR[p.id]=String(p.ts||p._ts||0)+'|'+(p.flow||'')+'|'+(p.stockOf||'')+'|'+(p.pn||'')+'|'+JSON.stringify(p.pendAdj||'')+'|'+(p.type||''); });
   (DB.movements||[]).forEach(function(m){ if(m&&m.id)MV[m.id]=m.productId||''; });
-  if(!full){ var o=_ppSig, mark=function(ps){ (ps||[]).forEach(function(x){ if(x)aff[x]=1; }); };
-    Object.keys(D).forEach(function(k){ var a=D[k], b=o.D[k]; if(b&&b.t===a.t)return; nChg++; if(a.nm||(b&&b.nm))full=true; mark(a.p); if(b)mark(b.p); });
-    Object.keys(o.D).forEach(function(k){ if(D[k])return; nChg++; if(o.D[k].nm)full=true; mark(o.D[k].p); });
+  if(!full){ var o=_ppSig, mark=function(ps){ (ps||[]).forEach(function(x){ if(x)aff[x]=1; }); }, _ni=null, markN=function(ks){ if(!ks||!ks.length)return; if(o.nmV!==2){ full=true; return; } _ni=_ni||_ppNmIdx(); ks.forEach(function(k){ (_ni[k]||[]).forEach(function(x){ aff[x]=1; }); }); };
+    Object.keys(D).forEach(function(k){ var a=D[k], b=o.D[k]; if(b&&b.t===a.t)return; nChg++; markN(a.nm); if(b)markN(b.nm); mark(a.p); if(b)mark(b.p); });
+    Object.keys(o.D).forEach(function(k){ if(D[k])return; nChg++; markN(o.D[k].nm); mark(o.D[k].p); });
     Object.keys(PR).forEach(function(k){ if(o.PR[k]!==PR[k]){ nChg++; aff[k]=1; } }); Object.keys(o.PR).forEach(function(k){ if(PR[k]==null){ nChg++; aff[k]=1; } });
     Object.keys(MV).forEach(function(k){ if(o.MV[k]==null&&MV[k])aff[MV[k]]=1; }); Object.keys(o.MV).forEach(function(k){ if(MV[k]==null&&o.MV[k])aff[o.MV[k]]=1; });
     if(nChg>150)full=true; }
-  _ppSig={D:D,PR:PR,MV:MV};
+  _ppSig={D:D,PR:PR,MV:MV,nmV:2};
   if(full){ _ppRes={}; _ppResKey='ok'; return; }
   var ids=Object.keys(aff); if(!ids.length)return;
   var kill={}; ids.forEach(function(id){ kill[id]=1; try{ Object.keys(ibIdGroup(id)).forEach(function(g){ kill[g]=1; }); }catch(e){}
@@ -6956,7 +7008,7 @@ function renderInvTable(){
   const ma=invMoveAgg();const mgBase=p=>ma[p.id]||{adj:0,tin:0,tout:0,ng:0};
   /* รวมยอดจากรายการย่อยที่ใช้สต๊อกร่วม (เฉพาะรายการหลัก) */
   const _kids=p=>(p&&!p.stockOf)?stockKids(p.id).concat(invSumKids(p)):[];
-  const roll=(f,p)=>{let v=Number(f(p))||0;_kids(p).forEach(k=>{v+=Number(f(k))||0;});return v;};
+  const roll=(f,p)=>{let v=(p&&!p.stockOf&&invSumKids(p).length)?0:(Number(f(p))||0);_kids(p).forEach(k=>{v+=Number(f(k))||0;});return v;};   /* ★ 11/11f รายการรวม = ผลรวมรายการย่อยเท่านั้น */
   const mg=p=>{var b=mgBase(p);var ks=_kids(p);if(!ks.length)return b;var o={adj:b.adj||0,tin:b.tin||0,tout:b.tout||0,ng:b.ng||0};ks.forEach(function(k){var g=mgBase(k);o.adj+=g.adj||0;o.tin+=g.tin||0;o.tout+=g.tout||0;o.ng+=g.ng||0;});return o;};
   const vendMap=invVendorMap();
   const tAdj=list.reduce((s,p)=>s+(mg(p).adj||0),0),tTin=list.reduce((s,p)=>s+(mg(p).tin||0),0),tTout=list.reduce((s,p)=>s+(mg(p).tout||0),0),tNg=list.reduce((s,p)=>s+(mg(p).ng||0),0);
@@ -7047,7 +7099,9 @@ function renderInvTable(){
   </tbody>${platePlantDatalist()}<tfoot><tr style="font-weight:700;background:var(--panel2);border-top:2px solid var(--line)">
     <td colspan="${3/*ประเภท+Part Number+ชื่อ*/+(invCols.date!==false?1:0)+PROD_DOCS.filter(d=>invCols[d[0]]!==false).length+['issue','sale','shape','docno','grade','dim','steel','perbar','pckg','kgprice','pcprice','harden','color','plant','wfg','w100','wfgtot','wpk','plateTPI','platePrice','cust','loc'].filter(k=>invCols[k]!==false).length}">SUBTOTAL — ${list.length} รายการ</td>
     ${invCols.moq!==false?`<td class="num">${fmt(tMoq)}</td>`:''}${invCols.salePrice?`<td class="num">${fmt2(tPrice)}</td>`:''}${invCols.vendor!==false?`<td></td>`:''}${invCols.prodPrice?`<td></td>`:''}${invCols.plating?`<td></td>`:''}${invCols.cond?`<td></td>`:''}${invCols.flow!==false?`<td></td>`:''}${invCols.adj!==false?`<td class="num">${(tAdj>0?'+':'')+fmt(tAdj)}</td>`:''}${invCols.tin!==false?`<td class="num">${fmt(tTin)}</td>`:''}${invCols.tout!==false?`<td class="num">${fmt(tTout)}</td>`:''}${invCols.ng!==false?`<td class="num">${fmt(tNg)}</td>`:''}
-    ${invCols.pcskg!==false?`<td></td>`:''}${invCols.kgbal!==false?`<td class="num">${fmt2(list.reduce((s,p)=>{if(p.stockOf)return s;const ppk=Number(p.pcsPerKg)||0;const u=String(p.unitBuy||'').toLowerCase();if(ppk>0)return s+onHandDispOf(p)/ppk;return s+((/kg|กก|กิโล|kilo/.test(u))?onHandDispOf(p):0);},0))}</td>`:''}<td class="num">${fmt(tOn)}</td>${invCols.bar3!==false?`<td class="num">${fmt(list.reduce((s,p)=>s+(p.stockOf?0:bars3mOf(p)),0))}</td>`:''}<td class="num">${fmt(tWip)}</td>${invCols.qtime!==false?`<td class="num">${fmt(tQt)}</td>`:''}${invCols.atp!==false?`<td class="num">${fmt(tPl)}</td>`:''}${invCols.rcv!==false?`<td class="num">${fmt(tSort)}</td>`:''}${invCols.stk!==false?`<td class="num">${fmt(tStk)}</td>`:''}${invCols.cntDate!==false?'<td></td>':''}${invCols.cntAct!==false?'<td></td>':''}<td></td>
+    ${invCols.pcskg!==false?`<td></td>`:''}${invCols.kgbal!==false?`<td class="num">${fmt2(list.reduce((s,p)=>{if(p.stockOf)return s;const ppk=Number(p.pcsPerKg)||0;const u=String(p.unitBuy||'').toLowerCase();if(ppk>0)return s+onHandDispOf(p)/ppk;return s+((/kg|กก|กิโล|kilo/.test(u))?onHandDispOf(p):0);},0))}</td>`:''}<td class="num">${fmt(tOn)}</td>${invCols.bar3!==false?`<td class="num">${fmt(list.reduce((s,p)=>s+(p.stockOf?0:bars3mOf(p)),0))}</td>`:''}<td class="num">${fmt(tWip)}</td>${invCols.qtime!==false?`<td class="num">${fmt(tQt)}</td>`:''}${invCols.atp!==false?`<td class="num">${fmt(tPl)}</td>`:''}${invCols.rcv!==false?`<td class="num">${fmt(tSort)}</td>`:''}${invCols.stk!==false?`<td class="num">${fmt(tStk)}</td>`:''}${(()=>{ /* ★ 11/11g ยอดรวมทั้งหมด */ const g=(Number(tOn)||0)+(Number(tWip)||0)+(Number(tQt)||0)+(Number(tPl)||0)+(Number(tSort)||0)+(Number(tStk)||0);
+      const gc=`<td class="num" style="white-space:nowrap"><span title="ยอดรวมทั้งหมด = FG ${fmt(tOn)} + WIP ${fmt(tWip)} + Q-TIME ${fmt(tQt)} + รอชุบ ${fmt(tPl)} + รอคัด ${fmt(tSort)} + รอชั่ง ${fmt(tStk)}" style="display:inline-block;padding:3px 10px;border:2px solid #1d4ed8;border-radius:8px;color:#1d4ed8;background:#eff6ff;font-size:14px"><span style="font-size:9.5px;font-weight:600;display:block;line-height:1.1">รวมทั้งหมด</span>${fmt(g)}</span></td>`;
+      const n=(invCols.cntDate!==false?1:0)+(invCols.cntAct!==false?1:0)+1; return gc+'<td></td>'.repeat(n-1); })()}
   </tr></tfoot></table></div>`;
   if(typeof setupDualScroll==='function'){setupDualScroll();setTimeout(setupDualScroll,30);}
 }
@@ -8853,6 +8907,9 @@ function ibMatFilterBar(rows){
    +'<span id="ibMatCnt" class="muted" style="font-size:11.5px;margin-left:auto"></span></div>';
 }
 /* ---------- วาดตาราง ---------- */
+/* ★ 14/11a ซ่อน/แสดงคอลัมน์ ผู้ผลิต/ผู้ขาย ในบัญชีคุม (ทุกรายการ · ตั้งต้นแสดง · จำที่เครื่อง) */
+function ibVendOn(){ try{ return localStorage.getItem('rtk_ibvendor')!=='0'; }catch(e){ return true; } }
+function ibVendToggle(){ try{ localStorage.setItem('rtk_ibvendor',ibVendOn()?'0':'1'); }catch(e){} try{ ibMatDraw(false); }catch(e){} }
 function ibColAllToggle(){ try{ localStorage.setItem('rtk_ibcolall',(localStorage.getItem('rtk_ibcolall')==='1')?'0':'1'); }catch(e){} try{ ibMatDraw(false); }catch(e){} }
 /* ★ เหล็กเส้น/ท่อ/แผ่น : จำนวนเส้นของแต่ละแถว (ใบสั่งซื้อ/รับ/เบิก) + คงเหลือเส้นสะสม — แสดงผลเท่านั้น (ยอด กก. เดิมไม่เปลี่ยน) */
 function ibBarCalc(p,rows,G){ rows.barMode=false; if(!p||p.type!=='RM'||forgeIs(p)||rmPcsBuy(p))return;   /* ★ ซื้อเป็นชิ้น = ไม่แสดงเส้น/กก. */
@@ -8895,9 +8952,12 @@ function ibMatTable(p,rows){
   var _mbFin=0; try{ var _lastV=vis.length?vis[vis.length-1]:null; _mbFin=_lastV?(Number(_lastV.matBal)||0):0; }catch(e){}
   var inp=function(docId,f,v,ph){ return '<input value="'+esc(v||'')+'" placeholder="'+ph+'" onchange="ibEditSet(\''+docId+'\',\''+f+'\',this.value)" style="width:100%;min-width:88px;padding:3px 6px;font-size:12.5px;border:1px solid transparent;background:transparent;border-radius:5px" onfocus="this.style.border=\'1px solid var(--line)\';this.style.background=\'#fff\'" onblur="this.style.border=\'1px solid transparent\';this.style.background=\'transparent\'">'; };
   var th=function(t,num){ return '<th style="padding:6px 7px;border-bottom:'+bd+';text-align:'+(num?'right':'left')+';white-space:nowrap">'+esc(t)+'</th>'; };
-  return (_hid||_all?('<div style="display:flex;gap:8px;align-items:center;margin-bottom:5px;font-size:11.5px" class="muted">'+(_hid?('🔎 ซ่อนคอลัมน์ที่ไม่มียอด '+_hid+' คอลัมน์ เพื่อให้พอดีหน้าจอ'):'แสดงทุกคอลัมน์อยู่')+'<button class="btn sm ghost" style="padding:2px 8px" onclick="ibColAllToggle()">'+(_all?'🔎 ซ่อนคอลัมน์ว่าง':'👁️ แสดงทุกคอลัมน์')+'</button></div>'):'')+'<div class="tbl-wrap" style="overflow:auto"><table style="width:100%;table-layout:auto;border-collapse:collapse;font-size:12.5px;white-space:nowrap">'
+  var _vOn=ibVendOn();
+  var _vTh='<th style="padding:6px 7px;border-bottom:'+bd+';text-align:left;white-space:nowrap">ผู้ผลิต/ผู้ขาย <span style="cursor:pointer;opacity:.55;font-size:11px" onclick="ibVendToggle()" title="ซ่อนคอลัมน์ผู้ผลิต/ผู้ขาย (ทุกรายการ)">🙈</span></th>';
+  return (_vOn?'':'<div style="margin-bottom:5px"><button class="btn sm ghost" style="padding:2px 8px;font-size:11.5px" onclick="ibVendToggle()" title="แสดงคอลัมน์ผู้ผลิต/ผู้ขาย (ทุกรายการ)">👁 แสดงผู้ผลิต/ผู้ขาย</button></div>')
+   +(_hid||_all?('<div style="display:flex;gap:8px;align-items:center;margin-bottom:5px;font-size:11.5px" class="muted">'+(_hid?('🔎 ซ่อนคอลัมน์ที่ไม่มียอด '+_hid+' คอลัมน์ เพื่อให้พอดีหน้าจอ'):'แสดงทุกคอลัมน์อยู่')+'<button class="btn sm ghost" style="padding:2px 8px" onclick="ibColAllToggle()">'+(_all?'🔎 ซ่อนคอลัมน์ว่าง':'👁️ แสดงทุกคอลัมน์')+'</button></div>'):'')+'<div class="tbl-wrap" style="overflow:auto"><table style="width:100%;table-layout:auto;border-collapse:collapse;font-size:12.5px;white-space:nowrap">'
    +'<thead><tr style="background:var(--panel2)">'
-   + th('ประเภท')+th('ผู้ดำเนินการ')+th('ผู้ผลิต/ผู้ขาย')+th('เลขที่ใบสั่งซื้อ/ผลิต')+th('วันที่')+th('เวลา')+th('เลขที่')
+   + th('ประเภท')+th('ผู้ดำเนินการ')+(_vOn?_vTh:'')+th('เลขที่ใบสั่งซื้อ/ผลิต')+th('วันที่')+th('เวลา')+th('เลขที่')
    + IB_USE_COLS.map(function(c){
        /* ★ งานสำเร็จรูป : ช่องเบิกวัตถุดิบแสดงเป็น "จำนวนชิ้นงาน" ไม่ใช่น้ำหนักเหล็ก */
        var _wdPc=(c[0]==='wd')&&!!(window.__ibWdCtx&&window.__ibWdCtx.isFG);
@@ -8917,7 +8977,7 @@ function ibMatTable(p,rows){
          +(r.status==='statonly'?' <span class="tag gray" style="font-size:9px" title="บันทึกเพื่อดูสถิติ ไม่กระทบยอด">สรุปเท่านั้น</span>':'')
          +(r.moved?' <span class="tag cyan" style="font-size:9px" title="ดึงขึ้นมารับเข้าก่อน เพื่อไม่ให้ยอดติดลบ">⇡ จัดลำดับ</span>':'')+'</td>'
        +'<td style="padding:3px 5px;border-bottom:'+bd+'">'+(auto?'<span class="muted">'+esc(r.actor||'-')+'</span>':inp(r.id,'actor',r.actor,'ผู้ดำเนินการ'))+'</td>'
-       +'<td style="padding:3px 5px;border-bottom:'+bd+'">'+(auto?'<span class="muted">'+esc(r.vendor||'-')+'</span>':inp(r.id,'vendor',r.vendor,'ผู้ผลิต/ขาย'))+'</td>'
+       +(_vOn?('<td style="padding:3px 5px;border-bottom:'+bd+'">'+(auto?'<span class="muted">'+esc(r.vendor||'-')+'</span>':inp(r.id,'vendor',r.vendor,'ผู้ผลิต/ขาย'))+'</td>'):'')
        +'<td style="padding:5px 7px;border-bottom:'+bd+'">'+esc(r.order||'-')+'</td>'
        +'<td class="muted" style="padding:5px 7px;border-bottom:'+bd+'">'+esc(r.date)+'</td>'
        +'<td class="muted" style="padding:5px 7px;border-bottom:'+bd+';font-size:11.5px" title="เวลาที่บันทึกเอกสาร (ใช้แยกลำดับเกิดก่อน–หลังในวันเดียวกัน)">'+esc(ibTimeOf(r)||'-')+'</td>'
@@ -8939,9 +8999,9 @@ function ibMatTable(p,rows){
            :(auto?'':ibActBtn(r,p.id)))+'</td>'
        +'</tr>';
      }).join('')
-    :'<tr><td colspan="'+(9+IB_USE_COLS.length+(_mbShow?1:0))+'" class="muted" style="padding:20px;text-align:center">ไม่มีรายการตามตัวกรอง</td></tr>')
+    :'<tr><td colspan="'+((_vOn?9:8)+IB_USE_COLS.length+(_mbShow?1:0))+'" class="muted" style="padding:20px;text-align:center">ไม่มีรายการตามตัวกรอง</td></tr>')
    +'<tr style="font-weight:800;background:#fff7a8">'
-   +'<td colspan="7" style="padding:6px 8px;text-align:right;border-top:2px solid var(--line)">SUBTOTAL</td>'
+   +'<td colspan="'+(_vOn?7:6)+'" style="padding:6px 8px;text-align:right;border-top:2px solid var(--line)">SUBTOTAL</td>'
    + IB_USE_COLS.map(function(c){ var cell=(c[0]==='ng'&&sum[c[0]])?('<td class="num" style="padding:6px 7px;border-top:2px solid var(--line);color:var(--red)" title="ยอดออกจากระบบ">−'+fmtQ(sum[c[0]],p)+'</td>'):('<td class="num" style="padding:6px 7px;border-top:2px solid var(--line)">'+ibBarSum(vis,c[0],sum[c[0]],p,rows)+'</td>');
        if(_mbShow&&c[0]===_mbAfter)cell+='<td class="num" style="padding:6px 7px;border-top:2px solid var(--line);border-left:2px solid var(--line);background:#fff2d6;font-size:13.5px;color:'+(_mbFin<0?'var(--red)':'#b45309')+'">'+fmtQ(_mbFin,p)+'</td>';
        return cell; }).join('')
@@ -9928,6 +9988,11 @@ function invSumKids(p){ try{ if(!p||p.stockOf)return []; var out=[], seen={}; se
     if(!/^\s*รวม/.test(String(p.name||'')))return [];
     (invSumIdx()[normPN(p.pn)]||[]).forEach(function(x){ if(!/^\s*รวม/.test(String(x.name||'')))add(x); }); return out; }catch(e){ return []; } }
 function invIsSum(p){ return invSumKids(p).length>0; }
+/* ★ 11/11f รายการรวมไม่ใช่ที่เก็บสต๊อค : ล้างยอดค้างเป็น 0 ครั้งเดียว (มีความเคลื่อนไหว ADJ SUM0) */
+function invSumZero(){ try{ ensureSettings(); var S=DB.settings; if(S.__sumZero1111)return 0; var n=0;
+  (DB.products||[]).forEach(function(p){ if(!p||p.stockOf||!invIsSum(p))return; ['onHand','wip','atPlating','passedQC','ng'].forEach(function(b){ var v=Number(p[b])||0; if(!v)return;
+    p[b]=0; try{ move(p.id,b,-v,'ADJ','SUM0','รายการรวม (Σ) ไม่เก็บสต๊อค — ล้างยอดค้าง '+v+' (ยอดจริงอยู่ที่รายการย่อย)'); }catch(e){} n++; }); if(n)p.ts=Date.now(); });
+  S.__sumZero1111=Date.now(); if(n){ try{ tdbBust(); }catch(e){} saveDB(); } return n; }catch(e){ console.warn('invSumZero',e); return 0; } }
 function invSumLedger(id){ var p=P(id); if(!p)return; var ks=invSumKids(p), wam=wipAgeMap(), ma=invMoveAgg(), z=function(v){ v=Number(v)||0; return v<0?0:v; };
   var T={oh:0,wip:0,qt:0,pl:0,so:0,st:0,tin:0,tout:0}, bd='1px solid var(--line)';
   var rows=ks.map(function(k){ var R={}; try{ R=procPend(k)||{}; }catch(e){} var na=!!R.na, dir=false; try{ dir=isDirectFlow(prodFlow(k)); }catch(e){}
@@ -10099,7 +10164,7 @@ function qcC(k){return qcCols[k]!==false;}
 function qcColToggle(k){qcCols[k]=(qcCols[k]===false)?true:false;try{localStorage.setItem('rtk_qccols',JSON.stringify(qcCols))}catch(e){}render();}
 function qcColReset(){qcCols={};try{localStorage.setItem('rtk_qccols','{}')}catch(e){}render();openQcColMenu();}
 function qcColEye(k){return '<span style="cursor:pointer;opacity:.4;font-size:10px;margin-left:2px" onclick="qcColToggle(\''+k+'\')" title="ซ่อนคอลัมน์นี้">🙈</span>';}
-function openQcColMenu(){const cols=[['maker','ชื่อผู้ผลิต'],['ord','สั่งผลิตจำนวน (จากใบสั่งผลิต)'],['rdate','วันที่รับชิ้นงาน'],['rqty','จำนวนรับชิ้นงาน'],['cust','ลูกค้า'],['insp','ผู้ตรวจ'],['point','จุดตรวจ'],['tool','เครื่องมือ'],['stg','ยอดรอคัด'],['tot','รวมคัด'],['qc20','🔗 ลิงก์ FM-QC-20 (ใบตรวจประจำวัน)']];modal({title:'👁 เลือกคอลัมน์คัดแยก',body:'<div class="hint" style="margin-bottom:8px"><span class="i">💡</span><div>ติ๊ก=แสดง · เอาออก=ซ่อน (จำเฉพาะเครื่องนี้)</div></div>'+cols.map(c=>`<label style="display:flex;gap:8px;align-items:center;padding:5px 2px;font-size:13.5px"><input type="checkbox" ${qcC(c[0])?'checked':''} onchange="qcColToggle('${c[0]}')"> ${c[1]}</label>`).join(''),footer:`<button class="btn" onclick="qcColReset()">↺ แสดงทั้งหมด</button><button class="btn pri" onclick="closeModal()">ปิด</button>`});}
+function openQcColMenu(){const cols=[['maker','ชื่อผู้ผลิต'],['ord','สั่งผลิตจำนวน (จากใบสั่งผลิต)'],['rdate','วันที่รับชิ้นงาน'],['rqty','จำนวนรับชิ้นงาน'],['rpl','จำนวนรับชุบ (จากส่งชุบ/รับชุบ)'],['sin','รับเข้าสต๊อค'],['dpl','ผลต่าง รับชิ้นงาน − รับชุบ'],['dsin','ผลต่าง OK+NG − รับเข้าสต๊อค'],['cust','ลูกค้า'],['insp','ผู้ตรวจ'],['point','จุดตรวจ'],['tool','เครื่องมือ'],['stg','ยอดรอคัด'],['tot','รวมคัด'],['qc20','🔗 ลิงก์ FM-QC-20 (ใบตรวจประจำวัน)']];modal({title:'👁 เลือกคอลัมน์คัดแยก',body:'<div class="hint" style="margin-bottom:8px"><span class="i">💡</span><div>ติ๊ก=แสดง · เอาออก=ซ่อน (จำเฉพาะเครื่องนี้)</div></div>'+cols.map(c=>`<label style="display:flex;gap:8px;align-items:center;padding:5px 2px;font-size:13.5px"><input type="checkbox" ${qcC(c[0])?'checked':''} onchange="qcColToggle('${c[0]}')"> ${c[1]}</label>`).join(''),footer:`<button class="btn" onclick="qcColReset()">↺ แสดงทั้งหมด</button><button class="btn pri" onclick="closeModal()">ปิด</button>`});}
 var ordFlowHide=(function(){try{return new Set(JSON.parse(localStorage.getItem('rtk_ordflowhide')||'[]'))}catch(e){return new Set()}})();
 function ordFlowShow(t){return !ordFlowHide.has(t);}
 function ordFlowToggle(t){if(ordFlowHide.has(t))ordFlowHide.delete(t);else ordFlowHide.add(t);try{localStorage.setItem('rtk_ordflowhide',JSON.stringify([...ordFlowHide]))}catch(e){}render();}
@@ -10384,17 +10449,17 @@ function viewDocs(type){
     </div>
     <div class="panel-b nopad">
       ${docs.length?`<div class="tbl-wrap"><table><thead><tr>
-        ${isGR?`<th>เลขที่</th><th>วันที่</th>${grC('inv')?'<th title="เลขที่ใบกำกับภาษี · กดปุ่มเพื่อแนบลิงก์ไฟล์ใบกำกับ">เลขที่ใบกำกับ <span style="font-weight:400;font-size:9.5px;color:#64748b">+ ลิงค์</span></th>':''}<th>PO เลขที่</th><th>รายละเอียด</th>${grC('ordqty')?'<th class="num" title="จำนวนสั่งซื้อจากใบสั่งซื้อ (แปลงเป็นชิ้น/เส้น)">จำนวนสั่งซื้อ</th>':''}${grC('lnkinv')?dlkTh('inv'):''}${grC('lnkir')?irTh():''}${grC('lnkmill')?millTh():''}${grC('lnkirsup')?dlkTh('irsup'):''}${grC('st19')?'<th style="text-align:center;min-width:82px" title="แนบลิงก์ใบรับวัตถุดิบที่เซ็นแล้ว (ไฟล์ PDF สร้างอัตโนมัติได้)">'+fmCodeChip('st.fm19','FM-ST-19')+'</th>':''}<th class="num">จำนวน/ชิ้น</th>${grC('kg')?'<th class="num">จำนวน/กก.</th>':''}${grC('price')?'<th class="num">ราคา/หน่วย</th>':''}${grC('amt')?'<th class="num">จำนวนเงิน</th>':''}<th>TAG</th><th style="width:52px;background:#eef2ff" title="ติ๊กถูก = ยอดใบนี้ไปพักที่ &quot;รอชุบ&quot; ทันที">ส่งชุบ</th><th style="width:52px;background:#eef2ff" title="ติ๊กถูก = ยอดใบนี้ไปพักที่ &quot;รอคัด&quot; ทันที">ส่งคัด</th>${grC('diff')?'<th class="num" title="จำนวนสั่งซื้อ − รับสะสม (ติดลบ = ส่งเกินใบสั่งซื้อ)">ผลต่าง</th>':''}<th>สถานะ</th><th></th>`:isPL?`<th>วันที่</th><th>เลขที่ใบสั่ง</th><th>Maker</th><th>Part Number</th><th>Part Name</th><th class="num">ส่งชุบ</th><th class="num" title="น้ำหนักส่งชุบ = จำนวนชิ้น × น้ำหนัก/ชิ้น (W/FG ในสินค้าคงคลัง)">ส่ง กก.</th><th>TAG</th><th>วันที่รับ</th><th class="num">รับชุบ</th><th class="num" title="น้ำหนักรับชุบ = จำนวนชิ้น × น้ำหนัก/ชิ้น (W/FG ในสินค้าคงคลัง)">รับ กก.</th>${plC('qc28')?'<th style="text-align:center;min-width:80px" title="ใบตรวจสอบรับเข้าชิ้นงานหลังชุบสี">'+fmCodeChip('qc.fm28','FM-QC-28')+'</th>':''}${plC('tbill')?'<th style="text-align:center;min-width:92px" title="แนบลิงก์ใบวางบิลชั่วคราว (TEMPORARY BILL) ที่โรงชุบเซ็นรับแล้ว">'+fmCodeChip('st.fm03','FM-ST-03')+'<div style="font-weight:400;font-size:9px;opacity:.75">Temporary Bill</div></th>':''}${plC('thick')?'<th style="text-align:center;min-width:82px" title="DATA THICKNESS">THICK NESS</th>':''}${plC('pend')?'<th class="num">คงค้าง</th>':''}${plC('due')?'<th>ครบกำหนด</th>':''}${plC('status')?'<th>สถานะ</th>':''}${plC('color')?'<th>ชุบสี</th>':''}${plC('plant')?'<th>โรงชุบ</th>':''}<th></th>`:isADJ?`<th>เลขที่</th><th>วันที่</th><th>สินค้า</th><th>วิธีปรับ</th><th class="num">จำนวน</th><th class="num">ผลต่าง</th><th>สถานะ</th><th></th>`:`<th>เลขที่</th><th>วันที่</th>${((isRW||isQC||isSI)||(isDP&&dpXOn()))?'<th>PO เลขที่</th>':''}<th>รายละเอียด</th>${isINV?'<th style="text-align:center;min-width:86px" title="แนบลิงก์ใบส่งสินค้า/Invoice ที่เซ็นรับแล้ว">'+fmCodeChip('mk.iv23','FM-MK-23')+'</th>':''}${isRW?(rwC('lnkdn')?dlkTh('dn'):'')+(rwC('lnkir')?irTh():'')+(rwC('lnkirmk')?dlkTh('irmk'):'')+(rwC('lnkmill')?millTh():'')+(rwC('qc59')?'<th style="text-align:center;min-width:82px" title="แนบลิงก์ FM-QC-59">'+fmCodeChip('qc.fm59','FM-QC-59')+'</th>':''):''}${(isIP||isSP)?'<th class="num">จำนวนสั่ง</th><th class="num">จำนวนรับ</th><th class="num">ผลต่าง</th>':''}${isQC?((qcC('ord')?'<th class="num">สั่งผลิตจำนวน'+qcColEye('ord')+'</th>':'')+(qcC('rdate')?'<th>วันที่รับชิ้นงาน'+qcColEye('rdate')+'</th>':'')+(qcC('rqty')?'<th class="num">จำนวน'+qcColEye('rqty')+'</th>':'')):''}${isQC?irThQC():''}${isQC&&qcC('qc20')?'<th style="text-align:center;min-width:82px" title="แนบลิงก์ใบบันทึกการตรวจสอบคุณภาพประจำวันที่เซ็นแล้ว">'+fmCodeChip('qc.fm20','FM-QC-20')+'</th>':''}${isPRD?((prdC('ref')?'<th style="min-width:140px" title="ที่มาของใบสั่งผลิต — อ้างอิง Forecast / Customer PO (สำหรับการตรวจสอบ)">Ref : Forecast</th>':'')+(prdShowCust()?'<th>ลูกค้า</th>':'')+(prdShowDue()?'<th>กำหนดส่ง</th>':'')):''}${isRW&&rwShowCust()?'<th>ลูกค้า</th>':''}${isPO?((poC('calc')?'<th class="num" title="คำนวณเป็นชิ้น/เส้น = จำนวนสั่งซื้อ × (1กก.=ชิ้น)">คำนวณ</th>':'')+(poC('ordqty')?'<th class="num">จำนวนสั่งซื้อ</th>':'')+(poC('unit')?'<th>UNIT</th>':'')):''}${isSI?'<th>ลูกค้า</th><th class="num">QC OK</th><th class="num">QC NG</th><th style="text-align:center;min-width:82px" title="แนบลิงก์บันทึกการรับเข้าสต๊อคที่เซ็นแล้ว">'+fmCodeChip('st.fm20','FM-ST-20')+'</th>':''}${isQC&&qcC('cust')?'<th>ลูกค้า'+qcColEye('cust')+'</th>':''}${isQC?((qcC('insp')?'<th>ผู้ตรวจ'+qcColEye('insp')+'</th>':'')+(qcC('point')?'<th>จุดตรวจ'+qcColEye('point')+'</th>':'')+(qcC('tool')?'<th>เครื่องมือ'+qcColEye('tool')+'</th>':'')):''}${isRW&&rwShowPrice()?'<th class="num">ราคาผลิต</th>':''}${(isPRD&&prdShowPrice())?'<th class="num">ราคาผลิต</th>':''}${isQC?((qcC('stg')?'<th class="num">ยอดรอคัด'+qcColEye('stg')+'</th>':'')+(qcC('tot')?'<th class="num">รวมคัด'+qcColEye('tot')+'</th>':'')+'<th class="num">OK</th><th>TAG</th><th class="num">NG</th><th>NG TAG</th>'):((isDP&&dpXOn())?'<th>เบิกวัตถุดิบ</th>':'')+(isWD?'<th class="num">จำนวนสั่งผลิต</th>':'')+(isRW?((rwC('prod')?'<th class="num">จำนวนสั่งผลิต</th>':'')+(rwC('iss')?'<th class="num">จำนวนเบิกวัตถุดิบ</th>':'')):'')+((isPO&&!poC('amt'))?'':'<th class="num">'+(isWD?'จำนวนเบิก':(isPO?'จำนวนเงิน':(isDP?'สั่งผลิตจำนวน':'จำนวน')))+'</th>')+(isWD?'<th class="num">จำนวนชิ้น</th>':'')+(isRW?((rwC('sum')?'<th class="num" title="ยอดรับสะสมของ PO นี้ทุกใบ">รวมรับ</th>':'')+(rwC('kg')?'<th class="num" title="น้ำหนักชิ้นงานที่รับเข้า (ชั่งในใบรับ · ไม่ได้ชั่ง = ประมาณจากน้ำหนัก/ชิ้น)">รับ กก.</th>':'')+'<th class="num">ผลต่าง</th><th>TAG</th>'+'<th style="width:52px;background:#eef2ff" title="ติ๊กถูก = ยอดใบนี้ไปพักที่ &quot;รอชุบ&quot; ทันที ไม่ต้องรอออกใบส่งชุบ">ส่งชุบ</th><th style="width:52px;background:#eef2ff" title="ติ๊กถูก = ยอดใบนี้ไปพักที่ &quot;รอคัด&quot; ทันที ไม่ต้องรอออกใบคัดแยก">ส่งคัด</th>'):'')+(isGR?'<th style="text-align:center" title="ตรวจว่าใบนี้เพิ่มยอดเข้าคงเหลือจริงหรือไม่">การไหล</th>':'')+(isWD?'<th style="text-align:center" title="ตรวจว่าใบนี้ตัดยอดออกจากคงเหลือจริงหรือไม่">การไหล</th>':'')+(isDP?'<th style="min-width:118px" title="วันที่ผู้ผลิตรับทราบใบสั่งผลิต — ป้องกันเอกสารตกหล่น">วันที่รับทราบ</th><th style="min-width:98px" title="ชื่อผู้รับทราบใบสั่งผลิต">ผู้รับทราบ</th><th style="min-width:120px">วันที่ผลิตเสร็จ</th><th class="num" style="min-width:92px">ผลิตได้</th><th>วันที่ส่ง</th>'
+        ${isGR?`<th>เลขที่</th><th>วันที่</th>${grC('inv')?'<th title="เลขที่ใบกำกับภาษี · กดปุ่มเพื่อแนบลิงก์ไฟล์ใบกำกับ">เลขที่ใบกำกับ <span style="font-weight:400;font-size:9.5px;color:#64748b">+ ลิงค์</span></th>':''}<th>PO เลขที่</th><th>รายละเอียด</th>${grC('ordqty')?'<th class="num" title="จำนวนสั่งซื้อจากใบสั่งซื้อ (แปลงเป็นชิ้น/เส้น)">จำนวนสั่งซื้อ</th>':''}${grC('lnkinv')?dlkTh('inv'):''}${grC('lnkir')?irTh():''}${grC('lnkmill')?millTh():''}${grC('lnkirsup')?dlkTh('irsup'):''}${grC('st19')?'<th style="text-align:center;min-width:82px" title="แนบลิงก์ใบรับวัตถุดิบที่เซ็นแล้ว (ไฟล์ PDF สร้างอัตโนมัติได้)">'+fmCodeChip('st.fm19','FM-ST-19')+'</th>':''}<th class="num">จำนวน/ชิ้น</th>${grC('kg')?'<th class="num">จำนวน/กก.</th>':''}${grC('price')?'<th class="num">ราคา/หน่วย</th>':''}${grC('amt')?'<th class="num">จำนวนเงิน</th>':''}<th>TAG</th><th style="width:52px;background:#eef2ff" title="ติ๊กถูก = ยอดใบนี้ไปพักที่ &quot;รอชุบ&quot; ทันที">ส่งชุบ</th><th style="width:52px;background:#eef2ff" title="ติ๊กถูก = ยอดใบนี้ไปพักที่ &quot;รอคัด&quot; ทันที">ส่งคัด</th>${grC('diff')?'<th class="num" title="จำนวนสั่งซื้อ − รับสะสม (ติดลบ = ส่งเกินใบสั่งซื้อ)">ผลต่าง</th>':''}<th style="text-align:center">การไหล</th><th>สถานะ</th>${iqcColTh('GR')}<th></th>`:isPL?`<th>วันที่</th><th>เลขที่ใบสั่ง</th><th>Maker</th><th>Part Number</th><th>Part Name</th><th class="num" title="ยอดรับชิ้นงานจากผู้ผลิต (ใบรับชิ้นงาน RW) ของเลขที่ใบสั่งเดียวกัน — อัตโนมัติ">รับชิ้นงาน</th><th class="num">ส่งชุบ</th><th class="num" title="น้ำหนักส่งชุบ = จำนวนชิ้น × น้ำหนัก/ชิ้น (W/FG ในสินค้าคงคลัง)">ส่ง กก.</th><th>TAG</th><th>วันที่รับ</th><th class="num">รับชุบ</th><th class="num" title="น้ำหนักรับชุบ = จำนวนชิ้น × น้ำหนัก/ชิ้น (W/FG ในสินค้าคงคลัง)">รับ กก.</th>${plC('qc28')?'<th style="text-align:center;min-width:80px" title="ใบตรวจสอบรับเข้าชิ้นงานหลังชุบสี">'+fmCodeChip('qc.fm28','FM-QC-28')+'</th>':''}${plC('tbill')?'<th style="text-align:center;min-width:92px" title="แนบลิงก์ใบวางบิลชั่วคราว (TEMPORARY BILL) ที่โรงชุบเซ็นรับแล้ว">'+fmCodeChip('st.fm03','FM-ST-03')+'<div style="font-weight:400;font-size:9px;opacity:.75">Temporary Bill</div></th>':''}${plC('thick')?'<th style="text-align:center;min-width:82px" title="DATA THICKNESS">THICK NESS</th>':''}${plC('pend')?'<th class="num">คงค้าง</th>':''}${plC('due')?'<th>ครบกำหนด</th>':''}${plC('status')?'<th>สถานะ</th>':''}${plC('color')?'<th>ชุบสี</th>':''}${plC('plant')?'<th>โรงชุบ</th>':''}<th></th>`:isADJ?`<th>เลขที่</th><th>วันที่</th><th>สินค้า</th><th>วิธีปรับ</th><th class="num">จำนวน</th><th class="num">ผลต่าง</th><th>สถานะ</th><th></th>`:`<th>เลขที่</th><th>วันที่</th>${((isRW||isQC||isSI)||(isDP&&dpXOn()))?'<th>PO เลขที่</th>':''}<th>รายละเอียด</th>${isINV?'<th style="text-align:center;min-width:86px" title="แนบลิงก์ใบส่งสินค้า/Invoice ที่เซ็นรับแล้ว">'+fmCodeChip('mk.iv23','FM-MK-23')+'</th>':''}${isRW?(rwC('lnkdn')?dlkTh('dn'):'')+(rwC('lnkir')?irTh():'')+(rwC('lnkirmk')?dlkTh('irmk'):'')+(rwC('lnkmill')?millTh():'')+(rwC('qc59')?'<th style="text-align:center;min-width:82px" title="แนบลิงก์ FM-QC-59">'+fmCodeChip('qc.fm59','FM-QC-59')+'</th>':''):''}${(isIP||isSP)?'<th class="num">จำนวนสั่ง</th><th class="num">จำนวนรับ</th><th class="num">ผลต่าง</th>':''}${isQC?((qcC('ord')?'<th class="num">สั่งผลิตจำนวน'+qcColEye('ord')+'</th>':'')+(qcC('rdate')?'<th>วันที่รับชิ้นงาน'+qcColEye('rdate')+'</th>':'')+(qcC('rqty')?'<th class="num" title="ยอดรับชิ้นงานจากผู้ผลิต ของเลขที่ใบสั่งเดียวกัน">รับชิ้นงาน'+qcColEye('rqty')+'</th>':'')+(qcC('rpl')?'<th class="num" title="ยอดรับชุบ (จากเมนู ส่งชุบ/รับชุบ) ของเลขที่ใบสั่งเดียวกัน — อัตโนมัติ">รับชุบ'+qcColEye('rpl')+'</th>':'')+(qcC('dpl')?'<th class="num" title="ผลต่าง = รับชิ้นงาน − รับชุบ (ของเลขที่ใบสั่งเดียวกัน)">ผลต่าง'+qcColEye('dpl')+'</th>':'')):''}${isQC?irThQC():''}${isQC&&qcC('qc20')?'<th style="text-align:center;min-width:82px" title="แนบลิงก์ใบบันทึกการตรวจสอบคุณภาพประจำวันที่เซ็นแล้ว">'+fmCodeChip('qc.fm20','FM-QC-20')+'</th>':''}${isPRD?((prdC('ref')?'<th style="min-width:140px" title="ที่มาของใบสั่งผลิต — อ้างอิง Forecast / Customer PO (สำหรับการตรวจสอบ)">Ref : Forecast</th>':'')+(prdShowCust()?'<th>ลูกค้า</th>':'')+(prdShowDue()?'<th>กำหนดส่ง</th>':'')):''}${isRW&&rwShowCust()?'<th>ลูกค้า</th>':''}${isPO?((poC('calc')?'<th class="num" title="คำนวณเป็นชิ้น/เส้น = จำนวนสั่งซื้อ × (1กก.=ชิ้น)">คำนวณ</th>':'')+(poC('ordqty')?'<th class="num">จำนวนสั่งซื้อ</th>':'')+(poC('unit')?'<th>UNIT</th>':'')):''}${isSI?'<th>ลูกค้า</th><th class="num">QC OK</th><th class="num">QC NG</th><th style="text-align:center;min-width:82px" title="แนบลิงก์บันทึกการรับเข้าสต๊อคที่เซ็นแล้ว">'+fmCodeChip('st.fm20','FM-ST-20')+'</th>':''}${isQC&&qcC('cust')?'<th>ลูกค้า'+qcColEye('cust')+'</th>':''}${isQC?((qcC('insp')?'<th>ผู้ตรวจ'+qcColEye('insp')+'</th>':'')+(qcC('point')?'<th>จุดตรวจ'+qcColEye('point')+'</th>':'')+(qcC('tool')?'<th>เครื่องมือ'+qcColEye('tool')+'</th>':'')):''}${isRW&&rwShowPrice()?'<th class="num">ราคาผลิต</th>':''}${(isPRD&&prdShowPrice())?'<th class="num">ราคาผลิต</th>':''}${isQC?((qcC('stg')?'<th class="num">ยอดรอคัด'+qcColEye('stg')+'</th>':'')+(qcC('tot')?'<th class="num">รวมคัด'+qcColEye('tot')+'</th>':'')+'<th class="num">OK</th><th>TAG</th><th class="num">NG</th><th>NG TAG</th>'+(qcC('sin')?'<th class="num" title="ยอดรับเข้าสต๊อค ของเลขที่ใบสั่งเดียวกัน — อัตโนมัติ">รับเข้าสต๊อค'+qcColEye('sin')+'</th>':'')+(qcC('dsin')?'<th class="num" title="ผลต่าง = OK + NG (ทุกใบคัดแยกของเลขที่ใบสั่งเดียวกัน) − รับเข้าสต๊อค">ผลต่าง'+qcColEye('dsin')+'</th>':'')):((isDP&&dpXOn())?'<th>เบิกวัตถุดิบ</th>':'')+(isWD?'<th class="num">จำนวนสั่งผลิต</th>':'')+(isRW?((rwC('prod')?'<th class="num">จำนวนสั่งผลิต</th>':'')+(rwC('iss')?'<th class="num">จำนวนเบิกวัตถุดิบ</th>':'')):'')+((isPO&&!poC('amt'))?'':'<th class="num">'+(isWD?'จำนวนเบิก':(isPO?'จำนวนเงิน':(isDP?'สั่งผลิตจำนวน':'จำนวน')))+'</th>')+(isWD?'<th class="num">จำนวนชิ้น</th>':'')+(isRW?((rwC('sum')?'<th class="num" title="ยอดรับสะสมของ PO นี้ทุกใบ">รวมรับ</th>':'')+(rwC('kg')?'<th class="num" title="น้ำหนักชิ้นงานที่รับเข้า (ชั่งในใบรับ · ไม่ได้ชั่ง = ประมาณจากน้ำหนัก/ชิ้น)">รับ กก.</th>':'')+'<th class="num">ผลต่าง</th><th>TAG</th>'+'<th style="width:52px;background:#eef2ff" title="ติ๊กถูก = ยอดใบนี้ไปพักที่ &quot;รอชุบ&quot; ทันที ไม่ต้องรอออกใบส่งชุบ">ส่งชุบ</th><th style="width:52px;background:#eef2ff" title="ติ๊กถูก = ยอดใบนี้ไปพักที่ &quot;รอคัด&quot; ทันที ไม่ต้องรอออกใบคัดแยก">ส่งคัด</th>'):'')+(isGR?'<th style="text-align:center" title="ตรวจว่าใบนี้เพิ่มยอดเข้าคงเหลือจริงหรือไม่">การไหล</th>':'')+(isWD?'<th style="text-align:center" title="ตรวจว่าใบนี้ตัดยอดออกจากคงเหลือจริงหรือไม่">การไหล</th>':'')+(isDP?'<th style="min-width:118px" title="วันที่ผู้ผลิตรับทราบใบสั่งผลิต — ป้องกันเอกสารตกหล่น">วันที่รับทราบ</th><th style="min-width:98px" title="ชื่อผู้รับทราบใบสั่งผลิต">ผู้รับทราบ</th><th style="min-width:120px">วันที่ผลิตเสร็จ</th><th class="num" style="min-width:92px">ผลิตได้</th><th>วันที่ส่ง</th>'
       +'<th class="num" title="ยอดรับชิ้นงานทั้งหมดของ PO นี้ (ทุกใบรับ)">รวมรับ</th>'
       +'<th class="num" title="ยอดเบิกวัตถุดิบ − รวมรับ">ผลต่าง</th>'
       +'<th class="num">จำนวน NG</th>'
       +'<th class="num" title="ยอดคัดแยกผ่านของ PO นี้ (ทุกใบคัดแยก)">คัดแยก OK</th>'
       +'<th class="num" title="ยอดคัดแยกไม่ผ่านของ PO นี้ (ทุกใบคัดแยก)">คัดแยก NG</th>'
       +(dpMoneyOn()?('<th class="num" title="ราคาค่าจ้างผลิตต่อชิ้น — ดึงจากใบสั่งผลิตอัตโนมัติ">ราคาผลิต</th>'
-      +'<th class="num" title="ยอดเงินสำหรับวางบิล = ราคาผลิต × รวมรับ">จำนวนเงิน</th>'):'')+(dpXOn()?(xTh('CHECK SHEET')+xTh('PM')+xTh('FM-PD-02')+'<th>ผู้ตรวจ</th>'):'')+'<th class="num" style="min-width:96px" title="ยอดคงเหลือของสินค้ารายการนี้ในสินค้าคงคลัง — ดึงมาแสดงอัตโนมัติ">สต๊อคคงเหลือ</th>':'')}${isPRD?'<th class="num">เบิกวัตถุดิบ</th><th class="num">จำนวนรับ</th><th class="num">ผลต่าง</th>'+(prdShowNg()?'<th class="num">PD NG</th><th class="num">QC NG</th>':''):(isPO?('<th class="num">จำนวนรับ</th>'+(poC('recvkg')?'<th class="num">จำนวนรับ กก.</th>':'')+'<th class="num">ผลต่าง</th>'):'')}${(isPO||isIP||isSP)&&poC('pc05')?'<th style="text-align:center;min-width:80px" title="แนบลิงก์ใบสั่งซื้อ FM-PC-05">FM-PC-05</th>':''}${isPRD?'<th style="text-align:center;min-width:82px" title="แนบลิงก์ใบสั่งผลิต">'+fmCodeChip('pc.fm04','FM-PC-04')+'</th>':''}${isWD?'<th style="text-align:center;min-width:82px" title="แนบลิงก์ใบเบิกวัตถุดิบ">'+fmCodeChip('st.fm02','FM-ST-02')+'</th>':''}<th>สถานะ</th>${isPO?`${poC('due')?'<th>วันที่ครบกำหนด</th>':''}${poC('note')?'<th>หมายเหตุ/สลิป</th>':''}${poC('paydate')?'<th>วันที่จ่าย</th>':''}${poC('payamt')?'<th class="num">ยอดจ่าย</th>':''}`:''}${isINV?'<th class="num" title="ยอดก่อน VAT (ชี้ที่ตัวเลขเพื่อดู VAT และยอดรวม)">จำนวนเงิน</th>':''}<th></th>${isINV&&ivShowFlow?'<th>สถานะการไหล&nbsp;🐌 <span style="cursor:pointer;opacity:.5;font-size:11px" onclick="ivFlowColToggle()" title="ซ่อนคอลัมน์นี้">🙈</span></th>':''}${(isPO||isIP||isSP||isPRD||isRW||isQC)&&ordFlowShow(type)?'<th>การไหล&nbsp;🐌 <span style="cursor:pointer;opacity:.5;font-size:11px" onclick="ordFlowToggle(\''+type+'\')" title="ซ่อนคอลัมน์นี้">🙈</span></th>':''}`}
+      +'<th class="num" title="ยอดเงินสำหรับวางบิล = ราคาผลิต × รวมรับ">จำนวนเงิน</th>'):'')+(dpXOn()?(xTh('CHECK SHEET')+xTh('PM')+xTh('FM-PD-02')+'<th>ผู้ตรวจ</th>'):'')+'<th class="num" style="min-width:96px" title="ยอดคงเหลือของสินค้ารายการนี้ในสินค้าคงคลัง — ดึงมาแสดงอัตโนมัติ">สต๊อคคงเหลือ</th>':'')}${isPRD?'<th class="num" title="จำนวนเส้น/แผ่นที่เบิกจากใบเบิกวัตถุดิบ — แก้ได้ (ระบบแก้ใบเบิกให้)">เส้น/แผ่น</th><th class="num">เบิกวัตถุดิบ</th><th class="num">จำนวนรับ</th><th class="num">ผลต่าง</th>'+(prdShowNg()?'<th class="num">PD NG</th><th class="num">QC NG</th>':''):(isPO?('<th class="num">จำนวนรับ</th>'+(poC('recvkg')?'<th class="num">จำนวนรับ กก.</th>':'')+'<th class="num">ผลต่าง</th>'):'')}${(isPO||isIP||isSP)&&poC('pc05')?'<th style="text-align:center;min-width:80px" title="แนบลิงก์ใบสั่งซื้อ FM-PC-05">FM-PC-05</th>':''}${isPRD?'<th style="text-align:center;min-width:82px" title="แนบลิงก์ใบสั่งผลิต">'+fmCodeChip('pc.fm04','FM-PC-04')+'</th>':''}${isWD?'<th style="text-align:center;min-width:82px" title="แนบลิงก์ใบเบิกวัตถุดิบ">'+fmCodeChip('st.fm02','FM-ST-02')+'</th>':''}<th>สถานะ</th>${isRW?iqcColTh('RW'):''}${isPO?`${poC('due')?'<th>วันที่ครบกำหนด</th>':''}${poC('note')?'<th>หมายเหตุ/สลิป</th>':''}${poC('paydate')?'<th>วันที่จ่าย</th>':''}${poC('payamt')?'<th class="num">ยอดจ่าย</th>':''}`:''}${isINV?'<th class="num" title="ยอดก่อน VAT (ชี้ที่ตัวเลขเพื่อดู VAT และยอดรวม)">จำนวนเงิน</th>':''}<th></th>${isINV&&ivShowFlow?'<th>สถานะการไหล&nbsp;🐌 <span style="cursor:pointer;opacity:.5;font-size:11px" onclick="ivFlowColToggle()" title="ซ่อนคอลัมน์นี้">🙈</span></th>':''}${(isPO||isIP||isSP||isPRD||isRW||isQC)&&ordFlowShow(type)?'<th>การไหล&nbsp;🐌 <span style="cursor:pointer;opacity:.5;font-size:11px" onclick="ordFlowToggle(\''+type+'\')" title="ซ่อนคอลัมน์นี้">🙈</span></th>':''}`}
       </tr></thead><tbody id="docRows">
       ${docs.map(d=>type==='DP'?dpRow(d):(type==='PO'?purchaseRow(d):docRow(d))).join('')}
-      </tbody>${isPO?`<tfoot><tr style="font-weight:700;background:var(--panel2);border-top:2px solid var(--line)">${poC('calc')?`<td colspan="4" style="text-align:right">SUBTOTAL (รวมยอดตามที่กรอง)</td>`:`<td colspan="3">SUBTOTAL (รวมยอดตามที่กรอง)</td>`}${poC('ordqty')?`<td class="num" id="poSubQty">${fmt2(poQtySum)}</td>`:''}${poC('unit')?`<td></td>`:''}${poC('amt')?`<td class="num" id="poSubtotal">${fmt2(poTotal)}</td>`:''}<td class="num" id="poSubRecv">${fmt(poRecvSum)}</td>${poC('recvkg')?`<td></td>`:''}<td colspan="${3+(poC('pc05')?1:0)+(ordFlowShow('PO')?1:0)+(poC('due')?1:0)+(poC('note')?1:0)+(poC('paydate')?1:0)+(poC('payamt')?1:0)}"></td></tr></tfoot>`:''}${isPRD?`<tfoot><tr style="font-weight:700;background:var(--panel2);border-top:2px solid var(--line)"><td colspan="${3+(prdShowCust()?1:0)+(prdShowDue()?1:0)}">SUBTOTAL (รวมจำนวนผลิตตามที่กรอง)</td>${prdShowPrice()?'<td class="num"></td>':''}<td class="num" id="prdSubtotal">${fmt(prdTotal)}</td><td colspan="${(ordFlowShow('PRD')?6:5)+(prdShowNg()?2:0)+1}"></td></tr></tfoot>`:''}${isGR?`<tfoot><tr style="font-weight:700;background:var(--panel2);border-top:2px solid var(--line)"><td colspan="${7-(grC('inv')?0:1)+(grC('ordqty')?1:0)+(grC('st19')?1:0)}">SUBTOTAL (รวมยอดตามที่กรอง)</td><td class="num" id="grSubPcs">${fmt2(grPcsSum)}</td>${grC('kg')?`<td class="num" id="grSubKg">${fmt2(grKgSum)}</td>`:''}${grC('price')?`<td></td>`:''}${grC('amt')?`<td class="num" id="grSubtotal">${fmt2(grTotal)}</td>`:''}<td colspan="${3+(grC('diff')?1:0)}"></td></tr></tfoot>`:''}${isRW?`<tfoot><tr style="font-weight:700;background:var(--panel2);border-top:2px solid var(--line)"><td colspan="${4+(rwC('lnkdn')?1:0)+(rwC('lnkir')?1:0)+(rwC('lnkirmk')?1:0)+(rwC('lnkmill')?1:0)+(rwC('qc59')?1:0)+(rwShowCust()?1:0)}">SUBTOTAL (รวมตามที่กรอง)</td>${rwShowPrice()?'<td class="num"></td>':''}${rwC('prod')?`<td class="num" id="rwSubProd">${fmt(docs.reduce((s,d)=>s+rwProdQtyOf(d),0))}</td>`:''}${rwC('iss')?`<td class="num" id="rwSubIss">${fmt(docs.reduce((s,d)=>s+rwIssuedPcsOf(d),0))}</td>`:''}<td class="num" id="rwSubtotal">${fmt(rwTotal)}</td>${rwC('sum')?'<td></td>':''}${rwC('kg')?`<td class="num" id="rwSubKg">${fmt2(docs.reduce((s,d)=>s+(rwKgOf(d).kg||0),0))}</td>`:''}<td class="num" id="rwSubDiff">${fmt(docs.reduce((s,d)=>s+(rwIssuedPcsOf(d)-((d.lines||[]).reduce((a,l)=>a+(l.qty||0),0))),0))}</td><td colspan="${ordFlowShow('RW')?6:5}"></td></tr></tfoot>`:''}${isDP?`<tfoot><tr style="font-weight:700;background:#fff7a8;border-top:2px solid var(--line)">
+      </tbody>${isPO?`<tfoot><tr style="font-weight:700;background:var(--panel2);border-top:2px solid var(--line)">${poC('calc')?`<td colspan="4" style="text-align:right">SUBTOTAL (รวมยอดตามที่กรอง)</td>`:`<td colspan="3">SUBTOTAL (รวมยอดตามที่กรอง)</td>`}${poC('ordqty')?`<td class="num" id="poSubQty">${fmt2(poQtySum)}</td>`:''}${poC('unit')?`<td></td>`:''}${poC('amt')?`<td class="num" id="poSubtotal">${fmt2(poTotal)}</td>`:''}<td class="num" id="poSubRecv">${fmt(poRecvSum)}</td>${poC('recvkg')?`<td></td>`:''}<td colspan="${3+(poC('pc05')?1:0)+(ordFlowShow('PO')?1:0)+(poC('due')?1:0)+(poC('note')?1:0)+(poC('paydate')?1:0)+(poC('payamt')?1:0)}"></td></tr></tfoot>`:''}${isPRD?`<tfoot><tr style="font-weight:700;background:var(--panel2);border-top:2px solid var(--line)"><td colspan="${3+(prdShowCust()?1:0)+(prdShowDue()?1:0)}">SUBTOTAL (รวมจำนวนผลิตตามที่กรอง)</td>${prdShowPrice()?'<td class="num"></td>':''}<td class="num" id="prdSubtotal">${fmt(prdTotal)}</td><td class="num" id="prdSubBars" title="รวมเส้น/แผ่นตามที่กรอง">${fmt(prdSvSum(docs,'bars'))}</td><td class="num" id="prdSubIss" title="รวมเบิกวัตถุดิบ (ชิ้น) ตามที่กรอง">${fmt(prdSvSum(docs,'iss'))}</td><td class="num" id="prdSubRecv" title="รวมจำนวนรับตามที่กรอง">${fmt(prdSvSum(docs,'recv'))}</td><td colspan="${(ordFlowShow('PRD')?3:2)+(prdShowNg()?2:0)+2}"></td></tr></tfoot>`:''}${isGR?`<tfoot><tr style="font-weight:700;background:var(--panel2);border-top:2px solid var(--line)"><td colspan="${7-(grC('inv')?0:1)+(grC('ordqty')?1:0)+(grC('st19')?1:0)}">SUBTOTAL (รวมยอดตามที่กรอง)</td><td class="num" id="grSubPcs">${fmt2(grPcsSum)}</td>${grC('kg')?`<td class="num" id="grSubKg">${fmt2(grKgSum)}</td>`:''}${grC('price')?`<td></td>`:''}${grC('amt')?`<td class="num" id="grSubtotal">${fmt2(grTotal)}</td>`:''}<td colspan="${5+(grC('diff')?1:0)}"></td></tr></tfoot>`:''}${isRW?`<tfoot><tr style="font-weight:700;background:var(--panel2);border-top:2px solid var(--line)"><td colspan="${4+(rwC('lnkdn')?1:0)+(rwC('lnkir')?1:0)+(rwC('lnkirmk')?1:0)+(rwC('lnkmill')?1:0)+(rwC('qc59')?1:0)+(rwShowCust()?1:0)}">SUBTOTAL (รวมตามที่กรอง)</td>${rwShowPrice()?'<td class="num"></td>':''}${rwC('prod')?`<td class="num" id="rwSubProd">${fmt(docs.reduce((s,d)=>s+rwProdQtyOf(d),0))}</td>`:''}${rwC('iss')?`<td class="num" id="rwSubIss">${fmt(docs.reduce((s,d)=>s+rwIssuedPcsOf(d),0))}</td>`:''}<td class="num" id="rwSubtotal">${fmt(rwTotal)}</td>${rwC('sum')?'<td></td>':''}${rwC('kg')?`<td class="num" id="rwSubKg">${fmt2(docs.reduce((s,d)=>s+(rwKgOf(d).kg||0),0))}</td>`:''}<td class="num" id="rwSubDiff">${fmt(docs.reduce((s,d)=>s+(rwIssuedPcsOf(d)-((d.lines||[]).reduce((a,l)=>a+(l.qty||0),0))),0))}</td><td colspan="${ordFlowShow('RW')?7:6}"></td></tr></tfoot>`:''}${isDP?`<tfoot><tr style="font-weight:700;background:#fff7a8;border-top:2px solid var(--line)">
       <td colspan="${dpXOn()?5:3}">SUBTOTAL <span style="font-weight:400;font-size:10.5px">(รวมตามที่กรอง · <span id="dpSubN">${docs.length}</span> ใบ)</span></td>
       <td class="num" id="dpSubOrdT">0</td><td></td><td></td><td></td><td class="num" id="dpSubDoneT">0</td><td></td>
       <td class="num" id="dpSubRecvT" style="color:var(--teal)">0</td>
@@ -10404,7 +10469,7 @@ function viewDocs(type){
       <td class="num" id="dpSubQngT" style="color:var(--red)">0</td>
       ${dpMoneyOn()?'<td></td><td class="num" id="dpSubAmtT" style="color:var(--brand)">0.00</td>':''}
       ${dpXOn()?'<td></td><td></td><td></td><td></td>':''}
-      <td></td><td></td><td><span id="dpSubtotal" style="display:none">${fmt(dpTotal)}</span></td></tr></tfoot>`:''}${isPL?`<tfoot><tr style="font-weight:700;background:#fff7a8;border-top:2px solid var(--line)"><td colspan="5" style="text-align:right">รวมตามที่กรอง</td><td class="num" id="plTotSent">${fmt(docs.reduce((s,d)=>s+(d.lines||[]).reduce((a,l)=>a+(Number(l.sentQty)||0),0),0))}</td><td class="num" id="plTotSentKg"></td><td></td><td></td><td class="num" id="plTotRecv">${fmt(docs.reduce((s,d)=>s+(d.lines||[]).reduce((a,l)=>a+(Number(l.recvQty)||0),0),0))}</td><td class="num" id="plTotRecvKg"></td>${plC('qc28')?`<td></td>`:''}${plC('tbill')?`<td></td>`:''}${plC('thick')?`<td></td>`:''}${plC('pend')?`<td class="num" id="plTotPend">${fmt(docs.reduce((s,d)=>s+(d.lines||[]).reduce((a,l)=>{const sn=Number(l.sentQty)||0,rc=Number(l.recvQty)||0;return a+((l.pending!=null&&l.pending!=='')?Number(l.pending):(sn-rc));},0),0))}</td>`:''}<td colspan="${(plC('due')?1:0)+(plC('status')?1:0)+(plC('color')?1:0)+(plC('plant')?1:0)+1}"></td></tr></tfoot>`:''}${isQC?`<tfoot><tr style="font-weight:700;background:var(--panel2);border-top:2px solid var(--line)"><td colspan="${5+(qcC('qc20')?1:0)+(qcC('ord')?1:0)+(qcC('rdate')?1:0)+(qcC('rqty')?1:0)+(qcC('cust')?1:0)+(qcC('insp')?1:0)+(qcC('point')?1:0)+(qcC('tool')?1:0)}">SUBTOTAL</td>${qcC('stg')?`<td class="num" id="qcSubStg">${fmt(qcStgSum)}</td>`:''}${qcC('tot')?`<td class="num" id="qcSubTotF">${fmt(qcTotSum)}</td>`:''}<td class="num" id="qcSubOkF">${fmt(qcOkSum)}</td><td class="num" id="qcSubtotal" style="color:var(--red)">${fmt(qcTotal)}</td><td colspan="${ordFlowShow('QC')?3:2}"></td></tr><tr style="background:#eef4ff;font-weight:600"><td colspan="40" style="padding:6px 10px">🧮 สั่งผลิต <b id="qcSumOrd">${fmt(qcOrdSum)}</b> − รับมาคัด <b id="qcSumRq">${fmt(qcRqSum)}</b> = <span style="color:#b45309">ค้างส่ง <b id="qcSumD1">${fmt(qcOrdSum-qcRqSum)}</b></span> &nbsp;·&nbsp; รับมาคัด − คัดแล้ว(OK+NG <b id="qcSumSorted">${fmt(qcOkSum+qcTotal)}</b>) = <span style="color:#b45309">ค้างคัด <b id="qcSumD2">${fmt(qcRqSum-(qcOkSum+qcTotal))}</b></span></td></tr></tfoot>`:''}${isSI?`<tfoot><tr style="font-weight:700;background:var(--panel2);border-top:2px solid var(--line)"><td colspan="4">SUBTOTAL</td><td></td><td class="num" id="siSubOkF">${fmt(siOkSum)}</td><td class="num" id="siSubNgF" style="color:var(--red)">${fmt(siNgSum)}</td><td class="num" id="siSubtotal">${fmt(siTotal)}</td><td colspan="2"></td></tr></tfoot>`:''}${isIP?`<tfoot><tr style="font-weight:700;background:var(--panel2);border-top:2px solid var(--line)"><td colspan="3">SUBTOTAL (รวมยอดตามที่กรอง)</td><td class="num" id="ipSubOrd">${fmt(ipOrdSum)}</td><td class="num" id="ipSubRecv">${fmt(ipRecvSum)}</td><td></td><td class="num" id="ipSubtotal">US$ ${fmt2(ipTotal)}</td><td colspan="${(ordFlowShow('IP')?3:2)+(poC('pc05')?1:0)}"></td></tr></tfoot>`:''}${isSP?`<tfoot><tr style="font-weight:700;background:var(--panel2);border-top:2px solid var(--line)"><td colspan="3">SUBTOTAL (รวมยอดตามที่กรอง)</td><td class="num" id="spSubOrd">${fmt(spOrdSum)}</td><td class="num" id="spSubRecv">${fmt(spRecvSum)}</td><td></td><td class="num" id="spSubtotal">฿ ${fmt2(spTotal)}</td><td colspan="${(ordFlowShow('SP')?3:2)+(poC('pc05')?1:0)}"></td></tr></tfoot>`:''}${isINV?`<tfoot><tr style="font-weight:700;background:var(--panel2);border-top:2px solid var(--line)"><td colspan="4">SUBTOTAL (รวมจำนวนส่งตามที่กรอง)</td><td class="num" id="ivSubtotal">${fmt(ivTotal)}</td><td></td><td class="num" id="ivMoneyTotal">${fmt2(docs.reduce((s,d)=>s+(d.status==='cancelled'?0:(Number(d.subtotal)||0)),0))}</td><td colspan="${ivShowFlow?2:1}"></td></tr></tfoot>`:''}${isIV2?`<tfoot><tr style="font-weight:700;background:var(--panel2);border-top:2px solid var(--line)"><td colspan="3">SUBTOTAL (รวมจำนวนส่งตามที่กรอง)</td><td class="num" id="iwSubtotal">${fmt(iwTotal)}</td><td colspan="2"></td></tr></tfoot>`:''}${isWD?`<tfoot><tr style="font-weight:700;background:var(--panel2);border-top:2px solid var(--line)"><td colspan="3">SUBTOTAL (รวมตามที่กรอง)</td><td class="num" id="wdSubProd">${fmt(docs.reduce((s,d)=>s+wdProdQty(d),0))}</td><td class="num" id="wdSubtotal">${fmt(wdTotal)}</td><td class="num" id="wdSubPcs">${fmt(docs.reduce((s,d)=>{var b=(d.lines||[]).reduce((a,l)=>{var lb=Number(l.bars)||0,lq=Number(l.qty)||0,ci=(typeof wdCutInfo==='function')?wdCutInfo(l):null;if(lb>0&&ci&&ci.per>0)return a+lb*ci.per;if(lb<=0&&lq>0)return a+lq;return a;},0);return s+b;},0))}</td><td colspan="3"></td></tr></tfoot>`:''}</table></div>`:(mkEmptyHTML(type)||`<div class="empty"><div class="big">${cfg.icon}</div><div class="t">ยังไม่มีเอกสาร</div><div>กดปุ่ม "สร้าง${cfg.label}" เพื่อเริ่มต้น</div></div>`)}
+      <td></td><td></td><td><span id="dpSubtotal" style="display:none">${fmt(dpTotal)}</span></td></tr></tfoot>`:''}${isPL?`<tfoot><tr style="font-weight:700;background:#fff7a8;border-top:2px solid var(--line)"><td colspan="5" style="text-align:right">รวมตามที่กรอง</td><td class="num" id="plTotRw" style="color:#0369a1" title="นับต่อเลขที่ใบสั่งครั้งเดียว"></td><td class="num" id="plTotSent">${fmt(docs.reduce((s,d)=>s+(d.lines||[]).reduce((a,l)=>a+(Number(l.sentQty)||0),0),0))}</td><td class="num" id="plTotSentKg"></td><td></td><td></td><td class="num" id="plTotRecv">${fmt(docs.reduce((s,d)=>s+(d.lines||[]).reduce((a,l)=>a+(Number(l.recvQty)||0),0),0))}</td><td class="num" id="plTotRecvKg"></td>${plC('qc28')?`<td></td>`:''}${plC('tbill')?`<td></td>`:''}${plC('thick')?`<td></td>`:''}${plC('pend')?`<td class="num" id="plTotPend">${fmt(docs.reduce((s,d)=>s+(d.lines||[]).reduce((a,l)=>{const sn=Number(l.sentQty)||0,rc=Number(l.recvQty)||0;return a+((l.pending!=null&&l.pending!=='')?Number(l.pending):(sn-rc));},0),0))}</td>`:''}<td colspan="${(plC('due')?1:0)+(plC('status')?1:0)+(plC('color')?1:0)+(plC('plant')?1:0)+1}"></td></tr></tfoot>`:''}${isQC?`<tfoot><tr style="font-weight:700;background:var(--panel2);border-top:2px solid var(--line)"><td colspan="${4+(qcC('ord')?1:0)+(qcC('rdate')?1:0)}">SUBTOTAL</td>${qcC('rqty')?'<td class="num" id="qcSubRq"></td>':''}${qcC('rpl')?'<td class="num" id="qcSubRpl" style="color:#7c3aed"></td>':''}${qcC('dpl')?'<td class="num" id="qcSubDpl" title="ผลต่าง รับชิ้นงาน − รับชุบ (นับต่อเลขที่ใบสั่งครั้งเดียว · เฉพาะที่มีรับชุบ)"></td>':''}<td colspan="${1+(qcC('qc20')?1:0)+(qcC('cust')?1:0)+(qcC('insp')?1:0)+(qcC('point')?1:0)+(qcC('tool')?1:0)}"></td>${qcC('stg')?`<td class="num" id="qcSubStg">${fmt(qcStgSum)}</td>`:''}${qcC('tot')?`<td class="num" id="qcSubTotF">${fmt(qcTotSum)}</td>`:''}<td class="num" id="qcSubOkF">${fmt(qcOkSum)}</td><td></td><td class="num" id="qcSubtotal" style="color:var(--red)">${fmt(qcTotal)}</td><td></td>${qcC('sin')?'<td class="num" id="qcSubSin" style="color:#0f766e" title="นับต่อเลขที่ใบสั่งครั้งเดียว"></td>':''}${qcC('dsin')?'<td class="num" id="qcSubDsin" title="ผลต่าง = OK + NG − รับเข้าสต๊อค (ตามตัวกรอง)"></td>':''}<td colspan="${ordFlowShow('QC')?3:2}"></td></tr><tr style="background:#eef4ff;font-weight:600"><td colspan="40" style="padding:6px 10px">🧮 สั่งผลิต <b id="qcSumOrd">${fmt(qcOrdSum)}</b> − รับมาคัด <b id="qcSumRq">${fmt(qcRqSum)}</b> = <span style="color:#b45309">ค้างส่ง <b id="qcSumD1">${fmt(qcOrdSum-qcRqSum)}</b></span> &nbsp;·&nbsp; รับมาคัด − คัดแล้ว(OK+NG <b id="qcSumSorted">${fmt(qcOkSum+qcTotal)}</b>) = <span style="color:#b45309">ค้างคัด <b id="qcSumD2">${fmt(qcRqSum-(qcOkSum+qcTotal))}</b></span></td></tr></tfoot>`:''}${isSI?`<tfoot><tr style="font-weight:700;background:var(--panel2);border-top:2px solid var(--line)"><td colspan="4">SUBTOTAL</td><td></td><td class="num" id="siSubOkF">${fmt(siOkSum)}</td><td class="num" id="siSubNgF" style="color:var(--red)">${fmt(siNgSum)}</td><td class="num" id="siSubtotal">${fmt(siTotal)}</td><td colspan="2"></td></tr></tfoot>`:''}${isIP?`<tfoot><tr style="font-weight:700;background:var(--panel2);border-top:2px solid var(--line)"><td colspan="3">SUBTOTAL (รวมยอดตามที่กรอง)</td><td class="num" id="ipSubOrd">${fmt(ipOrdSum)}</td><td class="num" id="ipSubRecv">${fmt(ipRecvSum)}</td><td></td><td class="num" id="ipSubtotal">US$ ${fmt2(ipTotal)}</td><td colspan="${(ordFlowShow('IP')?3:2)+(poC('pc05')?1:0)}"></td></tr></tfoot>`:''}${isSP?`<tfoot><tr style="font-weight:700;background:var(--panel2);border-top:2px solid var(--line)"><td colspan="3">SUBTOTAL (รวมยอดตามที่กรอง)</td><td class="num" id="spSubOrd">${fmt(spOrdSum)}</td><td class="num" id="spSubRecv">${fmt(spRecvSum)}</td><td></td><td class="num" id="spSubtotal">฿ ${fmt2(spTotal)}</td><td colspan="${(ordFlowShow('SP')?3:2)+(poC('pc05')?1:0)}"></td></tr></tfoot>`:''}${isINV?`<tfoot><tr style="font-weight:700;background:var(--panel2);border-top:2px solid var(--line)"><td colspan="4">SUBTOTAL (รวมจำนวนส่งตามที่กรอง)</td><td class="num" id="ivSubtotal">${fmt(ivTotal)}</td><td></td><td class="num" id="ivMoneyTotal">${fmt2(docs.reduce((s,d)=>s+(d.status==='cancelled'?0:(Number(d.subtotal)||0)),0))}</td><td colspan="${ivShowFlow?2:1}"></td></tr></tfoot>`:''}${isIV2?`<tfoot><tr style="font-weight:700;background:var(--panel2);border-top:2px solid var(--line)"><td colspan="3">SUBTOTAL (รวมจำนวนส่งตามที่กรอง)</td><td class="num" id="iwSubtotal">${fmt(iwTotal)}</td><td colspan="2"></td></tr></tfoot>`:''}${isWD?`<tfoot><tr style="font-weight:700;background:var(--panel2);border-top:2px solid var(--line)"><td colspan="3">SUBTOTAL (รวมตามที่กรอง)</td><td class="num" id="wdSubProd">${fmt(docs.reduce((s,d)=>s+wdProdQty(d),0))}</td><td class="num" id="wdSubtotal">${fmt(wdTotal)}</td><td class="num" id="wdSubPcs">${fmt(docs.reduce((s,d)=>{var b=(d.lines||[]).reduce((a,l)=>{var lb=Number(l.bars)||0,lq=Number(l.qty)||0,ci=(typeof wdCutInfo==='function')?wdCutInfo(l):null;if(lb>0&&ci&&ci.per>0)return a+lb*ci.per;if(lb<=0&&lq>0)return a+lq;return a;},0);return s+b;},0))}</td><td colspan="3"></td></tr></tfoot>`:''}</table></div>`:(mkEmptyHTML(type)||`<div class="empty"><div class="big">${cfg.icon}</div><div class="t">ยังไม่มีเอกสาร</div><div>กดปุ่ม "สร้าง${cfg.label}" เพื่อเริ่มต้น</div></div>`)}
     </div>
   </div>`;
   if(isGR){ if(!Array.isArray(grLines)||!grLines.length)grLines=[grBlank()]; setTimeout(renderGrLines,20); }
@@ -10744,6 +10809,46 @@ function planFilterBar(type){const mk=(id,ph,field)=>`<input id="${id}" class="f
 /* จำนวนชิ้นที่เบิกวัตถุดิบของใบสั่งผลิต — คิดเป็นชิ้นแบบเดียวกับคอลัมน์ "จำนวนชิ้น" ในลิสต์ใบเบิกวัตถุดิบ
    ★ ถ้ามีใบเบิกที่ผูกอัตโนมัติกับใบสั่งผลิตนี้ (autoFromPRD) ให้นับเฉพาะใบนั้น (กันการนับซ้ำจากใบเบิกอื่นที่บังเอิญมี PO เดียวกัน) */
 function wdDocPcs(x){ var pcs=0; (x.lines||[]).forEach(function(l){ var b=Number(l.bars)||0,q=Number(l.qty)||0,ci=(typeof wdCutInfo==='function')?wdCutInfo(l):null; if(b>0){ if(ci&&ci.per>0)pcs+=b*ci.per; } else if(q>0)pcs+=q; }); return pcs; }
+/* ★ 11/11b เส้น/แผ่น ที่เบิกจริงของใบสั่งผลิต (บรรทัดใบเบิกวัตถุดิบ) */
+/* ★ 11/11h ค่าต่อใบสำหรับ SUBTOTAL ใบสั่งผลิต (เก็บตอนวาดเซลล์) */
+var __prdSV={};
+function prdSvPut(id,k,v){ (__prdSV[id]=__prdSV[id]||{})[k]=Number(v)||0; }
+function prdSvSum(docs,k){ return Math.round((docs||[]).reduce(function(s,d){ return s+(((__prdSV[d.id]||{})[k])||0); },0)*100)/100; }
+function prdBarRefs(d){ var k=function(s){return String(s==null?'':s).toUpperCase().replace(/^PO/,'').replace(/[\s\-_.\/]+/g,'');}; var key=k(d.no), out=[];
+  var wds=(((typeof d.id==='string')&&rxPick('wdPrd',['A|'+d.id,'K|'+key]))||DB.docs||[]).filter(function(x){return x&&x.type==='WD'&&x.status!=='cancelled';});
+  var auto=wds.filter(function(x){return x.autoFromPRD===d.id;});
+  (auto.length?auto:wds).forEach(function(w){ (w.lines||[]).forEach(function(l){ if(!l)return; if(!auto.length&&!(l.poNo&&k(l.poNo)===key))return; out.push({w:w,l:l}); }); });
+  return out; }
+function prdBarsCell(d){ try{ prdSvPut(d.id,'bars',0); if(prdMatMode(d)==='none')return '<td class="num muted" title="ผู้ผลิตใช้วัตถุดิบของตัวเอง">-</td>';
+  var R=prdBarRefs(d); if(!R.length)return '<td class="num muted" title="ยังไม่มีใบเบิกวัตถุดิบของใบสั่งผลิตนี้">-</td>';
+  var b=0, kg=0, plate=false, nos=[]; R.forEach(function(x){ b+=Number(x.l.bars)||0; kg+=Number(x.l.qty)||0; try{ if(wdPlateOf(x.l))plate=true; }catch(e){} if(nos.indexOf(x.w.no)<0)nos.push(x.w.no); }); prdSvPut(d.id,'bars',b);
+  var u=plate?'แผ่น':'เส้น', tip='จากใบเบิก '+nos.join(', ')+(kg?(' · '+fmt2(kg)+' กก.'):'');
+  if(R.length>1||!(Number(R[0].l.bars)>0))return '<td class="num" title="'+esc(tip)+(R.length>1?' · หลายบรรทัด — แก้ที่ใบเบิกวัตถุดิบ':' · บรรทัดนี้เบิกเป็น กก./ชิ้น')+'">'+(b?fmt(Math.round(b*100)/100):'<span class="muted">-</span>')+'<div class="muted" style="font-size:9px">'+u+'</div></td>';
+  return '<td class="num" title="'+esc(tip)+' — แก้ได้ (ระบบแก้ใบเบิกให้)"><input value="'+(Math.round(b*100)/100)+'" onchange="prdSetBars(\''+d.id+'\',this.value)" style="width:58px;padding:3px 4px;text-align:right;font-weight:700"><div class="muted" style="font-size:9px">'+u+'</div></td>';
+  }catch(e){ return '<td></td>'; } }
+function prdSetBars(id,v){ var d=(DB.docs||[]).find(function(x){return x&&x.id===id;}); if(!d)return; var R=prdBarRefs(d);
+  if(R.length!==1){ toast(R.length?'มีหลายบรรทัด — แก้ที่ใบเบิกวัตถุดิบ':'ยังไม่มีใบเบิกวัตถุดิบ','err'); render(); return; }
+  var w=R[0].w, l=R[0].l, ob=Number(l.bars)||0, oq=Number(l.qty)||0, nb=Math.round((Number(String(v).replace(/,/g,''))||0)*100)/100;
+  if(!(nb>0)){ toast('จำนวนเส้น/แผ่นต้องมากกว่า 0','err'); render(); return; } if(nb===ob)return;
+  var kpu=0; try{ kpu=wdKgPerUnit(l)||0; }catch(e){} var nq=kpu>0?Math.round(nb*kpu*1000)/1000:((ob>0&&oq>0)?Math.round(oq/ob*nb*1000)/1000:oq);
+  var go=function(){ var appr=w.status==='approved';
+    /* ใบอนุมัติแล้ว : ปรับสต๊อคเฉพาะส่วนต่าง (ผูก docId ของใบเบิก → ยกเลิกใบภายหลังคืนครบ) — ไม่คืนทั้งใบแล้วตัดใหม่ เพราะบัญชีเส้น (barLots) ของใบเก่าไม่มีบันทึกการตัด */
+    if(appr){ var p=null; try{ p=stockSrc(P(l.productId)); }catch(e){} if(!p){ toast('ไม่พบวัตถุดิบของใบเบิก '+(w.no||''),'err'); render(); return; }
+      var dq=Math.round((nq-oq)*1000)/1000, db=Math.round((nb-ob)*100)/100, note='แก้จำนวนเบิก (ใบสั่งผลิต '+(d.no||'')+') '+fmt(ob)+'→'+fmt(nb);
+      var _o=window.__mvDocId; window.__mvDocId=w.id;
+      try{ if(dq){ p.onHand=(Number(p.onHand)||0)-dq; move(p.id,'onHand',-dq,'WD',w.no,note); }
+        if(db){ p.barsOnHand=(Number(p.barsOnHand)||0)-db; move(p.id,'barsOnHand',-db,'WD',w.no,note+' (เส้น)');
+          if(Array.isArray(p.barLots)&&p.barLots.length){ var L=barLenMOf(p)||6, rec=null;
+            if(db>0)rec=consumeBarMeters(p,db*L,ISSUE_BAR_LEN()); else { rec=[{len:L,bars:-db}]; restoreBarConsume(p,rec); rec=[{len:L,bars:db}]; }
+            if(rec){ w._barConsume=(w._barConsume||[]).concat([{productId:p.id,rec:rec}]); } } }
+      }finally{ window.__mvDocId=_o; } }
+    l.bars=nb; l.qty=nq; l.kgAuto=1;
+    try{ if(w.totalQty!=null)w.totalQty=(w.lines||[]).reduce(function(s,x){return s+(Number(x.qty)||0);},0); }catch(e){}
+    w.chg=w.chg||[]; w.chg.push({at:Date.now(),by:(typeof actorDefault==='function'?actorDefault('wd'):''),f:'เส้น/แผ่น',from:ob,to:nb,kg:[oq,nq],src:'ใบสั่งผลิต '+(d.no||'')});
+    w.ts=Date.now(); if(d.issuedOverride!=null){ delete d.issuedOverride; } d.ts=Date.now();
+    try{ saveDB(); }catch(e){} render(); toast('ใบเบิก '+(w.no||'')+' : '+fmt(ob)+' → '+fmt(nb)+' · '+fmt2(oq)+' → '+fmt2(nq)+' กก.'+(appr?' · ปรับสต๊อควัตถุดิบตามส่วนต่างแล้ว':''),'ok'); };
+  if(w.status==='approved')confirmBox('แก้จำนวนเบิก '+esc(w.no||'')+' ?','ใบเบิกอนุมัติ (ตัดสต๊อค) แล้ว — ระบบจะปรับสต๊อควัตถุดิบตามส่วนต่าง : '+fmt(ob)+' → '+fmt(nb)+' ('+fmt2(oq)+' → '+fmt2(nq)+' กก.)',go); else go();
+  setTimeout(function(){ if(!document.querySelector('.modal'))render(); },0); }
 function prdIssuedPcs(d){
   var k=function(s){return String(s==null?'':s).toUpperCase().replace(/^PO/,'').replace(/[\s\-_.\/]+/g,'');};
   var key=k(d.no);
@@ -10783,6 +10888,7 @@ function prdRecvCells(d){
   var diff=d.backlogClosed?0:(issued>0?(issued-recv):Math.max(0,ordered-recv));
   var dc=(diff<0)?'#dc2626':(diff>0?'#b45309':'#16a34a');
   var _mm=prdMatMode(d);
+  prdSvPut(d.id,'iss',_mm==='none'?0:issued); prdSvPut(d.id,'recv',recv);
   if(_mm==='none'){                      /* ★ ผู้ผลิตใช้วัตถุดิบเอง — ไม่มีการเบิกจ่าย */
     diff=d.backlogClosed?0:Math.max(0,ordered-recv);
     dc=(diff>0?'#b45309':'#16a34a');
@@ -11106,6 +11212,14 @@ function iqcRes(d){
   var ck=r.chk||{}; Object.keys(ck).forEach(function(k){ if(ck[k]==='ng')out.ok=false; });
   out.lot=lot; out.disp=r.disp||(out.ok?'acc':'sort'); return out;
 }
+/* ★ 14/11c คอลัมน์ เกณฑ์ตรวจรับ ในตาราง RW/GR/GI/GS → ฟอร์มตรวจรับของใบนั้น */
+function iqcColTh(t){ return '<th style="text-align:center;white-space:nowrap"><span class="linkish" style="cursor:pointer" onclick="iqcOpen(\''+t+'\')" title="เกณฑ์ตรวจรับเข้า AQL · ISO 2859-1 — กดเพื่อดูรายการทั้งหมด">📐 เกณฑ์ตรวจรับ</span></th>'; }
+function iqcCell(d){ try{ if(!d||iqcTypes().indexOf(d.type)<0)return '<td></td>'; if(d.status==='cancelled')return '<td class="muted" style="text-align:center">-</td>';
+  var R=d.iqc?iqcRes(d):null, lbl, st, tt;
+  if(!R){ lbl='📐 ตรวจรับ'; st=''; tt='ยังไม่ตรวจรับ — กดเพื่อบันทึกผลตรวจรับ (AQL)'; }
+  else if(R.ok){ lbl='✅ ผ่าน'; st='background:#16a34a;color:#fff;border-color:#16a34a'; tt='ผ่าน · ตรวจ '+(d.iqc.date||'')+(d.iqc.insp?' · '+d.iqc.insp:''); }
+  else { lbl='❌ ไม่ผ่าน'; st='background:#dc2626;color:#fff;border-color:#dc2626'; tt='ไม่ผ่าน · ตรวจ '+(d.iqc.date||'')+(d.iqc.ncNo?' · NC '+d.iqc.ncNo:''); }
+  return '<td style="text-align:center;white-space:nowrap"><button class="btn sm" style="'+st+'" onclick="iqcForm(\''+d.id+'\')" title="'+esc(tt)+'">'+lbl+'</button></td>'; }catch(e){ return '<td></td>'; } }
 function iqcChip(d){
   if(!d||!d.iqc)return '<span class="tag gray">⚪ ยังไม่ตรวจ / Pending</span>';
   var R=iqcRes(d); if(!R)return '<span class="tag gray">⚪ ยังไม่ตรวจ / Pending</span>';
@@ -11277,6 +11391,7 @@ function iqcSave(){
   d.iqc=r;
   try{ if(r.insp){ DB.settings.iqc=DB.settings.iqc||{}; DB.settings.iqc.defInsp=r.insp; } }catch(e){}
   saveDB(); toast('บันทึกผลตรวจรับแล้ว / Saved','ok');
+  try{ setTimeout(function(){ try{ render(); }catch(e){} },60); }catch(e){}   /* ★ 14/11c อัปเดตปุ่มในคอลัมน์ เกณฑ์ตรวจรับ */
   var R=iqcRes(d); if(R&&!R.ok&&!r.ncNo)toast('ล็อตไม่ผ่าน — อย่าลืมออกใบ NC','err');
 }
 function iqcToNC(){
@@ -13315,12 +13430,13 @@ function prdRow(d){
   const pn=first.fgId&&P(first.fgId)?P(first.fgId).pn:(first.name||'');
   const itemAll=(d.lines||[]).map(l=>l.fgId&&P(l.fgId)?P(l.fgId).pn:(l.name||'')).join(' ').toLowerCase();
   const fp=first.fgId&&P(first.fgId)?((P(first.fgId).prodPrice)||first.price||0):(first.price||0);
-  return `<tr data-no="${esc(d.no)}" data-ts="${d.ts||0}" data-price="${fp}" data-amt="${totQty}" data-mon="${(d.date||'').slice(0,7)}" data-mk="${esc(d.maker||'')}" data-item="${esc(itemAll)}">
+  const _bc=prdBarsCell(d), _rc=prdRecvCells(d), _sv=__prdSV[d.id]||{};
+  return `<tr data-no="${esc(d.no)}" data-ts="${d.ts||0}" data-price="${fp}" data-amt="${totQty}" data-bars="${_sv.bars||0}" data-iss="${_sv.iss||0}" data-recv="${_sv.recv||0}" data-mon="${(d.date||'').slice(0,7)}" data-mk="${esc(d.maker||'')}" data-item="${esc(itemAll)}">
     <td class="pn linkish" onclick="viewDoc('${d.id}')">${esc(String(d.no||'').replace(/^PO/i,''))}</td><td class="muted">${d.date}</td>
     <td>${prdShowMaker()?'<span class="tag violet">'+esc(makerShort(d.makerAbbr||d.maker))+'</span> ':''}${prdMatTag(d)}${esc(pn)}${more}</td>
     ${prdC('ref')?`<td>${prdRefCell(d)}</td>`:''}${prdShowCust()?`<td>${esc(d.customer||'')}</td>`:''}${prdShowDue()?`<td class="muted">${esc(first.due||d.due||'')}</td>`:''}
     ${prdShowPrice()?`<td class="num">${fp?fmt2(fp):'<span class="muted">-</span>'}</td>`:''}
-    <td class="num">${fmt(totQty)}</td>${prdRecvCells(d)}<td style="text-align:center">${xLinkBtn(d.id,'pc04',fmCode('pc.fm04','FM-PC-04'))}</td><td>${statusTag(d.status)}</td>
+    <td class="num">${fmt(totQty)}</td>${_bc}${_rc}<td style="text-align:center">${xLinkBtn(d.id,'pc04',fmCode('pc.fm04','FM-PC-04'))}</td><td>${statusTag(d.status)}</td>
     <td style="text-align:right;white-space:nowrap">
       <button class="btn sm" onclick="viewDoc('${d.id}')">ดู</button>
       <button class="btn sm" onclick="printPO('${d.id}')">🖨️</button>
@@ -13348,6 +13464,7 @@ function filterPrdRows(){
   let sum=0;
   document.querySelectorAll('#docRows tr').forEach(tr=>{const ds=tr.dataset||{};const t=tr.textContent.toLowerCase();const show=(!q||t.includes(q))&&(!no||(ds.no||'').toLowerCase().includes(no))&&(!mon||(ds.mon||'').includes(mon))&&(!mk||(ds.mk||'').toLowerCase().includes(mk))&&(!it||(ds.item||'').includes(it))&&(!price||(ds.price||'').includes(price));tr.style.display=show?'':'none';if(show)sum+=Number(ds.amt||0);});
   const st=document.getElementById('prdSubtotal');if(st)st.textContent=fmt(sum);
+  setCellTxt('prdSubBars',fmt(Math.round(sumRowsBy('bars')*100)/100));setCellTxt('prdSubIss',fmt(sumRowsBy('iss')));setCellTxt('prdSubRecv',fmt(sumRowsBy('recv')));
   const sortv=((document.getElementById('prdSort')||{}).value)||'ts_desc';
   const tb=document.getElementById('docRows');
   if(tb){const rows=[...tb.querySelectorAll('tr')];rows.sort((a,b)=>{const A=a.dataset||{},B=b.dataset||{};if(sortv==='no_asc')return (A.no||'').localeCompare(B.no||'',undefined,{numeric:true});if(sortv==='no_desc')return (B.no||'').localeCompare(A.no||'',undefined,{numeric:true});const at=Number(A.ts||0),bt=Number(B.ts||0);return sortv==='ts_asc'?at-bt:bt-at;});rows.forEach(r=>tb.appendChild(r));}
@@ -14198,11 +14315,11 @@ function grRow(d){
     ${grC('kg')?`<td class="num">${kg?fmt2(kg):'-'}</td>`:''}
     ${grC('price')?`<td class="num">${price?fmt2(price):(ln.length>1?'<span class="muted" style="font-size:11px">หลายราคา</span>':'-')}</td>`:''}
     ${grC('amt')?`<td class="num"><b>${amt?fmt2(amt):'-'}</b></td>`:''}
-    <td style="text-align:center;white-space:nowrap"><button class="btn sm" onclick="openMvTagDialog('${d.id}')" title="พิมพ์ TAG ควบคุมการเคลื่อนที่ชิ้นงาน (FM-ST-04) เหมือนรับชิ้นงาน">🏷️ TAG</button></td>
+    <td style="text-align:center;white-space:nowrap"><button class="btn sm" onclick="openMvTagDialog('${d.id}')" title="พิมพ์ TAG ควบคุมการเคลื่อนที่ชิ้นงาน (FM-ST-04) เหมือนรับชิ้นงาน">🏷️ TAG</button> <button class="btn sm" onclick="openPlateTagDialog('${d.id}')" title="พิมพ์ TAG ชุบ 4.3×8.5ซม. (FM-ST-16) + บันทึกส่งชุบ (เหมือนรับชิ้นงาน)">🏷️ ชุบ</button></td>
     ${rwToCell(d.id,'plate')}${rwToCell(d.id,'sort')}
     ${grC('diff')?(()=>{const _o=grPoOrderedPcs(poTxt);const _rt=_o.isBar?grRecvBarsForPO(poNos[0]||poTxt):_o.pcs?grRecvPcsForPO(poNos[0]||poTxt):((typeof orderRecvQty==='function')?(Number(orderRecvQty('PO',poNos[0]||poTxt))||0):0);const _df=(_o.qty||0)-_rt;if(!_o.qty)return '<td class="num muted">-</td>';const _c=_df<0?'#dc2626':(Math.abs(_df)<0.005?'#16a34a':'#b45309');const _F=_o.isBar?fmt2:fmt;const _u=_o.isBar?' เส้น':(_o.pcs?' ชิ้น':'');const _st=(_rt<=0)?'ยังไม่ส่ง':(Math.abs(_df)<0.005?'ส่งครบ':(_df>0?'ส่งขาด':'ส่งเกิน'));return `<td class="num" style="color:${_c};font-weight:700" title="จำนวนสั่งซื้อ ${_F(_o.qty)}${_u} − รับสะสม ${_F(_rt)}${_u} = ${_F(_df)}${_u} · ${_st}">${_df<0?'⚠ '+_F(_df):_F(_df)}<br><span style="font-size:9px;font-weight:600">${_st}</span></td>`;})():''}
     <td style="text-align:center">${grfFlowChip(d)}</td>
-    <td>${statusTag(d.status)}</td>
+    <td>${statusTag(d.status)}</td>${iqcCell(d)}
     <td style="text-align:right;white-space:nowrap">
       ${sncBtn('GR',d.id)}
       <button class="btn sm" onclick="viewDoc('${d.id}')">ดู</button>
@@ -14479,13 +14596,14 @@ function submitRW(status,editId){
     if(_over>0.001){ try{ toast('⚠️ รับเข้าเกิน'+_baseLbl+' '+fmt(_over)+' ชิ้น (PART '+(_pn||'-')+') — อยู่ในส่วนต่างที่ยอมรับได้ ±'+fmt(_tol)+(_sp?' (เฉพาะ PART นี้)':'')+' บันทึกได้','ok'); }catch(e){} }
   }
   let d;
-  if(editId){d=DB.docs.find(x=>x.id===editId);if(!d)return;}else{d={id:uid(),type:'RW',ts:Date.now(),status:'pending'};DB.docs.push(d);}
+  var _wasA=false,_old=null;   /* ★ 13/11c แก้ใบที่อนุมัติแล้ว = คืนยอดเดิมก่อน แล้วลงยอดใหม่ */
+  if(editId){d=DB.docs.find(x=>x.id===editId);if(!d)return; if(d.status==='approved'){ _wasA=true; _old={lines:d.lines,totalQty:d.totalQty,totalWeight:d.totalWeight,maker:d.maker,date:d.date}; reverseDoc(d); d.status='pending'; delete d.approvedAt; } }else{d={id:uid(),type:'RW',ts:Date.now(),status:'pending'};DB.docs.push(d);}
   if(!d.no)d.no=nextNo('RW');
   d.date=v('rw_date')||todayISO(); d.actor=((document.getElementById('rw_recv')||{}).value||'').trim()||actorDefault('rw'); d.receiver=d.actor; d.issuer=d.actor; actorRemember('rw',d.actor);d.note=(v('rw_note')||'').trim();d.receiver=d.actor;
   d.maker=(lines[0]&&lines[0].maker)||'';d.lines=lines;
   d.totalQty=lines.reduce((s,l)=>s+l.qty,0);d.totalWeight=lines.reduce((s,l)=>s+l.totalWeight,0);
   if(status==='statonly'){d.status='statonly';d.statOnly=true;toast('บันทึกรับชิ้นงานแบบสรุป (ไม่เข้าระบบ): '+d.no,'ok');}
-  else if(status==='approved'){const r=doApprove(d);if(!r.ok){toast('อนุมัติไม่สำเร็จ: '+r.err,'err');return}toast('รับชิ้นงานเข้า WIP แล้ว: '+d.no,'ok');}
+  else if(status==='approved'||_wasA){const r=doApprove(d);if(!r.ok){ if(_wasA&&_old){ Object.assign(d,_old); try{ doApprove(d); }catch(e){} try{saveDB();}catch(e){} render(); } toast('อนุมัติไม่สำเร็จ: '+r.err+(_wasA?' — คืนรายการเดิมแล้ว':''),'err');return}toast((_wasA?'แก้ไขแล้ว (คืนยอดเดิม → ลงยอดใหม่): ':'รับชิ้นงานเข้า WIP แล้ว: ')+d.no,'ok');}
   else toast((editId?'บันทึกการแก้ไข ':'สร้างใบรับชิ้นงาน ')+d.no+' (รออนุมัติ)','ok');
   d.ts=Date.now();try{saveDB();}catch(e){}try{xLinkPushNow();}catch(e){}  /* ★ บันทึกทันที ไม่รอรอบวาดจอ */
   rwLines=[];closeModal();try{rwClear();}catch(e){}try{rwToggle(false);}catch(e){}render();
@@ -15171,7 +15289,7 @@ function rwRow(d){
       return `<td class="num" style="color:${c};font-weight:700" title="สั่งผลิต ${fmt(ord)} − รับสะสมถึงใบนี้ ${fmt(cum)} · ${st}">${fmt(Math.abs(diff))}<br><span style="font-size:9px;font-weight:600">${st}</span></td>`;})()}
     <td style="text-align:center;white-space:nowrap"><button class="btn sm" onclick="openMvTagDialog('${d.id}')" title="พิมพ์ TAG ควบคุมการเคลื่อนที่ชิ้นงาน (FM-ST-04)">🏷️ TAG</button> <button class="btn sm" onclick="openPlateTagDialog('${d.id}')" title="พิมพ์ TAG ชุบ 4.3×8.5ซม. (FM-ST-16) + บันทึกส่งชุบ">🏷️ ชุบ</button></td>
     ${rwToCell(d.id,'plate')}${rwToCell(d.id,'sort')}
-    <td>${statusTag(d.status)}</td>
+    <td>${statusTag(d.status)}</td>${iqcCell(d)}
     <td style="text-align:right;white-space:nowrap">
       ${sncBtn('RW',d.id)}
       <button class="btn sm" onclick="viewDoc('${d.id}')">ดู</button>
@@ -17158,6 +17276,18 @@ function prdPartByPORaw(po){
   }
   return '';
 }
+/* ★ 17/11d ยอดรับชุบ (PL recvQty) ต่อ เลขที่ใบสั่ง+ชิ้นงาน */
+var __qcPlR=null;
+function qcPlRecvMap(){ var now=Date.now(), n=(DB.docs||[]).length; if(__qcPlR&&now-__qcPlR.t<3000&&__qcPlR.n===n)return __qcPlR.m; var m={};
+  (DB.docs||[]).forEach(function(d){ if(!d||d.type!=='PL'||d.status==='cancelled')return; (d.lines||[]).forEach(function(l){ var q=Number(l&&l.recvQty)||0; if(!(q>0))return; var k=ordKeyNorm(l.poNo||''); if(!k)return; var o=m[k]||(m[k]={all:0,p:{}}); o.all+=q; var pid=l.productId||''; if(pid)o.p[pid]=(o.p[pid]||0)+q; }); });
+  __qcPlR={t:now,n:n,m:m}; return m; }
+function qcPlRecv(po,pid){ try{ var tot=0; String(po||'').split(',').forEach(function(x){ var k=ordKeyNorm(x.trim()); var o=k?qcPlRecvMap()[k]:null; if(!o)return; tot+=(pid&&o.p[pid]!=null)?o.p[pid]:o.all; }); return tot; }catch(e){ return 0; } }
+/* ★ 17/11f OK+NG รวมทุกใบคัดแยก (ไม่ยกเลิก) ต่อ เลขที่ใบสั่ง */
+var __qcSrtP=null;
+function qcSortedByPO(){ var now=Date.now(), n=(DB.docs||[]).length; if(__qcSrtP&&now-__qcSrtP.t<3000&&__qcSrtP.n===n)return __qcSrtP.m; var m={};
+  (DB.docs||[]).forEach(function(d){ if(!d||d.type!=='QC'||d.status==='cancelled'||d.status==='rejected')return; var L=d.lines||[]; var f0=L[0]||{}; var v=(Number(f0.ok)||0)+L.reduce(function(a,l){return a+(Number(l&&l.ng)||0);},0); var ks={}; L.forEach(function(l){ var k=ordKeyNorm((l&&l.poNo)||''); if(k)ks[k]=1; }); Object.keys(ks).forEach(function(k){ m[k]=(m[k]||0)+v; }); });
+  __qcSrtP={t:now,n:n,m:m}; return m; }
+function qcDiffTd(v,show,tip){ if(!show)return '<td class="num muted">-</td>'; return '<td class="num" style="font-weight:600;color:'+(v?'#c2410c':'#15803d')+'" title="'+esc(tip)+'">'+fmt(v)+'</td>'; }
 function qcRow(d){
   const items=(d.lines||[]).map(l=>l.productId&&P(l.productId)?P(l.productId).pn:(l.name||'')).filter(Boolean);
   const _po0=[...new Set((d.lines||[]).map(l=>l.poNo).filter(Boolean))].join(', ');
@@ -17168,13 +17298,13 @@ function qcRow(d){
   const mkAll=[...new Set((d.lines||[]).map(l=>l.maker).filter(Boolean))].join(' ');
   const poNos=[...new Set((d.lines||[]).map(l=>l.poNo).filter(Boolean))];const poTxt=poNos.length?poNos.join(', '):'-';
   const f0=(d.lines&&d.lines[0])||{};
-  const _rcv=qcRecvInfo(f0);const _ord=prdOrderByPO(poTxt);
+  const _rcv=qcRecvInfo(f0);const _ord=prdOrderByPO(poTxt);const _rpl=qcPlRecv(poNos.join(','),f0.productId||'');let _sin=0,_srtP=0;{const _sx=stockInByPOIndex(),_sp=qcSortedByPO();[...new Set(poNos.map(x=>ordKeyNorm(x)).filter(Boolean))].forEach(k=>{_sin+=Number(_sx[k])||0;_srtP+=Number(_sp[k])||0;});}const _dpl=_rpl?(Number(_rcv.qty)||0)-_rpl:0;const _dsin=_srtP-_sin;
   const _pr=f0.productId?P(f0.productId):null;const _fl=_pr?prodFlow(_pr):'';const _stg=qcStgOf(_pr);const _totV=(f0.total!=null&&f0.total!=='')?Number(f0.total)||0:_stg;
-  return `<tr data-no="${esc(d.no)}" data-ts="${d.ts||0}" data-date="${esc(d.date||'')}" data-amt="${ng}" data-stg="${_stg||0}" data-tot="${_totV}" data-ok="${Number(f0.ok)||0}" data-mon="${(d.date||'').slice(0,7)}" data-mk="${esc(mkAll)}" data-item="${esc(itemAll)}" data-po="${esc(poTxt)}" data-ord="${_ord||0}" data-rqty="${_rcv.qty||0}" data-rdate="${esc(_rcv.date||'')}">
+  return `<tr data-no="${esc(d.no)}" data-ts="${d.ts||0}" data-date="${esc(d.date||'')}" data-amt="${ng}" data-stg="${_stg||0}" data-tot="${_totV}" data-ok="${Number(f0.ok)||0}" data-mon="${(d.date||'').slice(0,7)}" data-mk="${esc(mkAll)}" data-item="${esc(itemAll)}" data-po="${esc(poTxt)}" data-ord="${_ord||0}" data-rqty="${_rcv.qty||0}" data-rpl="${_rpl||0}" data-sin="${_sin||0}" data-dpl="${_rpl?_dpl:''}" data-dsin="${_dsin}" data-rdate="${esc(_rcv.date||'')}">
     <td class="pn linkish" onclick="viewDoc('${d.id}')">${d.no}</td><td class="muted">${d.date}</td>
     <td><span class="tag violet">${esc(poDisp(poTxt))}</span></td>
     <td>${qcC('maker')?`<span class="tag amber">${esc(makerShort(d.maker))}</span> `:''}<span class="muted">${esc(head)}</span></td>
-    ${qcC('ord')?`<td class="num">${_ord?fmt(_ord):'-'}</td>`:''}${qcC('rdate')?`<td class="c muted">${esc(_rcv.date||'')}</td>`:''}${qcC('rqty')?`<td class="num">${_rcv.qty?fmt(_rcv.qty):'-'}</td>`:''}
+    ${qcC('ord')?`<td class="num">${_ord?fmt(_ord):'-'}</td>`:''}${qcC('rdate')?`<td class="c muted">${esc(_rcv.date||'')}</td>`:''}${qcC('rqty')?`<td class="num">${_rcv.qty?fmt(_rcv.qty):'-'}</td>`:''}${qcC('rpl')?`<td class="num" style="color:#7c3aed;font-weight:600" title="ยอดรับชุบ (ส่งชุบ/รับชุบ) ของเลขที่ใบสั่ง ${esc(poTxt)}">${_rpl?fmt(_rpl):'-'}</td>`:''}${qcC('dpl')?qcDiffTd(_dpl,!!_rpl,'รับชิ้นงาน '+fmt(Number(_rcv.qty)||0)+' − รับชุบ '+fmt(_rpl)):''}
     <td style="text-align:center">${irLinkBtnQC(d)}</td>
     ${qcC('qc20')?`<td style="text-align:center">${xLinkBtn(d.id,'qc20','FM-QC-20')}</td>`:''}
     ${qcC('cust')?`<td>${esc(f0.cust||d.customer||'')}</td>`:''}
@@ -17184,7 +17314,7 @@ function qcRow(d){
     <td class="num"><input type="number" value="${(f0.ok!=null&&f0.ok!=='')?f0.ok:''}" onchange="setQCOk('${d.id}',this.value)" style="width:70px;text-align:right;padding:4px 6px"></td>
     <td style="text-align:center"><button class="btn sm" onclick="openTagDialog('${d.id}')" title="พิมพ์ OK TAG ใส่ถุง">🏷️ TAG</button></td>
     <td class="num"${ng?' style="color:var(--red);font-weight:700"':''}>${fmt(ng)}</td>
-    <td style="text-align:center"><button class="btn sm" onclick="openNgTagDialog('${d.id}')" title="พิมพ์ NG TAG ใส่ถุง">🏷️ NG</button>${ng>0?(d.ncId&&DB.docs.some(x=>x.id===d.ncId&&x.type==='NC')?` <button class="btn sm" style="background:var(--teal);color:#fff" onclick="qcToNC('${d.id}')" title="เปิดรายการ NC ที่ส่งแล้ว">✓ NC</button>`:` <button class="btn sm" style="background:#fee2e2;color:#b91c1c;font-weight:700" onclick="qcToNC('${d.id}')" title="ส่งรายการ NG เข้า ผลิตภัณฑ์ไม่เป็นไปตามข้อกำหนด (NC)">➡️ NC</button>`):''}</td><td>${statusTag(d.status)}</td>
+    <td style="text-align:center"><button class="btn sm" onclick="openNgTagDialog('${d.id}')" title="พิมพ์ NG TAG ใส่ถุง">🏷️ NG</button>${ng>0?(d.ncId&&DB.docs.some(x=>x.id===d.ncId&&x.type==='NC')?` <button class="btn sm" style="background:var(--teal);color:#fff" onclick="qcToNC('${d.id}')" title="เปิดรายการ NC ที่ส่งแล้ว">✓ NC</button>`:` <button class="btn sm" style="background:#fee2e2;color:#b91c1c;font-weight:700" onclick="qcToNC('${d.id}')" title="ส่งรายการ NG เข้า ผลิตภัณฑ์ไม่เป็นไปตามข้อกำหนด (NC)">➡️ NC</button>`):''}</td>${qcC('sin')?`<td class="num" style="color:#0f766e;font-weight:600" title="ยอดรับเข้าสต๊อค ของเลขที่ใบสั่ง ${esc(poTxt)}">${_sin?fmt(_sin):'-'}</td>`:''}${qcC('dsin')?qcDiffTd(_dsin,!!(_srtP||_sin),'OK+NG ทุกใบคัดแยกของ PO '+poTxt+' = '+fmt(_srtP)+' − รับเข้าสต๊อค '+fmt(_sin)):''}<td>${statusTag(d.status)}</td>
     <td style="text-align:right;white-space:nowrap">
       ${sncBtn('QC',d.id)} ${clmBtn(d)}
       <button class="btn sm" onclick="qc20Open('${d.id}')" title="พิมพ์ ใบบันทึกการตรวจสอบคุณภาพประจำวัน (FM-QC-20) — เลือกพิมพ์รวมทั้ง PO ได้">🖨️</button>
@@ -17199,9 +17329,9 @@ function qcRow(d){
 function filterQcRows(){
   const g=id=>((document.getElementById(id)||{}).value||'').trim().toLowerCase();
   const q=g('docSearch'),no=g('qcNoF'),mon=((document.getElementById('qcMon')||{}).value||'').trim(),mk=g('qcMkr'),it=g('qcItem');
-  let sum=0,stot=0,sok=0,sstg=0,sord=0,srq=0;var seenO={},seenR={};
-  document.querySelectorAll('#docRows tr').forEach(tr=>{const ds=tr.dataset||{};const t=tr.textContent.toLowerCase();const show=(!q||t.includes(q))&&(!no||(ds.no||'').toLowerCase().includes(no))&&(!mon||(ds.mon||'').includes(mon))&&(!mk||(ds.mk||'').toLowerCase().includes(mk))&&(!it||(ds.item||'').includes(it));tr.style.display=show?'':'none';if(show){sum+=Number(ds.amt||0);stot+=Number(ds.tot||0);sok+=Number(ds.ok||0);sstg+=Number(ds.stg||0);var _po=(ds.po||'').replace(/^PO/i,'').trim();if(_po&&!seenO[_po]){seenO[_po]=1;sord+=Number(ds.ord||0);}var _rk=_po+'|'+(ds.rdate||'');if(_po&&!seenR[_rk]){seenR[_rk]=1;srq+=Number(ds.rqty||0);}}});
-  const st=document.getElementById('qcSubtotal');if(st)st.textContent=fmt(sum);const sstgf=document.getElementById('qcSubStg');if(sstgf)sstgf.textContent=fmt(sstg);const stt=document.getElementById('qcSubTotF');if(stt)stt.textContent=fmt(stot);const sokf=document.getElementById('qcSubOkF');if(sokf)sokf.textContent=fmt(sok);var _srt=sok+sum;var _e;if(_e=document.getElementById('qcSumOrd'))_e.textContent=fmt(sord);if(_e=document.getElementById('qcSumRq'))_e.textContent=fmt(srq);if(_e=document.getElementById('qcSumD1'))_e.textContent=fmt(sord-srq);if(_e=document.getElementById('qcSumSorted'))_e.textContent=fmt(_srt);if(_e=document.getElementById('qcSumD2'))_e.textContent=fmt(srq-_srt);
+  let sum=0,stot=0,sok=0,sstg=0,sord=0,srq=0,ssin=0,srpl=0,sdpl=0;var seenO={},seenR={},seenS={},seenP={};
+  document.querySelectorAll('#docRows tr').forEach(tr=>{const ds=tr.dataset||{};const t=tr.textContent.toLowerCase();const show=(!q||t.includes(q))&&(!no||(ds.no||'').toLowerCase().includes(no))&&(!mon||(ds.mon||'').includes(mon))&&(!mk||(ds.mk||'').toLowerCase().includes(mk))&&(!it||(ds.item||'').includes(it));tr.style.display=show?'':'none';if(show){sum+=Number(ds.amt||0);stot+=Number(ds.tot||0);sok+=Number(ds.ok||0);sstg+=Number(ds.stg||0);var _po=(ds.po||'').replace(/^PO/i,'').trim();if(_po&&!seenO[_po]){seenO[_po]=1;sord+=Number(ds.ord||0);}if(_po&&!seenS[_po]){seenS[_po]=1;ssin+=Number(ds.sin||0);}if(_po&&!seenP[_po]){seenP[_po]=1;srpl+=Number(ds.rpl||0);sdpl+=Number(ds.dpl||0);}var _rk=_po+'|'+(ds.rdate||'');if(_po&&!seenR[_rk]){seenR[_rk]=1;srq+=Number(ds.rqty||0);}}});
+  const st=document.getElementById('qcSubtotal');if(st)st.textContent=fmt(sum);const sstgf=document.getElementById('qcSubStg');if(sstgf)sstgf.textContent=fmt(sstg);const stt=document.getElementById('qcSubTotF');if(stt)stt.textContent=fmt(stot);const sokf=document.getElementById('qcSubOkF');if(sokf)sokf.textContent=fmt(sok);{const _ss=document.getElementById('qcSubSin');if(_ss)_ss.textContent=fmt(ssin);const _sd=(id,v,c)=>{const e=document.getElementById(id);if(e){e.textContent=fmt(v);if(c)e.style.color=v?'#c2410c':'#15803d';}};_sd('qcSubRq',srq);_sd('qcSubRpl',srpl);_sd('qcSubDpl',sdpl,1);_sd('qcSubDsin',sok+sum-ssin,1);}var _srt=sok+sum;var _e;if(_e=document.getElementById('qcSumOrd'))_e.textContent=fmt(sord);if(_e=document.getElementById('qcSumRq'))_e.textContent=fmt(srq);if(_e=document.getElementById('qcSumD1'))_e.textContent=fmt(sord-srq);if(_e=document.getElementById('qcSumSorted'))_e.textContent=fmt(_srt);if(_e=document.getElementById('qcSumD2'))_e.textContent=fmt(srq-_srt);
   /* ★ ค่าตั้งต้น = วันที่ มาก → น้อย (ใบล่าสุดอยู่บนสุด) ใช้ชุดเดียวกับหน้ารับชิ้นงาน/รับเข้าสต๊อค */
   const sortv=((document.getElementById('qcSort')||{}).value)||'date_desc';
   const tb=document.getElementById('docRows');
@@ -18285,6 +18415,8 @@ function plRwKgPc(po){ try{ var k=rwPoKey(po); var o=k?plRwKgMap()[k]:null; retu
 function plAutoKg(p,qty,po){ qty=Number(qty)||0; if(!(qty>0))return 0; var w=plRwKgPc(po); if(!(w>0))w=plKgPc(p); return w>0?Math.round(qty*w*100)/100:0; }
 function plKgOf(p,qty,l,k){ var o=Number(l&&l[k==='s'?'sentKg':'recvKg']); if(o>0&&(l[k==='s'?'skgM':'rkgM']))return Math.round(o*100)/100; var a=plAutoKg(p,qty,l&&l.poNo); if(a>0)return a; return o>0?Math.round(o*100)/100:0; }
 function plKgTip(p,l){ var rw=l?plRwKgPc(l.poNo):0; if(rw>0){ var o=plRwKgMap()[rwPoKey(l.poNo)]; return 'ตามใบรับชิ้นงาน PO '+l.poNo+' : '+fmt2(o.w)+' กก. / '+fmt(o.q)+' ชิ้น (= '+invR(rw,5)+' กก./ชิ้น)'; } var w=plKgPc(p); var est=!!(p&&!(Number(p.wfg)>0)&&!(Number(p.pcPerKg)>0)); return w>0?('น้ำหนัก/ชิ้น '+invR(w,4)+' กก. '+(est?'(ประมาณจากสเปคเหล็ก — กรอก W/FG ที่สินค้าคงคลังเพื่อค่าที่ตรง)':'(W/FG)')):'ยังไม่ได้กรอกน้ำหนัก/ชิ้น — ตั้งที่สินค้าคงคลัง ช่อง W/FG หรือ 100 ชิ้น/กก.'; }
+/* ★ 17/11c ยอดรับชิ้นงาน (RW) ของเลขที่ใบสั่ง — ค่าเดียวกับ prdRecvCells (orderRecvQty) */
+function plRwRecv(po){ try{ if(!po)return 0; var t=['PRD','PO','SP','IP']; for(var i=0;i<t.length;i++){ var v=Number(orderRecvQty(t[i],po))||0; if(v>0)return v; } return 0; }catch(e){ return 0; } }
 function plRow(d){
   const lines=(d.lines&&d.lines.length)?d.lines:[{}];
   return lines.map((l,idx)=>{
@@ -18292,17 +18424,19 @@ function plRow(d){
     const pn=l.pn||(p?p.pn:((l.name||'').split(' ')[0]||''));
     const pname=l.pname||(p?(p.name&&p.name!=='-'?p.name:''):((l.name||'').split(' ').slice(1).join(' ')));
     const sent=Number(l.sentQty)||0,recv=Number(l.recvQty)||0;
+    const rwq=plRwRecv(l.poNo), rwk=ordKeyNorm(l.poNo||'')||'';
     const skg=plKgOf(p,sent,l,'s'), rkg=plKgOf(p,recv,l,'r'), _kgTip=plKgTip(p,l);
     const pend=(l.pending!=null&&l.pending!=='')?Number(l.pending):(sent-recv);
     const sttxt=(l.pstatus||'').trim()||((sent>0&&pend<=0)?'Done':'Pending');
     const stc=/done|ครบ|เสร็จ/i.test(sttxt)?'teal':'amber';
     const acts=`<button class="btn sm" onclick="viewPLDoc('${d.id}')">ดู</button> <button class="btn sm" onclick="qc28Open('${d.id}',${idx})" title="ตรวจรับเข้าชิ้นงานหลังชุบสี (${esc(fmCode('qc.fm28','FM-QC-28'))}) — บันทึกผลตรวจ + พิมพ์">🖨️</button> <button class="btn sm" style="opacity:.65" onclick="printPLDoc('${d.id}')" title="ใบส่งชุบแบบเดิม">📄</button> <button class="btn sm" onclick="editPLInline('${d.id}')">✏️</button> `+(d.status==='cancelled'?`<button class="btn sm danger" onclick="delDocConfirm('${d.id}')">🗑️ ลบ</button>`:d.status==='approved'?`<button class="btn sm danger" onclick="cancelDoc('${d.id}')">ยกเลิก</button>`:`<button class="btn sm danger" onclick="deleteDoc('${d.id}')">ลบ</button>`);
-    return `<tr data-no="${esc(d.no)}" data-ts="${(d.ts||0)+idx}" data-date="${esc(l.date||d.date||'')}" data-sent="${sent}" data-recv="${recv}" data-skg="${skg}" data-rkg="${rkg}" data-pend="${pend}" data-amt="${recv}" data-mon="${(l.date||d.date||'').slice(0,7)}" data-mk="${esc((l.maker||d.maker||'').toLowerCase())}" data-item="${esc((pn+' '+pname).toLowerCase())}" data-po="${esc((l.poNo||'').toLowerCase())}">
+    return `<tr data-no="${esc(d.no)}" data-ts="${(d.ts||0)+idx}" data-date="${esc(l.date||d.date||'')}" data-sent="${sent}" data-recv="${recv}" data-rw="${rwq}" data-rwk="${esc(rwk)}" data-skg="${skg}" data-rkg="${rkg}" data-pend="${pend}" data-amt="${recv}" data-mon="${(l.date||d.date||'').slice(0,7)}" data-mk="${esc((l.maker||d.maker||'').toLowerCase())}" data-item="${esc((pn+' '+pname).toLowerCase())}" data-po="${esc((l.poNo||'').toLowerCase())}">
       <td class="muted">${esc(l.date||d.date||'')}</td>
       <td><span class="tag violet">${esc(l.poNo||'-')}</span></td>
       <td>${mkColShow('pl')?`<span class="tag amber">${esc(makerShort(l.maker||d.maker))}</span>`:''}</td>
       <td class="pn linkish" onclick="editPLInline('${d.id}')"><b>${esc(pn)}</b></td>
       <td class="muted">${esc(pname)}</td>
+      <td class="num" style="color:#0369a1;font-weight:600" title="ยอดรับชิ้นงานจากผู้ผลิต (ใบรับชิ้นงาน) ของเลขที่ใบสั่ง ${esc(l.poNo||'-')}">${rwq?fmt(rwq):'-'}</td>
       <td class="num">${sent?fmt(sent):'-'}</td>
       <td class="num" style="color:var(--ink2)" title="${esc(_kgTip)}">${skg?fmt2(skg):'-'}</td>
       <td class="c"><button class="btn sm" onclick="openPlateTagDialog('${d.id}',${idx})" title="พิมพ์ TAG ชุบ (FM-ST-16) 4.3×8.5ซม.">🏷️ TAG</button></td>
@@ -18324,9 +18458,9 @@ function plRow(d){
 function filterPlRows(){
   const g=id=>((document.getElementById(id)||{}).value||'').trim().toLowerCase();
   const q=g('docSearch'),no=g('plNoF'),mon=((document.getElementById('plMon')||{}).value||'').trim(),mk=g('plMkr'),it=g('plItem');
-  let ss=0,sr=0,sp=0,sk=0,rk=0;
-  document.querySelectorAll('#docRows tr').forEach(tr=>{const ds=tr.dataset||{};const t=tr.textContent.toLowerCase();const show=(!q||t.includes(q))&&(!no||(ds.no||'').toLowerCase().includes(no))&&(!mon||(ds.mon||'').includes(mon))&&(!mk||(ds.mk||'').toLowerCase().includes(mk))&&(!it||(ds.item||'').includes(it));tr.style.display=show?'':'none';if(show){ss+=Number(ds.sent||0);sr+=Number(ds.recv||0);sp+=Number(ds.pend||0);sk+=Number(ds.skg||0);rk+=Number(ds.rkg||0);}});
-  const setT=(id,val)=>{const e=document.getElementById(id);if(e)e.textContent=fmt(val);};setT('plTotSent',ss);setT('plTotRecv',sr);setT('plTotPend',sp);{const e1=document.getElementById('plTotSentKg');if(e1)e1.textContent=fmt2(Math.round(sk*100)/100);const e2=document.getElementById('plTotRecvKg');if(e2)e2.textContent=fmt2(Math.round(rk*100)/100);}
+  let ss=0,sr=0,sp=0,sk=0,rk=0,rwT=0;const rwSeen={};
+  document.querySelectorAll('#docRows tr').forEach(tr=>{const ds=tr.dataset||{};const t=tr.textContent.toLowerCase();const show=(!q||t.includes(q))&&(!no||(ds.no||'').toLowerCase().includes(no))&&(!mon||(ds.mon||'').includes(mon))&&(!mk||(ds.mk||'').toLowerCase().includes(mk))&&(!it||(ds.item||'').includes(it));tr.style.display=show?'':'none';if(show){if(ds.rwk&&!rwSeen[ds.rwk]){rwSeen[ds.rwk]=1;rwT+=Number(ds.rw||0);}ss+=Number(ds.sent||0);sr+=Number(ds.recv||0);sp+=Number(ds.pend||0);sk+=Number(ds.skg||0);rk+=Number(ds.rkg||0);}});
+  const setT=(id,val)=>{const e=document.getElementById(id);if(e)e.textContent=fmt(val);};setT('plTotSent',ss);setT('plTotRw',rwT);setT('plTotRecv',sr);setT('plTotPend',sp);{const e1=document.getElementById('plTotSentKg');if(e1)e1.textContent=fmt2(Math.round(sk*100)/100);const e2=document.getElementById('plTotRecvKg');if(e2)e2.textContent=fmt2(Math.round(rk*100)/100);}
   /* ★ ค่าตั้งต้น = วันที่ มาก → น้อย (ใบล่าสุดอยู่บนสุด) ชุดเดียวกับหน้ารับชิ้นงาน/คัดแยก */
   const sortv=((document.getElementById('plSort')||{}).value)||'date_desc';
   const tb=document.getElementById('docRows');
@@ -18613,6 +18747,12 @@ function dpSelfRMBox(d){
 function dpWdNoShow(){try{return localStorage.getItem('rtk_dpwdno')!=='0';}catch(e){return true;}}
 function dpWdNoToggle(){try{localStorage.setItem('rtk_dpwdno',dpWdNoShow()?'0':'1');}catch(e){}render();}
 /* ความยาวชิ้นงาน (มม.) + จำนวนชิ้นต่อเส้น จากสินค้าสำเร็จรูปของใบเบิกบรรทัดนั้น */
+/* ★ 14/11b ใบสั่งผลิตของเลข PO ในบรรทัดใบเบิก (ใช้เมื่อรหัสงานในใบเบิกไม่ตรงสินค้า) */
+function wdPrdOfLine(l){ try{ var kk=function(v){ return String(v||'').toUpperCase().replace(/^PO/,'').replace(/[\s\-_.\/]+/g,''); }; var k=kk(l&&l.poNo); if(!k)return null;
+  var m=memo('wdPrdNo','',function(){ var o={}; (DB.docs||[]).forEach(function(x){ if(!x||x.type!=='PRD'||x.status==='cancelled')return; var q=kk(x.no); if(q&&(!o[q]||(x.ts||0)>(o[q].ts||0)))o[q]=x; }); return o; });
+  return m[k]||null; }catch(e){ return null; } }
+function wdPrdLineOf(l){ try{ var d=wdPrdOfLine(l); if(!d)return null; var ls=(d.lines||[]).filter(Boolean); if(!ls.length)return null; if(ls.length===1)return ls[0];
+  var f=String((l&&l.fgPn)||'').toUpperCase().replace(/\s+/g,''); if(f){ var h=ls.find(function(x){ var p=P(x.fgId||x.productId); var pn=String((p&&p.pn)||x.name||'').toUpperCase().replace(/\s+/g,''); return pn&&(pn===f||pn.indexOf(f)===0); }); if(h)return h; } return null; }catch(e){ return null; } }
 function wdCutInfo(l){
   try{
     /* ★ ยึดค่าจาก "ใบสั่งผลิต" ก่อนเสมอ — ใบสั่งผลิตกับใบเบิกต้องได้จำนวนงานเท่ากัน */
@@ -18623,6 +18763,9 @@ function wdCutInfo(l){
     }
     var fg=null;
     if(l&&l.fgPn){ fg=rxProdByPn(pnNorm(l.fgPn),true); if(fg===undefined)fg=DB.products.find(function(x){ return (x.type==='FG'||x.type==='ASM')&&pnNorm(x.pn)===pnNorm(l.fgPn); }); }
+    if(!fg){ var _pl=wdPrdLineOf(l);   /* ★ 14/11b รหัสงานในใบเบิกไม่ตรง → ชิ้นต่อเส้นของใบสั่งผลิต → ชิ้นงานของใบสั่งผลิต */
+      if(_pl&&Number(_pl.perBar)>0)return {cut:Number(_pl.workLen)||0,per:Number(_pl.perBar),bar:(Number(_pl.barLen)||0)*1000,src:'prd',plate:!!_pl.plate};
+      try{ var _fp=_pl?P(_pl.fgId||_pl.productId):null; if(_fp&&(_fp.type==='FG'||_fp.type==='ASM'))fg=_fp; }catch(e){} }
     if(!fg)return null;
     try{ var _pi=plInfo(fg); if(_pi){ var _n=plPerSheet(fg);
       if(_n>0)return {cut:_pi.pieceL,per:_n,bar:_pi.plateL,plate:1}; } }catch(e){}   /* ★ เหล็กแผ่น : 1 แผ่น = n ชิ้น */
@@ -18990,7 +19133,7 @@ function dpRow(d){
       ${dpIpcBtn(d)}
       <button class="btn sm pri" onclick="vs4Tag('${d.id}')" title="พิมพ์ TAG ควบคุมการเคลื่อนที่ชิ้นงาน (FM-ST-04) + บันทึกจัดส่งเข้ารับชิ้นงาน">🏷️ TAG</button>
       <button class="btn sm" onclick="viewDoc('${d.id}')">ดู</button>
-      <button class="btn sm" onclick="printDP('${d.id}')" title="พิมพ์รายงานผลิต">🖨️</button>
+      <button class="btn sm" onclick="printDP('${d.id}')" title="พิมพ์รายงานผลิต (FM-PD-02)">🖨️</button><span style="display:inline-flex;align-items:center;gap:2px;font-size:9.5px;font-weight:700;color:#475569;vertical-align:middle" title="แนบเอกสาร FM-PD-02 รายงานผลิตประจำวัน">FM-PD-02 ${xLinkBtn(d.id,'fmpd02','FM-PD-02')}</span>
       <button class="btn sm" onclick="editDPInline('${d.id}')">✏️</button>
       ${d.status==='pending'?`<button class="btn sm ok" onclick="approveDoc('${d.id}')">อนุมัติ</button> <button class="btn sm danger" onclick="deleteDoc('${d.id}')">🗑️ ลบ</button>`:''}
       ${d.status==='approved'?`<button class="btn sm danger" onclick="cancelDoc('${d.id}')">ยกเลิก</button>`:''}
@@ -19141,6 +19284,8 @@ function dpStepsModal(d){
 /* ยอดตั้งต้นของสายการผลิต : ใช้ OK ที่รับมาจาก "รับชิ้นงาน"/รายงานผลิต ถ้าไม่มีใช้จำนวนสั่งผลิต */
 function dpBaseQty(d){
   if(!d)return 0;
+  /* ★ 18/11a ยอดตั้งต้น = ยอดเบิกวัตถุดิบที่เป็นชิ้น (ก่อนยอดรับชิ้นงาน) */
+  try{ var _wp=dpWdPcs(d); if(_wp>0)return _wp; }catch(e){}
   /* ★ ยอดตั้งต้น : ใช้ยอดที่ "รับชิ้นงาน" จริงของ PO นั้นก่อน */
   try{
     var pos=[...new Set((d.lines||[]).map(function(l){ return l.poNo; }).filter(Boolean))];
@@ -20158,9 +20303,10 @@ function openPlateTagDialog(docId,idx){
   /* ★★ ค่าที่ "เคยกดบันทึกไว้บน TAG" ต้องมาก่อนค่าจากสินค้าคงคลังเสมอ
      เดิมเอาค่าจากสินค้าคงคลังขึ้นก่อน พอแก้แล้วกดบันทึก เปิดใหม่จึงถูกทับ = "บันทึกแล้วไม่จำ" */
   var part=l.pn||(p?p.pn:(l.name||'')); var pname=l.pname||(p?(p.name||''):'');
-  var po=l.poNo||d.no||''; var maker=makerShort(l.maker||d.maker||'');
+  var po=l.poNo||d.poNo||d.no||''; var maker=makerShort(l.maker||d.maker||'');
+  if(['GR','GI','GS'].indexOf(d.type)>=0){ try{ var _sn=String(d.supplier||l.supplier||'').trim(), _sr=((DB.settings&&DB.settings.supList)||[]).find(function(x){ return x&&(String(x.name||'').trim()===_sn||String(x.code||'')===_sn); }); maker=l.maker?makerShort(l.maker):(d.supplierAbbr||(_sr&&_sr.shortName)||_sn); }catch(e){ maker=d.supplier||l.supplier||''; } }   /* ★ 11/11a รับวัตถุดิบ : ผู้ขาย */
   var lot=l.lot||l.date||d.date||'';
-  var qty=isPL?(Number(l.sentQty)||0):(Number(l.receivedQty||l.qty)||0);
+  var qty=isPL?(Number(l.sentQty)||0):(['GR','GI','GS'].indexOf(d.type)>=0?(Number(l.qty)||Number(l.receivedQty)||0):(Number(l.receivedQty||l.qty)||0));   /* GR : qty = จำนวนเข้าสต๊อค (ชิ้น) · receivedQty อาจเป็น กก. */
   var plating=l.plating||(p&&p.colorPlate)||(p&&p.plating)||'';
   var plant=l.vendor||l.plant||(p&&p.plateTPI)||'';
   var packQ=Number(l.packQty)||0;
@@ -20171,7 +20317,7 @@ function openPlateTagDialog(docId,idx){
         if(_rw){ var _ln=(_rw.lines||[]).find(function(y){return _k(y.poNo)===_kk&&(Number(y.totalWeight)||0)>0;});
           var _bq=Number(_ln.receivedQty||_ln.qty)||0; if(_bq>0)ptTotW=(Number(_ln.totalWeight)||0)/_bq*(qty||_bq); } } }catch(e){} }
   var ptUnit=(qty>0&&ptTotW>0)?(ptTotW/qty):0;
-  window.__plateTag={docId:docId,idx:idx||0,part:part,pname:pname,po:po,maker:maker,lot:lot,qty:qty,isPL:isPL,pid:pid||''};
+  window.__plateTag={docId:docId,idx:idx||0,part:part,pname:pname,po:po,maker:maker,lot:lot,qty:qty,isPL:isPL,pid:pid||'',srcType:d.type,srcNo:d.no||''};
   modal({title:'🏷️ TAG ชุบ (FM-ST-16) 4.3×8.5 ซม.',size:'md',body:
     '<div class="hint" style="margin-bottom:8px"><span class="i">💡</span><div>พิมพ์ตามจำนวนบรรจุ (จำนวน ÷ บรรจุ) · A4 = 10 ใบ · มี QR (บาร์โค้ด)</div></div>'
     +'<div class="row c2"><div class="field"><label>ชื่อโรงชุบ (PLATING NAME)</label><input id="pt_plant" value="'+esc(plant)+'" placeholder="เช่น TPI"></div><div class="field"><label>ชุบสี (PLATING)</label><input id="pt_plating" value="'+esc(plating)+'" placeholder="เช่น MFZn8-Cf"></div></div>'
@@ -20269,7 +20415,8 @@ function plateSaveSend(){
   var name=(v('pt_part')+(v('pt_pname')?' '+v('pt_pname'):'')).trim();
   var _tw=Number(((document.getElementById('pt_totw')||{}).value))||0;
   var line={date:todayISO(),poNo:po,prdId:'',productId:s.pid||'',name:name,maker:maker,sentQty:qty,recvDate:'',recvQty:'',pending:qty,dueDate:'',pstatus:'ส่งชุบ',vendor:plant,totalWeight:_tw};
-  var pl={id:uid(),type:'PL',ts:Date.now(),status:'pending',no:nextNo('PL'),date:todayISO(),maker:maker,lines:[line],totalQty:qty,note:'ส่งชุบจากรับชิ้นงาน'};
+  if(s.docId){ line.srcDoc=s.docId; line.srcNo=s.srcNo||''; }
+  var pl={id:uid(),type:'PL',ts:Date.now(),status:'pending',no:nextNo('PL'),date:todayISO(),maker:maker,lines:[line],totalQty:qty,note:(['GR','GI','GS'].indexOf(s.srcType)>=0?('ส่งชุบจาก'+({GR:'รับวัตถุดิบ',GI:'รับเข้าต่างประเทศ',GS:'รับเข้าพิเศษ'}[s.srcType])+' '+(s.srcNo||'')):'ส่งชุบจากรับชิ้นงาน')};
   DB.docs.push(pl); try{saveDB();}catch(e){}
   closeModal(); render(); toast('✅ สร้างใบส่งชุบ '+pl.no+' แล้ว → ดูที่เมนู "ส่งชุบ/รับชุบ" (รออนุมัติ)','ok');
 }
@@ -20290,13 +20437,16 @@ function printDP(id){ var d=DB.docs.find(function(x){return x.id===id;}); if(!d)
   var poNos=[]; (d.lines||[]).forEach(function(l){ if(l.poNo&&poNos.indexOf(l.poNo)<0)poNos.push(l.poNo); });
   var poTxt=poNos.length?poNos.join(', '):(d.type==='PRD'?(d.no||''):'');
   var rwi=(d.type==='RW')?{recv:(d.lines||[]).reduce(function(s,l){return s+(Number(l.receivedQty!=null?l.receivedQty:l.qty)||0);},0),date:d.date||''}:dpRWInfo(poTxt);
-  var wd=dpWdAgg(d);
+  var wd=dpWdAgg(d); try{ var _wpc=dpWdPcs(d); if(_wpc>0||wd.qty>0)wd.qty=_wpc; }catch(e){}
+  var _ordT=(d.lines||[]).reduce(function(s,l){return s+(Number(l.orderQty||l.qty||l.receivedQty)||0);},0);
+  var _dDone=d.doneDate||'', _dQty=(d.doneQty!=null&&d.doneQty!=='')?Number(d.doneQty)||0:null;
   var mkQR=(makerShort(d.maker||'')||info.maker||'');
   var poNum=String(info.po||poTxt||d.no||'').split(',')[0].trim().replace(/^PO/i,'');
   var qrText=[poNum, (rwi.recv||0), mkQR].filter(function(x){return String(x).length;}).join(', ');
   var infoBlock='<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-top:26px;gap:20px">'
     +'<div style="font-size:14px;line-height:2.1">'
       +'<div><b>เบิกวัตถุดิบ</b> &nbsp;&nbsp; '+esc(slash(wd.date))+' &nbsp;&nbsp; จำนวน &nbsp;<b>'+fmt(wd.qty)+'</b> ชิ้น &nbsp;&nbsp;&nbsp;&nbsp; <b>งานเสีย</b> &nbsp;<b style="color:#c00">'+fmt(agg.ng)+'</b> ชิ้น</div>'
+      +'<div><b>วันที่จัดส่ง</b> &nbsp; '+(_dDone?esc(slash(_dDone)):'..................')+' &nbsp;&nbsp; จำนวน &nbsp;<b>'+(_dQty!=null?fmt(_dQty):'..........')+'</b> ชิ้น</div>'
       +'<div><b>วันที่รับชิ้นงาน</b> &nbsp; '+esc(slash(rwi.date))+' &nbsp;&nbsp; จำนวน &nbsp;<b>'+fmt(rwi.recv||0)+'</b> ชิ้น</div>'
     +'</div>'
     +'<div style="text-align:center"><div class="qr" data-qr="'+esc(qrText)+'" style="width:110px;height:110px;margin:0 auto"></div></div>'
@@ -20304,8 +20454,8 @@ function printDP(id){ var d=DB.docs.find(function(x){return x.id===id;}); if(!d)
   var html='<html><head><meta charset="utf-8"><title>รายงานผลิต '+esc(d.no||'')+'</title><style>@page{size:A4;margin:1cm}body{font-family:Tahoma,\"Sarabun\",sans-serif;font-size:13px}h1{font-size:17px;margin:0 0 2px}table{width:100%;border-collapse:collapse;margin-top:10px}th,td{border:1px solid #444;padding:5px 7px}.c{text-align:center}.r{text-align:right}th{background:#eef2f7}.kv{margin:2px 0}.qr img,.qr canvas{width:110px!important;height:110px!important}</style></head><body>'
     +'<div style="text-align:right;font-size:12px;color:#c00">รายงานผลิต '+esc(d.no||'')+'</div>'
     +'<h1>'+esc(co.thName||co.name||'RTK')+'</h1><div style="font-weight:700;font-size:15px;margin-bottom:6px">รายงานผลิตประจำวัน '+esc(d.no||'')+'</div>'
-    +'<div class="kv"><b>PART:</b> '+esc(info.part)+' &nbsp; <b>PO:</b> '+esc(info.po)+' &nbsp; <b>วันที่:</b> '+esc(d.date||'')+'</div>'
-    +'<div class="kv"><b>จำนวนสั่ง:</b> '+fmt((d.lines||[]).reduce(function(s,l){return s+(Number(l.orderQty)||0);},0))+' &nbsp; <b>ผู้ตรวจ:</b> '+esc(d.inspector||'-')+'</div>'
+    +'<div class="kv"><b>PART:</b> '+esc(info.part)+' &nbsp; <b>PO:</b> '+esc(info.po)+' &nbsp; <b>วันที่:</b> '+esc(d.date||'')+' &nbsp; <b>ผู้ผลิต:</b> '+esc(mkQR||'-')+'</div>'
+    +'<div class="kv"><b>จำนวนสั่ง:</b> '+fmt(_ordT)+' &nbsp; <b>ผู้ตรวจ:</b> '+esc(d.inspector||'-')+'</div>'
     +'<div class="kv" style="border:1px solid #444;padding:4px 7px;background:'+((d.ackDate||d.ackBy)?'#f3fbf5':'#fff7e6')+'"><b>รับทราบใบสั่งผลิต:</b> วันที่ '+esc(slash(d.ackDate||'')||'..................')+' &nbsp; ผู้รับทราบ '+esc(d.ackBy||'..................')+((d.ackDate||d.ackBy)?'':' &nbsp; <b style="color:#c00">(ยังไม่รับทราบ)</b>')+'</div>'
     +'<table><thead><tr><th>ลำดับ</th><th>กระบวนการ</th><th>วันที่เริ่ม</th><th>วันที่เสร็จ</th><th>OK</th><th>NG</th><th>ผู้ผลิต</th></tr></thead><tbody>'+rows+'</tbody>'
     +'<tfoot><tr style="background:#fff7a8;font-weight:700"><td colspan="4" class="r">รวม</td><td class="r">'+fmt(agg.ok)+'</td><td class="r" style="color:#c00">'+fmt(agg.ng)+'</td><td></td></tr></tfoot></table>'
@@ -20687,12 +20837,13 @@ function submitGR(status,editId){
   }));
   if(!lines.length){toast('กรุณาเพิ่มรายการรับ (มีเลข PO/รายการ และจำนวนส่ง > 0)','err');return}
   let d;
-  if(editId){d=DB.docs.find(x=>x.id===editId);if(!d)return;}else{d={id:uid(),type:'GR',ts:Date.now(),status:'pending'};DB.docs.push(d);}
+  var _wasA=false,_old=null;   /* ★ 13/11c แก้ใบที่อนุมัติแล้ว = คืนยอดเดิมก่อน แล้วลงยอดใหม่ */
+  if(editId){d=DB.docs.find(x=>x.id===editId);if(!d)return; if(d.status==='approved'){ _wasA=true; _old={lines:d.lines,totalQty:d.totalQty,totalWeight:d.totalWeight,amount:d.amount,supplier:d.supplier,date:d.date}; reverseDoc(d); d.status='pending'; delete d.approvedAt; } }else{d={id:uid(),type:'GR',ts:Date.now(),status:'pending'};DB.docs.push(d);}
   if(!d.no)d.no=nextNo('GR');
   d.date=v('gr_date')||todayISO(); d.actor=((document.getElementById('gr_recv')||{}).value||'').trim()||actorDefault('gr'); d.issuer=d.actor; actorRemember('gr',d.actor); d.receiver=d.actor;d.note=(v('gr_note')||'').trim();d.receiver=(v('gr_recv')||'').trim();d.invNo=(v('gr_inv')||'').trim();
   d.supplier=(lines[0]&&lines[0].supplier)||'';d.lines=lines;
   d.totalQty=lines.reduce((s,l)=>s+l.qty,0);d.totalWeight=lines.reduce((s,l)=>s+l.totalWeight,0);d.amount=lines.reduce((s,l)=>s+(l.amount||0),0);
-  if(status==='approved'){const r=doApprove(d);if(!r.ok){toast('อนุมัติไม่สำเร็จ: '+r.err,'err');return}toast('รับเข้าสต๊อคแล้ว: '+d.no,'ok');}
+  if(status==='approved'||_wasA){const r=doApprove(d);if(!r.ok){ if(_wasA&&_old){ Object.assign(d,_old); try{ doApprove(d); }catch(e){} try{saveDB();}catch(e){} render(); } toast('อนุมัติไม่สำเร็จ: '+r.err+(_wasA?' — คืนรายการเดิมแล้ว':''),'err');return}toast((_wasA?'แก้ไขแล้ว (คืนยอดเดิม → ลงยอดใหม่): ':'รับเข้าสต๊อคแล้ว: ')+d.no,'ok');}
   else toast((editId?'บันทึกการแก้ไข ':'สร้างใบรับ ')+d.no+' (รออนุมัติ)','ok');
   try{d.ts=Date.now();}catch(e){}try{saveDB();}catch(e){}try{xLinkPushNow();}catch(e){}/*★บันทึกทันที*/
   grLines=[];closeModal();try{grClear();}catch(e){}try{grToggle(false);}catch(e){}render();
@@ -23024,7 +23175,7 @@ function printWD(id,mode){
     const up=_cm?0:((sc.price>0)?sc.price:wdUnitPrice(l));
     let amt=_cm?0:((sc.amt>0)?sc.amt:(up*(u.byWeight?u.kgs:u.pcs)));
     const _q=_pm(l); let _up=up; if(_q){ _up=_q.price; amt=_q.amt; }
-    const _per=wdPerOf(l), _pcs=wdPcsOf(l), _uT=wdUnitTH(l);
+    const _per=wdPerOf(l), _pcs=wdPcsOf(l), _uT=(_cm&&!(Number(l.bars)>0))?'ชิ้น':wdUnitTH(l);   /* ★ 13/11a แมทลูกค้าเบิกเป็นชิ้น */
     return '<tr><td class="c">'+(i+1)+'</td><td class="c">'+(l.date||'')+'</td><td>'+esc(l.matName||'')
       +(_per?'<div style="font-size:8.5px;color:#555">1 '+_uT+' ได้งาน '+fmt(_per)+' ชิ้น</div>':'')
       +'</td><td class="r">'+fmt(u.pcs||0)+(u.pcs?('<div style="font-size:8.5px;color:#555">'+_uT+'</div>'):'')+'</td>'
@@ -23032,7 +23183,7 @@ function printWD(id,mode){
       +'<td class="r">'+(u.byWeight?fmt2(kg):'-')+'</td><td class="r">'+fmt2(_up)+'</td>'+(_hasM?'<td class="r"><b>'+(_q?fmt(_q.m):'-')+'</b></td>':'')+'<td class="r">'+fmt2(amt)+'</td><td class="c">'+esc(l.poNo||'')+'</td><td>'+esc(l.fgPn||'')+'</td><td class="r">'+(_ordOf(l)?fmt(_ordOf(l)):'-')+'</td></tr>';}).join('');
   const blanks=Array.from({length:Math.max(0,5-(d.lines||[]).length)}).map(()=>'<tr><td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>'+(_hasM?'<td></td>':'')+'</tr>').join('');
   const pcsTot=(d.lines||[]).reduce((s,l)=>s+(wdPcsOf(l)||0),0);
-  const unitTot=(()=>{try{ return (d.lines||[]).some(l=>Number(l.bars)>0)?((d.lines||[]).some(l=>wdPlateOf(l))?'แผ่น':'เส้น'):'PCS.'; }catch(e){ return 'PCS.'; }})();
+  const unitTot=(()=>{try{ if((d.lines||[]).length&&(d.lines||[]).every(l=>wdIsCustMat(l)&&!(Number(l.bars)>0)))return 'ชิ้น'; return (d.lines||[]).some(l=>Number(l.bars)>0)?((d.lines||[]).some(l=>wdPlateOf(l))?'แผ่น':'เส้น'):'PCS.'; }catch(e){ return 'PCS.'; }})();
   const fmno=fmCode('st.fm02','FM-ST-02')+'  Rev.00';
   const html='<!DOCTYPE html><html lang="th"><head><meta charset="utf-8"><title>'+esc(d.no)+'</title><style>'+"*{font-family:'Tahoma','TH Sarabun New',sans-serif;box-sizing:border-box}"+"@page{size:A4;margin:0}body{margin:0;color:#111;font-size:12px}"+".copy{padding:9mm 10mm 6mm;height:148.5mm;display:flex;flex-direction:column;page-break-inside:avoid;position:relative}"+".copy+.copy{border-top:1px dashed #bbb}"+".hd{display:flex;align-items:center;gap:10px;border-bottom:2px solid #111;padding-bottom:5px}"+".hd .lg{width:26mm;flex:0 0 26mm;font-size:26px;font-weight:800;letter-spacing:1px;line-height:1}"+".hd .co{flex:1;text-align:center}.hd .co h1{font-size:15px;margin:0}.hd .co div{font-size:10px;color:#333}"+".hd .cp{flex:0 0 26mm;text-align:right;font-size:16px;font-weight:700}"+".ttl{text-align:center;font-size:16px;font-weight:700;margin:6px 0 5px}"+".sup{display:flex;justify-content:space-between;font-size:10.5px;border:1px solid #999;border-radius:5px;padding:5px 9px;margin-bottom:6px}.sup b{color:#555}"+"table{width:100%;border-collapse:collapse;font-size:10.5px}th,td{border:1px solid #888;padding:3px 5px}th{background:#eee;text-align:center}td.r{text-align:right}td.c{text-align:center}"+".tot{display:flex;justify-content:flex-end;gap:16px;margin-top:5px;font-size:11px;font-weight:700}"+".sign{display:flex;justify-content:space-between;margin-top:auto;padding-top:8px;text-align:center;font-size:10px}.sign>div{width:23%}.sign .line{border-top:1px dotted #555;margin-top:16px;padding-top:2px}"
    +".sign .sbox{height:26px;display:flex;align-items:flex-end;justify-content:center}.sign .sbox img{max-height:25px;max-width:94%;object-fit:contain}"
@@ -23262,8 +23413,11 @@ function viewDoc(id){
 }
 function doApprove(d){
   if(d&&d.statOnly)return {ok:true};
+  /* ★ 13/11c กันลงยอดซ้ำ : ใบที่อนุมัติแล้วและยังมีความเคลื่อนไหวของใบนี้อยู่ = ต้อง reverseDoc ก่อนเสมอ */
+  try{ if(d&&d.status==='approved'&&d.id&&(DB.movements||[]).some(function(m){ return m&&m.docId===d.id; })){ console.warn('⛔ doApprove ซ้ำ '+d.no); return {ok:false,err:'เอกสาร '+(d.no||'')+' อนุมัติ (ลงยอด) แล้ว — ระบบไม่ลงยอดซ้ำ'}; } }catch(e){}
   if(d.type==='IV2'||(d.type==='INV'&&(d.date||'')<'2026-07-03')){try{invDrawFromQTime(d);}catch(e){}}
   if(d.type==='WD'){try{wdAutoTopUp(d);}catch(e){}}   /* ★ วัตถุดิบไม่พอ → เติมให้พอเบิกก่อน */
+  if(d.type==='FGI'){ try{ var _sl=(d.lines||[]).map(function(l){ return P(l.productId||l.fgId); }).filter(function(p){ return p&&invIsSum(p); }); if(_sl.length)return {ok:false,err:'รายการรวม '+_sl[0].pn+' ('+(_sl[0].name||'')+') ใช้เบิกจ่ายไม่ได้ — แก้ใบให้เลือกรายการย่อย (เช่น '+invSumKids(_sl[0]).slice(0,3).map(function(k){ return k.pn; }).join(' / ')+')'}; }catch(e){} }   /* ★ 11/11f */
   const r=applyDoc(d);if(!r.ok)return r;
   d.status='approved';d.approvedAt=new Date().toLocaleString('th-TH');return {ok:true};
 }
@@ -23968,16 +24122,19 @@ function viewRcv(kind){
     <div class="right" style="display:flex;gap:6px;flex-wrap:wrap"><div class="searchbox"><input id="rcvQ" placeholder="ค้นหา เลขที่/ใบกำกับ/PO/ผู้ขาย/รายการ" oninput="filterRcvList()"></div>${(function(){ var k=(kind==='GS')?'GS':'GI'; var n=0; try{ n=pdfPending(false,k).length; }catch(e){}
     return '<button class="btn" style="'+(n?'border-color:#2563eb;color:#1d4ed8;font-weight:700':'')+'" onclick="pdfPanel(\''+k+'\')" title="เก็บใบรับเข้าเป็นไฟล์ PDF ไว้ที่เครื่องแม่ข่าย — ทำอัตโนมัติทุกวัน 17:00-18:00 น.">📄 PDF เก็บเข้าแฟ้ม'+(n?(' ('+fmt(n)+')'):'')+'</button>'; })()}<button class="btn" onclick="grfFlowAudit()" title="ตรวจใบที่ยอดยังไม่เข้าคงเหลือ">🐌 ตรวจการไหล</button>${['GI','GS'].indexOf(cf.type)>=0?`<button class="btn" onclick="iqcOpen('${cf.type}')" title="เกณฑ์ตรวจรับเข้า AQL · ISO 2859-1">📐 เกณฑ์ตรวจรับ</button>`:''} <button class="btn pri" onclick="openRcvForm('${kind}')">+ รายการใหม่</button></div>
   </div><div class="panel-b nopad">
-    ${docs.length?`<div class="tbl-wrap"><table style="white-space:nowrap;font-size:12px"><thead><tr><th>เลขที่</th><th>วันที่</th><th>เลขที่ใบกำกับ</th><th>PO เลขที่</th><th>ผู้ขาย</th><th>รายการ</th><th class="num">จำนวนรับ</th>${irThQCK()}<th class="num">จำนวนเงิน</th><th style="text-align:center;min-width:82px" title="แนบลิงก์ใบรับเข้าที่เซ็นแล้ว">${fmCodeChip('qc.fm59','FM-QC-59')}</th><th>TAG</th><th style="text-align:center">การไหล</th><th>สถานะ</th><th></th></tr></thead><tbody id="rcvRows">${docs.map(d=>rcvRow(d,kind)).join('')}</tbody>
-    <tfoot><tr style="background:#fff7a8;font-weight:700"><td colspan="6" style="text-align:right">รวม</td><td class="num">${fmt(docs.reduce((s,d)=>s+(d.totalQty||0),0))}</td><td></td><td class="num">${fmt2(docs.reduce((s,d)=>s+(Number(d.amount)||0),0))}</td><td colspan="3"></td></tr></tfoot></table></div>`:`<div class="empty"><div class="big">${cf.ico}</div><div class="t">ยังไม่มีรายการ${esc(cf.label)}</div><div>กด "+ รายการใหม่" แล้วเคาะเลข ${esc(cf.srcLabel)}</div></div>`}
+    ${docs.length?`<div class="tbl-wrap"><table style="white-space:nowrap;font-size:12px"><thead><tr><th>เลขที่</th><th>วันที่</th><th>เลขที่ใบกำกับ</th><th>PO เลขที่</th><th>ผู้ขาย</th><th>รายการ</th><th class="num">จำนวนรับ</th>${irThQCK()}<th class="num">จำนวนเงิน</th><th style="text-align:center;min-width:82px" title="แนบลิงก์ใบรับเข้าที่เซ็นแล้ว">${fmCodeChip('qc.fm59','FM-QC-59')}</th><th>TAG</th><th style="text-align:center">การไหล</th><th>สถานะ</th>${iqcColTh(cf.type)}<th></th></tr></thead><tbody id="rcvRows">${docs.map(d=>rcvRow(d,kind)).join('')}</tbody>
+    <tfoot><tr style="background:#fff7a8;font-weight:700"><td colspan="6" style="text-align:right" title="รวมเฉพาะแถวที่แสดงตามการค้นหา">SUBTOTAL <span style="font-weight:400;font-size:10.5px">(<span id="rcvSubN">${fmt(docs.length)}</span> ใบ)</span></td><td class="num" id="rcvSubQ">${fmt(docs.reduce((s,d)=>s+(d.totalQty||0),0))}</td><td></td><td class="num" id="rcvSubA">${fmt2(docs.reduce((s,d)=>s+(Number(d.amount)||0),0))}</td><td colspan="4"></td></tr></tfoot></table></div>`:`<div class="empty"><div class="big">${cf.ico}</div><div class="t">ยังไม่มีรายการ${esc(cf.label)}</div><div>กด "+ รายการใหม่" แล้วเคาะเลข ${esc(cf.srcLabel)}</div></div>`}
   </div></div>`;
 }
-function filterRcvList(){const q=((document.getElementById('rcvQ')||{}).value||'').trim().toLowerCase();document.querySelectorAll('#rcvRows tr').forEach(tr=>{tr.style.display=(!q||tr.textContent.toLowerCase().includes(q))?'':'none';});}
+/* ★ 10/11d SUBTOTAL ตามตัวกรอง : รวม data-q / data-amt ของแถวที่แสดง */
+function subTotRows(body,pre){ var q=0,a=0,n=0; document.querySelectorAll('#'+body+' tr').forEach(function(tr){ if(tr.style.display==='none')return; var ds=tr.dataset||{}; if(ds.q==null&&ds.amt==null)return; q+=Number(ds.q)||0; a+=Number(ds.amt)||0; n++; });
+  var e; if((e=document.getElementById(pre+'Q')))e.textContent=fmt(q); if((e=document.getElementById(pre+'A')))e.textContent=fmt2(a); if((e=document.getElementById(pre+'N')))e.textContent=fmt(n); }
+function filterRcvList(){const q=((document.getElementById('rcvQ')||{}).value||'').trim().toLowerCase();document.querySelectorAll('#rcvRows tr').forEach(tr=>{tr.style.display=(!q||tr.textContent.toLowerCase().includes(q))?'':'none';});subTotRows('rcvRows','rcvSub');}
 function rcvRow(d,kind){
   const items=(d.lines||[]).map(l=>l.productId&&P(l.productId)?P(l.productId).pn:(l.name||'')).filter(Boolean);
   const head=items.slice(0,1).join(', ')+(items.length>1?` +${items.length-1}`:'');
   const tq=(d.lines||[]).reduce((s,l)=>s+(Number(l.qty)||0),0);
-  return `<tr><td class="pn linkish" onclick="openRcvForm('${kind}',DB.docs.find(x=>x.id==='${d.id}'))">${esc(d.no)}</td><td class="muted">${esc(d.date||'')}</td><td>${d.invNo?'<span class="tag amber">'+esc(d.invNo)+'</span>':'<span class="muted">-</span>'}</td><td><span class="tag violet">${esc(poDisp(d.poNo)||'-')}</span></td><td><span class="tag cyan">${esc(d.supplier||'-')}</span></td><td class="muted">${esc(head)}</td><td class="num">${fmt(tq)}</td><td style="text-align:center">${irLinkBtn(d.id)}</td><td class="num"><b>${fmt2(d.amount||0)}</b></td><td style="text-align:center">${xLinkBtn(d.id,'qc59',fmCode('qc.fm59','FM-QC-59'))}</td><td style="text-align:center;white-space:nowrap"><button class="btn sm" onclick="openMvTagDialog('${d.id}')" title="พิมพ์ TAG ควบคุมการเคลื่อนที่ชิ้นงาน (FM-ST-04) เหมือนรับชิ้นงาน">🏷️ TAG</button></td><td style="text-align:center">${grfFlowChip(d)}</td><td>${statusTag(d.status)}</td>
+  return `<tr data-q="${Number(d.totalQty)||0}" data-amt="${Number(d.amount)||0}"><td class="pn linkish" onclick="openRcvForm('${kind}',DB.docs.find(x=>x.id==='${d.id}'))">${esc(d.no)}</td><td class="muted">${esc(d.date||'')}</td><td>${d.invNo?'<span class="tag amber">'+esc(d.invNo)+'</span>':'<span class="muted">-</span>'}</td><td><span class="tag violet">${esc(poDisp(d.poNo)||'-')}</span></td><td><span class="tag cyan">${esc(d.supplier||'-')}</span></td><td class="muted">${esc(head)}</td><td class="num">${fmt(tq)}</td><td style="text-align:center">${irLinkBtn(d.id)}</td><td class="num"><b>${fmt2(d.amount||0)}</b></td><td style="text-align:center">${xLinkBtn(d.id,'qc59',fmCode('qc.fm59','FM-QC-59'))}</td><td style="text-align:center;white-space:nowrap"><button class="btn sm" onclick="openMvTagDialog('${d.id}')" title="พิมพ์ TAG ควบคุมการเคลื่อนที่ชิ้นงาน (FM-ST-04) เหมือนรับชิ้นงาน">🏷️ TAG</button> <button class="btn sm" onclick="openPlateTagDialog('${d.id}')" title="พิมพ์ TAG ชุบ 4.3×8.5ซม. (FM-ST-16) + บันทึกส่งชุบ (เหมือนรับชิ้นงาน)">🏷️ ชุบ</button></td><td style="text-align:center">${grfFlowChip(d)}</td><td>${statusTag(d.status)}</td>${iqcCell(d)}
    <td style="white-space:nowrap">${sncBtn(kind,d.id)} <button class="btn sm" onclick="printGR('${d.id}')" title="พิมพ์ใบรับเข้า (แบบฟอร์มเดียวกับรับวัตถุดิบ)">🖨️</button> <button class="btn sm" onclick="printGR('${d.id}','image')" title="ส่งรูป (LINE)">📤</button> <button class="btn sm" onclick="openRcvForm('${kind}',DB.docs.find(x=>x.id==='${d.id}'))">✏️</button> ${d.status==='approved'?`<button class="btn sm danger" onclick="cancelDoc('${d.id}')">ยกเลิก</button>`:d.status==='cancelled'?`<button class="btn sm danger" onclick="delDocConfirm('${d.id}')">🗑️</button>`:`<button class="btn sm ok" onclick="approveDoc('${d.id}')">อนุมัติ</button> <button class="btn sm danger" onclick="deleteDoc('${d.id}')">ลบ</button>`}</td></tr>`;
 }
 function openRcvForm(kind,edit){
@@ -27430,7 +27587,7 @@ function fpLoad2(p){
       return fpLoad(''); }
     var el2=document.getElementById('fpBody'); if(!el2)return;
     el2.innerHTML='<div class="hint" style="border-color:#f59e0b"><span class="i">⚠️</span><div><b>เปิดคลังเอกสารไม่ได้</b><br>'
-      +'1) ต้องเข้าแอปผ่านที่อยู่ของเครื่องแม่ข่าย เช่น <b>http://192.168.1.51:8080</b><br>'
+      +'1) ต้องเข้าแอปผ่านที่อยู่ของเครื่องแม่ข่าย เช่น <b>http://192.168.1.200:8080</b><br>'
       +'2) เครื่องแม่ข่ายต้องเปิด <b>server.js</b> ค้างไว้ (หน้าต่างสีดำ)<br>'
       +'3) ถ้าเพิ่งอัปเดต server.js ให้ปิดหน้าต่างนั้นแล้วเปิดใหม่<br>'
       +'<span class="muted" style="font-size:11.5px">ตรวจได้ที่ '+esc(fpBase())+'/api/ping — ต้องขึ้น "docs":true</span></div></div>';
@@ -28214,8 +28371,10 @@ function docOfficeExt(u){ return String(u||'').toLowerCase().split('?')[0].split
 function docOfficeScheme(u){ var e=docOfficeExt(u); if(e==='xlsx'||e==='xlsm'||e==='xls'||e==='xlsb')return 'ms-excel'; if(e==='docx'||e==='doc'||e==='docm')return 'ms-word'; if(e==='pptx'||e==='ppt'||e==='pptm')return 'ms-powerpoint'; return ''; }
 function docOfficeEditBtn(u){ if(!docIsDocsRef(u))return ''; if(!docOfficeScheme(u))return ''; var js=String(u).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); return '<button class="btn pri" onclick="docOfficeEdit(\''+js+'\')" title="เปิดในโปรแกรม Office ที่เครื่องนี้ (เครื่องลูก) แก้แล้วกด Save จะบันทึกทับไฟล์ต้นฉบับบนเครื่องแม่ข่าย">📝 แก้ที่เครื่องนี้ (Office)</button><button class="btn" onclick="docOfficeHelp(\''+js+'\')" title="ไฟล์ไม่เปิด? ดูวิธีติดตั้งตัวช่วย / คัดลอกที่อยู่ไฟล์" style="padding:6px 9px">❓</button>'; }
 function docOfficeHelp(u){ if(!docIsDocsRef(u))return; var rel=String(u).slice(7); var base=(typeof fpBase==='function')?fpBase():(location.origin||''); var scheme=docOfficeScheme(u);
-  fetch(base+'/api/localpath?p='+encodeURIComponent(rel),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){ var lp=(j&&j.unc)?j.unc:((j&&j.path)?j.path:''); docHelperHint(lp||'(ไม่พบพาธ)',scheme); }).catch(function(){ toast('เชื่อมต่อเครื่องแม่ข่ายไม่ได้','err'); }); }
+  fetch(base+'/api/localpath?p='+encodeURIComponent(rel),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){ var lp=(j&&j.unc)?docUncFix(j.unc,base):((j&&j.path)?j.path:''); docHelperHint(lp||'(ไม่พบพาธ)',scheme); }).catch(function(){ toast('เชื่อมต่อเครื่องแม่ข่ายไม่ได้','err'); }); }
 var _docLocalPath='', _docLocalScheme='';
+/* ★ 13/11d ไฟล์ในคลังเอกสารอยู่บนเครื่องแม่ข่าย → UNC ที่เป็น IP เก่า (share-map เดิม 192.168.1.51) เปลี่ยนเป็น IP แม่ข่ายที่เชื่อมอยู่ */
+function docUncFix(p,base){ try{ var B=String.fromCharCode(92), s=String(p||''); if(s.slice(0,2)!==B+B)return p; var rest=s.slice(2), i=rest.indexOf(B); if(i<0)return p; var ip=rest.slice(0,i), re=/^[0-9]{1,3}([.][0-9]{1,3}){3}$/; if(!re.test(ip))return p; var h=''; try{ h=new URL(base||location.origin).hostname; }catch(e){} if(!re.test(h)||h===ip||h.indexOf('127.')===0)return p; return B+B+h+rest.slice(i); }catch(e){ return p; } }
 function docOfficeEdit(u){
   if(!docIsDocsRef(u)){toast('ใช้ได้เฉพาะไฟล์ในคลังเอกสาร','err');return;}
   var scheme=docOfficeScheme(u);
@@ -28224,7 +28383,7 @@ function docOfficeEdit(u){
   toast('กำลังเตรียมเปิดไฟล์…','ok');
   fetch(base+'/api/localpath?p='+encodeURIComponent(rel),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
     /* อยู่บนเครื่องแม่ข่ายเอง → ใช้พาธจริง (D:\...) · เครื่องลูก → ใช้ไดรฟ์/UNC ที่ map ไว้ (Z:\...) */
-    var localPath=(j&&j.isLocal&&j.path)?j.path:((j&&j.unc)?j.unc:'');
+    var localPath=(j&&j.isLocal&&j.path)?j.path:((j&&j.unc)?docUncFix(j.unc,base):'');
     if(localPath){ docLaunchHelper(localPath,scheme); return; }           /* มีไดรฟ์/UNC → เปิดด้วยตัวช่วย (คลิกเดียว) */
     if(/^https?:/i.test(httpUrl)&&scheme){ try{window.location.href=scheme+':ofe|u|'+httpUrl;}catch(e){} toast('เปิดผ่าน http — ถ้า Excel บล็อก/อ่านอย่างเดียว ให้ map ไดรฟ์ Z: และตั้ง share-map.json ที่เครื่องแม่ข่าย','err'); return; }
     toast('ต้องเข้าผ่านเครื่องแม่ข่าย LAN','err');
@@ -33269,6 +33428,35 @@ function viewSafety(el){
     +'<div class="panel"><div class="panel-b">'+supStdHTML('714')+'</div></div>';
 }
 
+/* ★ 14/11d เมนู บุคคล = 7 การสนับสนุน → 7.1.2 บุคคล (ข้อมูลชุดเดียวกัน) */
+function viewHrPeople(el){
+  ensureSettings(); ensureSupport();
+  setTitle('👥 บุคคล (People)','ข้อมูลชุดเดียวกับ 7 การสนับสนุน → 7.1.2 บุคคล · ISO 9001 / IATF 16949 ข้อ 7.1.2 · 7.2 · 7.3');
+  el.innerHTML='<div class="hint" style="margin-bottom:10px"><span class="i">👥</span><div>แก้ไข / เพิ่ม / พิมพ์ ที่หน้านี้หรือที่ <b class="linkish" onclick="window.__supTab=\'712\';go(\'support\')">7 การสนับสนุน → 7.1.2 บุคคล</b> ก็ได้ — เป็นข้อมูลชุดเดียวกัน</div></div>'
+    +'<div class="panel iso-doc"><div class="panel-b">'+supStdHTML('712')+'</div></div>';
+}
+/* ★ 14/11e เมนู ซ่อมบำรุง = 7 การสนับสนุน → 7.1.3 ซ่อมบำรุง (ข้อมูลชุดเดียวกัน) */
+function viewMnMaint(el){
+  ensureSettings(); ensureSupport();
+  setTitle('🔧 ซ่อมบำรุง (Maintenance)','ข้อมูลชุดเดียวกับ 7 การสนับสนุน → 7.1.3 ซ่อมบำรุง · ISO 9001 ข้อ 7.1.3 · IATF 16949 8.5.1.5 TPM · 8.5.1.6 Tooling');
+  el.innerHTML='<div class="hint" style="margin-bottom:10px"><span class="i">🔧</span><div>แก้ไข / เพิ่ม / พิมพ์ ที่หน้านี้หรือที่ <b class="linkish" onclick="window.__supTab=\'713\';go(\'support\')">7 การสนับสนุน → 7.1.3 ซ่อมบำรุง</b> ก็ได้ — เป็นข้อมูลชุดเดียวกัน</div></div>'
+    +'<div class="panel iso-doc"><div class="panel-b">'+supStdHTML('713')+'</div></div>';
+}
+/* ★ 17/11a เมนู เครื่องมือวัด = 7 การสนับสนุน → 7.1.5 เครื่องมือวัด (ข้อมูลชุดเดียวกัน) */
+function viewTlMeas(el){
+  ensureSettings(); ensureSupport();
+  setTitle('📏 เครื่องมือวัด (Measuring Equipment)','ข้อมูลชุดเดียวกับ 7 การสนับสนุน → 7.1.5 เครื่องมือวัด · ISO 9001 ข้อ 7.1.5 · IATF 16949 7.1.5.1.1 MSA · 7.1.5.2.1 · 7.1.5.3');
+  el.innerHTML='<div class="hint" style="margin-bottom:10px"><span class="i">📏</span><div>แก้ไข / เพิ่ม / พิมพ์ ที่หน้านี้หรือที่ <b class="linkish" onclick="window.__supTab=\'715\';go(\'support\')">7 การสนับสนุน → 7.1.5 เครื่องมือวัด</b> ก็ได้ — เป็นข้อมูลชุดเดียวกัน</div></div>'
+    +'<div class="panel iso-doc"><div class="panel-b">'+supStdHTML('715')+'</div></div>';
+}
+/* ★ 17/11b เมนู ควบคุมเอกสาร = 7 การสนับสนุน → 7.5 เอกสารข้อมูล (วาดด้วย viewSupport แท็บ 75 · ข้อมูลชุดเดียวกัน) */
+function viewDccCtl(el){
+  var prev=window.__supTab; window.__supTab='75';
+  try{ viewSupport(el); }finally{ window.__supTab=prev; }
+  setTitle('📑 ควบคุมเอกสาร (Document Control)','ข้อมูลชุดเดียวกับ 7 การสนับสนุน → 7.5 เอกสารข้อมูล · ISO 9001 ข้อ 7.5 · IATF 16949 7.5.1.1 · 7.5.3.2.1 · 7.5.3.2.2');
+  try{ el.querySelectorAll('.iso-tabs button').forEach(function(b){ if(/^supTab\(/.test(b.getAttribute('onclick')||''))b.style.display='none'; }); }catch(e){}
+  el.insertAdjacentHTML('afterbegin','<div class="hint" style="margin-bottom:10px"><span class="i">📑</span><div>แก้ไข / เพิ่ม / พิมพ์ ที่หน้านี้หรือที่ <b class="linkish" onclick="window.__supTab=\'75\';go(\'support\')">7 การสนับสนุน → 7.5 เอกสารข้อมูล</b> ก็ได้ — เป็นข้อมูลชุดเดียวกัน</div></div>');
+}
 function viewComm(el){
   setTitle('💬 การสื่อสาร','บันทึกการสื่อสารภายในและภายนอก FM-MR-02 · ข้อมูลชุดเดียวกับ 7 การสนับสนุน → 7.4 การสื่อสาร · ISO 9001 ข้อ 7.4');
   var n=supStdRows('74').length;
@@ -36779,7 +36967,7 @@ function renderWSList(){
   if(!docs.length){wrap.innerHTML=`<div class="empty"><div class="big">🧰</div><div class="t">ยังไม่มีรายการเบิกวัสดุสิ้นเปลือง</div><div>กด "+ สร้างเบิกวัสดุสิ้นเปลือง"</div></div>`;return;}
   let tQ=0,tAmt=0;
   const rows=docs.map(d=>{const items=(d.lines||[]).map(l=>l.name).filter(Boolean);const head=items.slice(0,1).join(', ')+(items.length>1?` +${items.length-1}`:'');const q=(d.lines||[]).reduce((s,l)=>s+(Number(l.qty)||0),0);const amt=(d.lines||[]).reduce((s,l)=>s+(Number(l.qty)||0)*(Number(l.price)||0),0);const pr=(d.lines&&d.lines[0]&&d.lines[0].price)||0;tQ+=q;tAmt+=amt;
-    return `<tr data-no="${esc(d.refNo||d.no)}" data-mon="${esc((d.date||'').slice(0,7))}" data-maker="${esc(d.issuer||'')}" data-item="${esc(items.join(' ').toLowerCase())}">
+    return `<tr data-q="${q}" data-amt="${amt}" data-no="${esc(d.refNo||d.no)}" data-mon="${esc((d.date||'').slice(0,7))}" data-maker="${esc(d.issuer||'')}" data-item="${esc(items.join(' ').toLowerCase())}">
       <td class="pn linkish" onclick="printWS('${d.id}')">${esc(d.refNo||d.no||'')}</td><td class="muted">${esc(d.date||'')}</td>
       <td><b>${esc(head)}</b></td><td>${esc(d.issuer||'-')}</td>
       <td style="text-align:center">${xLinkBtn(d.id,'st22',fmCode('st.fm22','FM-ST-22'))}</td>
@@ -36789,9 +36977,9 @@ function renderWSList(){
   wrap.innerHTML=`<div class="tbl-wrap"><table style="white-space:nowrap"><thead><tr>
     <th>เลขที่</th><th>วันที่</th><th>รายละเอียด</th><th>ผู้เบิก</th><th style="text-align:center;min-width:82px" title="แนบลิงก์ใบเบิกวัสดุสิ้นเปลืองที่เซ็นแล้ว">${fmCodeChip('st.fm22','FM-ST-22')}</th><th class="num">จำนวนชิ้น</th><th class="num">ราคา</th><th class="num">จำนวนเงิน</th><th>สถานะ</th><th></th>
   </tr></thead><tbody id="wsFilterBody">${rows}</tbody>
-  <tfoot><tr style="background:#f3f6fb;font-weight:700"><td colspan="5" style="text-align:right">รวม</td><td class="num">${fmt(tQ)}</td><td></td><td class="num">${fmt2(tAmt)}</td><td colspan="2"></td></tr></tfoot></table></div>`;
+  <tfoot><tr style="background:#f3f6fb;font-weight:700"><td colspan="5" style="text-align:right" title="รวมเฉพาะแถวที่แสดงตามตัวกรอง">SUBTOTAL <span style="font-weight:400;font-size:10.5px">(<span id="wsSubN">${fmt(docs.length)}</span> ใบ)</span></td><td class="num" id="wsSubQ">${fmt(tQ)}</td><td></td><td class="num" id="wsSubA">${fmt2(tAmt)}</td><td colspan="2"></td></tr></tfoot></table></div>`;
 }
-function filterWsRows(){const g=id=>((document.getElementById(id)||{}).value||'').trim().toLowerCase();const q=g('wsSearch'),fn=g('ws_no'),fm=g('ws_mon'),fk=g('ws_maker'),fi=g('ws_item');document.querySelectorAll('#wsFilterBody tr').forEach(tr=>{const ds=tr.dataset||{};const t=tr.textContent.toLowerCase();const show=(!q||t.includes(q))&&(!fn||(ds.no||'').toLowerCase().includes(fn))&&(!fm||(ds.mon||'').includes(fm))&&(!fk||(ds.maker||'').toLowerCase().includes(fk))&&(!fi||(ds.item||'').includes(fi));tr.style.display=show?'':'none';});}
+function filterWsRows(){const g=id=>((document.getElementById(id)||{}).value||'').trim().toLowerCase();const q=g('wsSearch'),fn=g('ws_no'),fm=g('ws_mon'),fk=g('ws_maker'),fi=g('ws_item');document.querySelectorAll('#wsFilterBody tr').forEach(tr=>{const ds=tr.dataset||{};const t=tr.textContent.toLowerCase();const show=(!q||t.includes(q))&&(!fn||(ds.no||'').toLowerCase().includes(fn))&&(!fm||(ds.mon||'').includes(fm))&&(!fk||(ds.maker||'').toLowerCase().includes(fk))&&(!fi||(ds.item||'').includes(fi));tr.style.display=show?'':'none';});subTotRows('wsFilterBody','wsSub');}
 function openWSForm(edit){
   ensureSettings();const makers=(DB.settings.makers||[]).map(m=>m.code||m).filter(Boolean);
   const e=edit||{};
@@ -36919,7 +37107,7 @@ function renderSUPList(){
   if(!docs.length){wrap.innerHTML=`<div class="empty"><div class="big">🧰</div><div class="t">ยังไม่มีรายการวัสดุสิ้นเปลือง</div><div>กด "+ รับวัสดุสิ้นเปลือง" เพื่อเริ่ม</div></div>`;return;}
   let tQ=0,tAmt=0;
   const rows=docs.map(d=>{const items=(d.lines||[]).map(l=>l.name).filter(Boolean);const head=items.slice(0,1).join(', ')+(items.length>1?` +${items.length-1}`:'');const q=(d.lines||[]).reduce((s,l)=>s+(Number(l.qty)||0),0);const amt=(d.lines||[]).reduce((s,l)=>s+(Number(l.qty)||0)*(Number(l.price)||0),0);tQ+=q;tAmt+=amt;
-    return `<tr data-no="${esc(d.refNo||d.no)}" data-mon="${esc((d.date||'').slice(0,7))}" data-sup="${esc(d.supplier||'')}" data-item="${esc(items.join(' ').toLowerCase())}">
+    return `<tr data-q="${q}" data-amt="${amt}" data-no="${esc(d.refNo||d.no)}" data-mon="${esc((d.date||'').slice(0,7))}" data-sup="${esc(d.supplier||'')}" data-item="${esc(items.join(' ').toLowerCase())}">
       <td class="muted">${esc(d.date||'')}</td><td class="pn linkish" onclick="printSUP('${d.id}')">${esc(d.refNo||d.no||'')}</td>
       <td><span class="tag violet">${esc(d.supplier||'-')}</span></td><td>${esc(head)}</td>
       <td style="text-align:center">${xLinkBtn(d.id,'st21',fmCode('st.fm21','FM-ST-21'))}</td>
@@ -36929,9 +37117,9 @@ function renderSUPList(){
   wrap.innerHTML=`<div class="tbl-wrap"><table style="white-space:nowrap"><thead><tr>
     <th>วันที่</th><th>เลขที่ใบสั่ง</th><th>Supplier</th><th>รายละเอียด (วัสดุ)</th><th style="text-align:center;min-width:82px" title="แนบลิงก์ใบรับวัสดุสิ้นเปลืองที่เซ็นแล้ว">${fmCodeChip('st.fm21','FM-ST-21')}</th><th class="num">จำนวน</th><th class="num">รวมเงิน</th><th>สถานะ</th><th></th>
   </tr></thead><tbody id="supFilterBody">${rows}</tbody>
-  <tfoot><tr style="background:#f3f6fb;font-weight:700"><td colspan="4" style="text-align:right">รวม</td><td class="num">${fmt(tQ)}</td><td class="num">${fmt2(tAmt)}</td><td colspan="2"></td></tr></tfoot></table></div>`;
+  <tfoot><tr style="background:#f3f6fb;font-weight:700"><td colspan="4" style="text-align:right" title="รวมเฉพาะแถวที่แสดงตามตัวกรอง">SUBTOTAL <span style="font-weight:400;font-size:10.5px">(<span id="supSubN">${fmt(docs.length)}</span> ใบ)</span></td><td class="num" id="supSubQ">${fmt(tQ)}</td><td class="num" id="supSubA">${fmt2(tAmt)}</td><td colspan="2"></td></tr></tfoot></table></div>`;
 }
-function filterSupRows(){const g=id=>((document.getElementById(id)||{}).value||'').trim().toLowerCase();const q=g('supSearch'),fn=g('sf_no'),fm=g('sf_mon'),fs=g('sf_sup'),fi=g('sf_item');document.querySelectorAll('#supFilterBody tr').forEach(tr=>{const ds=tr.dataset||{};const t=tr.textContent.toLowerCase();const show=(!q||t.includes(q))&&(!fn||(ds.no||'').toLowerCase().includes(fn))&&(!fm||(ds.mon||'').includes(fm))&&(!fs||(ds.sup||'').toLowerCase().includes(fs))&&(!fi||(ds.item||'').includes(fi));tr.style.display=show?'':'none';});}
+function filterSupRows(){const g=id=>((document.getElementById(id)||{}).value||'').trim().toLowerCase();const q=g('supSearch'),fn=g('sf_no'),fm=g('sf_mon'),fs=g('sf_sup'),fi=g('sf_item');document.querySelectorAll('#supFilterBody tr').forEach(tr=>{const ds=tr.dataset||{};const t=tr.textContent.toLowerCase();const show=(!q||t.includes(q))&&(!fn||(ds.no||'').toLowerCase().includes(fn))&&(!fm||(ds.mon||'').includes(fm))&&(!fs||(ds.sup||'').toLowerCase().includes(fs))&&(!fi||(ds.item||'').includes(fi));tr.style.display=show?'':'none';});subTotRows('supFilterBody','supSub');}
 function openSUPForm(edit){
   ensureSettings();const sups=[...new Set(DB.docs.filter(x=>x.type==='SUP').map(x=>x.supplier).filter(Boolean))].sort();
   const e=edit||{};window.__supEdit=edit?edit.id:'';
@@ -39949,7 +40137,7 @@ function fgiMakerOf(d){ if(!d)return {t:'',est:false}; return memo('fgimk',d.id+
     var x=(DB.docs||[]).find(function(y){ return y&&y.type==='PRD'&&y.status!=='cancelled'&&K(y.no)===k; });
     if(x){ var m=''; try{ m=makerShort(x.maker); }catch(e){} out.push(m&&m!=='-'?m:(x.maker||'')); return; }
     x=(DB.docs||[]).find(function(y){ return y&&(y.type==='PO'||y.type==='IP'||y.type==='SP')&&y.status!=='cancelled'&&K(y.no)===k; });
-    if(x)out.push(x.supplierAbbr||x.supplier||''); });
+    if(x){ var sn=x.supplierAbbr||''; if(!sn){ try{ var nk=String(x.supplier||'').trim().toLowerCase(); var sp=((DB.settings||{}).supList||[]).find(function(q){ return q&&(String(q.name||'').trim().toLowerCase()===nk||String(q.code||'').trim().toLowerCase()===nk); }); sn=sp&&sp.shortName||''; }catch(e){} } out.push(sn||x.supplier||''); } });   /* ★ 11/11c ชื่อย่อผู้ขาย */
   if(!out.length){ (d.lines||[]).forEach(function(l){ var pid=l.productId||l.fgId; if(!pid)return; try{ var mi=lastMakeInfo(pid); if(mi&&mi.maker){ var m=makerShort(mi.maker); out.push(m&&m!=='-'?m:mi.maker); est=true; } }catch(e){} }); }
   out=[...new Set(out.filter(Boolean))];
   return {t:out.slice(0,2).join(', ')+(out.length>2?' +'+(out.length-2):''),est:est}; }); }
@@ -41278,17 +41466,26 @@ function fgiSetQty(id,v){ var d=(DB.docs||[]).find(function(x){ return x&&x.id==
     d.ts=Date.now(); try{ saveDB(); }catch(e){} render(); toast('เปลี่ยนจำนวน '+(d.no||'')+' '+fmt(old)+' → '+fmt(q)+(appr?' · คืนยอดเดิมและตัดยอดใหม่แล้ว':''),'ok'); };
   if(d.status==='approved')confirmBox('เปลี่ยนจำนวน '+esc(d.no||'')+' ?','ใบนี้อนุมัติ (ตัดยอด) แล้ว — ระบบจะคืนยอดเดิม '+fmt(old)+' แล้วตัดยอดใหม่ '+fmt(q)+' ชิ้น',go); else go();
   setTimeout(function(){ if(!document.querySelector('.modal'))render(); },0); }
+/* ★ 11/11c ค่าจากสินค้าคงคลัง : ลูกค้า (ชื่อย่อ) · ผู้ขาย/ผู้ผลิต · ชื่อขาย */
+function fgiInvInfo(d){ return memo('fgiinv',d.id+'|'+(d.ts||0),function(){ var vm=memo('invvm','',function(){ try{ return invVendorMap()||{}; }catch(e){ return {}; } }), rf={}; try{ rf=invRefMap()||{}; }catch(e){}
+  var cu=[], mk=[], nm=[], U=function(a,v){ v=String(v||'').trim(); if(v&&v!=='-'&&v!=='ไม่ระบุ'&&!/^RTK(?![A-Z])|รัสสมิ|รัศมี|RUSSAMI/i.test(v)&&a.indexOf(v)<0)a.push(v); };   /* RTK = บริษัทเอง → ใช้ค่าจากเอกสาร */
+  (d.lines||[]).forEach(function(l){ var p=(l&&(l.productId||l.fgId))?P(l.productId||l.fgId):null; if(!p){ U(nm,l&&l.name); return; }
+    var c=p.customer&&p.customer!=='ไม่ระบุ'?p.customer:((rf[p.id]||{}).cust||''); try{ c=invCustShort(c)||c; }catch(e){} U(cu,c); if(!cu.length&&(rf[p.id]||{}).cust){ var c2=rf[p.id].cust; try{ c2=invCustShort(c2)||c2; }catch(e){} U(cu,c2); }
+    U(mk,p.supplier||vm[p.id]||''); U(nm,p.saleName||l.name||p.pn); });
+  var j=function(a){ return a.slice(0,2).join(', ')+(a.length>2?' +'+(a.length-2):''); };
+  return {cust:j(cu),maker:j(mk),parts:nm}; }); }
 function fgiRowHtml(d){
   const tot=(d.lines||[]).reduce((s,l)=>s+(Number(l.qty)||0),0);
   const _due=fgiDueOf(d);
-  const parts=(d.lines||[]).map(l=>l.name||(l.productId&&P(l.productId)?P(l.productId).pn:'')).filter(Boolean);
+  const _ii=fgiInvInfo(d);
+  const parts=_ii.parts.length?_ii.parts:(d.lines||[]).map(l=>l.name||(l.productId&&P(l.productId)?P(l.productId).pn:'')).filter(Boolean);
   const head=parts.slice(0,2).join(', ')+(parts.length>2?` +${parts.length-2}`:'');
   const prodPO=fgiProdPO(d);
   const invNo=fgiInvoiceNo(d);
-  const acts=`<button class="btn sm" onclick="viewFGIDoc('${d.id}')">ดู</button> <button class="btn sm" onclick="printFGI('${d.id}')" title="พิมพ์">🖨️</button> <button class="btn sm" onclick="printFGI('${d.id}','image')" title="ส่งรูป">📤</button> <button class="btn sm" onclick="openFGIForm('${d.id}')">✏️</button> `+(d.status==='pending'?`<button class="btn sm ok" onclick="approveDoc('${d.id}')">อนุมัติ</button> `:'')+(d.status!=='cancelled'?`<button class="btn sm danger" onclick="delFGI('${d.id}')" title="ยกเลิก (ใบยังอยู่ในรายการ)">ยกเลิก</button>`:'');
-  return `<tr data-no="${esc(d.no)}" data-ts="${d.ts||0}" data-date="${esc(_due)}" data-cdate="${esc(d.date||'')}" data-mon="${(_due||'').slice(0,7)}" data-cust="${esc((d.customer||'').toLowerCase())}" data-item="${esc(parts.join(' ').toLowerCase())}" data-po="${esc(((d.custPo||'')+' '+prodPO+' '+invNo).toLowerCase())}" data-qty="${tot}">
+  const acts=`<button class="btn sm" onclick="viewFGIDoc('${d.id}')">ดู</button> <button class="btn sm" onclick="printFGI('${d.id}')" title="พิมพ์">🖨️</button> <button class="btn sm" onclick="printFGI('${d.id}','image')" title="ส่งรูป">📤</button> <button class="btn sm" onclick="openFGIForm('${d.id}')">✏️</button> `+(d.status==='pending'?`<button class="btn sm ok" onclick="approveDoc('${d.id}')">อนุมัติ</button> `:'')+(d.status!=='cancelled'?`<button class="btn sm danger" onclick="delFGI('${d.id}')" title="ยกเลิก (ใบยังอยู่ในรายการ)">ยกเลิก</button>`:`<button class="btn sm danger" onclick="fgiPurge('${d.id}')" title="ลบใบที่ยกเลิกแล้วออกจากรายการถาวร">🗑️ ลบ</button>`);
+  return `<tr data-no="${esc(d.no)}" data-ts="${d.ts||0}" data-date="${esc(_due)}" data-cdate="${esc(d.date||'')}" data-mon="${(_due||'').slice(0,7)}" data-cust="${esc(((d.customer||'')+' '+_ii.cust).toLowerCase())}" data-item="${esc(parts.join(' ').toLowerCase())}" data-po="${esc(((d.custPo||'')+' '+prodPO+' '+invNo).toLowerCase())}" data-qty="${tot}">
     <td class="pn linkish" onclick="viewFGIDoc('${d.id}')">${esc(d.no)}</td><td class="muted">${esc(d.date||'')}</td>
-    <td>${esc(d.customer||'-')}</td>${fgiC('custpo')?`<td><span class="tag violet">${esc(d.custPo||'-')}</span></td>`:''}${fgiC('maker')?(()=>{const _m=fgiMakerOf(d);return _m.t?`<td><span class="tag amber"${_m.est?' style="opacity:.65" title="ไม่พบจากเลขที่ PO — ผู้ผลิตล่าสุดของชิ้นงาน"':''}>${esc(_m.t)}</span></td>`:'<td class="muted">-</td>';})():''}
+    <td title="${esc('ในใบ : '+(d.customer||'-'))}">${esc(_ii.cust||(()=>{try{return invCustShort(d.customer)||d.customer;}catch(e){return d.customer;}})()||'-')}</td>${fgiC('custpo')?`<td><span class="tag violet">${esc(d.custPo||'-')}</span></td>`:''}${fgiC('maker')?(()=>{const _m=_ii.maker?{t:_ii.maker,est:false}:fgiMakerOf(d);return _m.t?`<td><span class="tag amber"${_m.est?' style="opacity:.65" title="ไม่พบจากเลขที่ PO — ผู้ผลิตล่าสุดของชิ้นงาน"':''}>${esc(_m.t)}</span></td>`:'<td class="muted">-</td>';})():''}
     ${fgiC('inv')?`<td>${invNo?`<span class="tag green">${esc(invNo)}</span>`:'<span class="muted">-</span>'}</td>`:''}
     ${fgiC('prodpo')?`<td>${fgiInvoiceNo(d)?(prodPO?`<span class="tag cyan" title="ออก Invoice แล้ว — ล็อก">${esc(poDisp(prodPO))}</span>`:'<span class="muted">-</span>'):`<input value="${esc(prodPO||'')}" placeholder="เลขที่ PO" title="พิมพ์/แก้เลขที่ PO (ใบสั่งผลิต) · ลบให้ว่าง = ใช้ค่าอัตโนมัติ" onchange="fgiSetPO('${d.id}',this.value)" style="width:96px;padding:4px 6px;font-size:12px;border-radius:7px;${d.prodPO?'border-color:#0891b2;background:#ecfeff;font-weight:700':''}">`}</td>`:''}
     <td class="muted">${esc(head)}</td><td class="c">${fgiInvoiceNo(d)?esc(_due):`<span style="display:inline-flex;align-items:center;gap:2px;position:relative"><input value="${esc(_due)}" placeholder="yyyy-mm-dd" maxlength="10" onchange="fgiDueTxt('${d.id}',this)" title="แก้กำหนดส่ง (ทุกรายการในใบ) · พิมพ์ 2026-10-28 หรือ 28/10/2026 · 📅 = เลือกจากปฏิทิน" style="padding:2px 5px;font-size:11.5px;width:86px;text-align:center"><input type="date" tabindex="-1" value="${esc(_due)}" onchange="fgiSetDue('${d.id}',this.value)" style="position:absolute;left:0;bottom:0;width:1px;height:1px;opacity:0;pointer-events:none;border:0;padding:0"><button type="button" class="btn sm" style="padding:0 4px;font-size:11px;line-height:18px" title="เลือกจากปฏิทิน" onclick="fgiDuePick(this)">📅</button></span>`}</td><td style="text-align:center">${irLinkBtn(d.id)}</td><td style="text-align:center">${millLinkBtn(d.id)}</td><td style="text-align:center">${xLinkBtn(d.id,'st17',fmCode('st.fm17','FM-ST-17'))}</td><td class="num">${fgiInvoiceNo(d)?`<b>${fmt(tot)}</b>`:((d.lines||[]).length>1?`<b class="linkish" onclick="openFGIForm('${d.id}')" title="หลายรายการ — กดเพื่อแก้จำนวนทีละรายการ">${fmt(tot)}</b>`:`<input type="number" min="1" value="${tot}" onchange="fgiSetQty('${d.id}',this.value)" title="แก้จำนวน${d.status==='approved'?' (อนุมัติแล้ว → คืนยอดเดิมแล้วตัดใหม่)':''}" style="padding:2px 4px;font-size:12px;font-weight:700;width:86px;text-align:right">`)}</td>
@@ -41452,10 +41649,26 @@ function viewFGIDoc(id){const d=DB.docs.find(x=>x.id===id);if(!d)return;const ro
 function fgiVoid(d,why){ if(!d)return false; if(d.status==='approved'){ try{ reverseDoc(d); }catch(e){} }
   d.status='cancelled'; d.cancelledAt=new Date().toLocaleString('th-TH'); if(why)d.cancelWhy=why; d.ts=Date.now();
   try{ _cpoIx={t:0}; _cpoShip={t:0}; }catch(e){} return true; }
+/* ★ 11/11d ใบเบิกจ่ายนี้อยู่ใน Invoice จริงไหม : ทุกบรรทัด (ชิ้นงาน+จำนวน) ตรงกับบรรทัดใน Invoice ของ PO ลูกค้าเดียวกัน = hard */
+function fgiInvLink(d){ var key=poKeyOf(d.custPo||d.custPO||''); if(!key)return null;
+  var invs=(DB.docs||[]).filter(function(x){ return x&&(x.type==='INV'||x.type==='IV2')&&x.status!=='cancelled'&&poKeyOf(x.custPO||x.custPo||'')===key; }); if(!invs.length)return null;
+  var tk=function(t){ var m=String(t||'').trim().split(/s+/)[0]||''; try{ return normPN(m); }catch(e){ return m.toUpperCase(); } };
+  var keys=function(l){ var p=(l.productId||l.fgId)?P(l.productId||l.fgId):null, K={}; [l.name,p&&p.pn,p&&p.saleName].forEach(function(v){ var k=tk(v); if(k)K[k]=1; }); return K; };
+  var IL=[]; invs.forEach(function(x){ (x.lines||[]).forEach(function(l){ IL.push({no:x.invNo||x.no,k:tk(l.name||l.code||l.pn),q:Number(l.qty)||0,nm:String(l.name||'').trim()}); }); });
+  var hard=[], all=(d.lines||[]).length>0; (d.lines||[]).forEach(function(l){ var K=keys(l), q=Number(l.qty)||0; var m=IL.find(function(z){ return K[z.k]&&Math.abs(z.q-q)<0.001; }); if(m){ if(hard.indexOf(m.no)<0)hard.push(m.no); } else all=false; });
+  return {hard:all?hard.join(', '):'', txt:IL.map(function(z){ return esc(z.no+' : '+z.nm+' '+fmt(z.q)); }).join('<br>'), mine:(d.lines||[]).map(function(l){ return String(l.name||'').trim()+' '+fmt(Number(l.qty)||0); }).join(', ')}; }
+/* ★ 11/11e ลบใบเบิกจ่ายที่ยกเลิกแล้วออกถาวร (ทะเบียนลบ tombAdd กันฟื้นตอนซิงก์) */
+function fgiPurge(id){ var d=(DB.docs||[]).find(function(x){ return x&&x.id===id; }); if(!d)return;
+  if(d.status!=='cancelled'){ toast('ลบได้เฉพาะใบที่ยกเลิกแล้ว — กด ยกเลิก ก่อน','err'); return; }
+  confirmBox('ลบใบเบิกจ่าย '+esc(d.no||'')+' ออกจากรายการ?','ใบนี้ยกเลิกแล้ว (คืนยอดสต๊อคเรียบร้อย) · ลบถาวร ไม่แสดงในรายการอีก · กู้คืนไม่ได้'+(d.cancelWhy?'<br><span class="muted">เหตุผลที่ยกเลิก : '+esc(d.cancelWhy)+'</span>':''),function(){
+    try{ mkDead(id); }catch(e){} DB.docs=DB.docs.filter(function(x){ return x!==d; }); try{ tombAdd([id]); }catch(e){} try{ _cpoIx={t:0}; _cpoShip={t:0}; }catch(e){}
+    saveDB(); closeModal(); render(); toast('ลบใบเบิกจ่าย '+(d.no||'')+' แล้ว','ok'); }); }
 function delFGI(id){const d=DB.docs.find(x=>x.id===id);if(!d)return;
   if(d.status==='cancelled'){ toast('ใบนี้ยกเลิกแล้ว (เก็บไว้เป็นหลักฐาน)','err'); return; }
-  var inv=''; try{ inv=fgiInvoiceNo(d)||''; }catch(e){} if(inv){ toast('ออก Invoice แล้ว ('+inv+') — ยกเลิกใบเบิกจ่ายไม่ได้','err'); return; }
-  confirmBox('ยกเลิกใบเบิกจ่าย '+esc(d.no)+'?',(d.status==='approved'?'คืนยอดสต๊อคที่ตัดไป · ':'')+'ใบยังอยู่ในรายการ (สถานะ ยกเลิก) ไม่ลบออก — กันเลขที่/ยอดหาย',()=>{fgiVoid(d,'ยกเลิกจากรายการใบเบิกจ่าย');saveDB();closeModal();render();toast('ยกเลิกแล้ว'+(d.cancelWhy?'':''),'ok');});}
+  var inv=''; try{ inv=fgiInvoiceNo(d)||''; }catch(e){} var IL=inv?fgiInvLink(d):null;
+  if(IL&&IL.hard){ toast('ออก Invoice แล้ว ('+IL.hard+' มีรายการ+จำนวนตรงกับใบนี้) — ยกเลิกใบเบิกจ่ายไม่ได้','err'); return; }
+  var _w=IL?('<div style="margin:6px 0;padding:8px;border:1px solid #f59e0b;background:#fffbeb;border-radius:8px;font-size:12.5px">⚠️ PO ลูกค้าเดียวกันออก Invoice แล้ว ('+esc(inv)+') แต่<b>ไม่มีรายการ+จำนวนตรงกับใบนี้</b> :<br>'+IL.txt+'<br>ใบนี้ : '+esc(IL.mine)+'</div>'):'';
+  confirmBox('ยกเลิกใบเบิกจ่าย '+esc(d.no)+'?',_w+(d.status==='approved'?'คืนยอดสต๊อคที่ตัดไป · ':'')+'ใบยังอยู่ในรายการ (สถานะ ยกเลิก) ไม่ลบออก — กันเลขที่/ยอดหาย'+(IL?' · Invoice ไม่ถูกแก้':''),()=>{fgiVoid(d,'ยกเลิกจากรายการใบเบิกจ่าย');saveDB();closeModal();render();toast('ยกเลิกแล้ว'+(d.cancelWhy?'':''),'ok');});}
 /* ===== บาร์โค้ด Code128-B เป็น SVG ล้วน (ไม่ต้องพึ่งไลบรารี · ใช้งานออฟไลน์ได้) ===== */
 var _C128=['212222','222122','222221','121223','121322','131222','122213','122312','132212','221213','221312','231212','112232','122132','122231','113222','123122','123221','223211','221132','221231','213212','223112','312131','311222','321122','321221','312212','322112','322211','212123','212321','232121','111323','131123','131321','112313','132113','132311','211313','231113','231311','112133','112331','132131','113123','113321','133121','313121','211331','231131','213113','213311','213131','311123','311321','331121','312113','312311','332111','314111','221411','431111','111224','111422','121124','121421','141122','141221','112214','112412','122114','122411','142112','142211','241211','221114','413111','241112','134111','111242','121142','121241','114212','124112','124211','411212','421112','421211','212141','214121','412121','111143','111341','131141','114113','114311','411113','411311','113141','114131','311141','411131','211412','211214','211232','2331112'];
 function barcode128SVG(text,opts){ opts=opts||{}; var H=opts.h||46, mod=opts.mod||1.5, quiet=10;
