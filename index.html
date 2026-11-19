@@ -1120,9 +1120,23 @@ const SEED={
 
 /* ---------- State ---------- */
 let DB=null;
-const APP_BUILD='DPPRN-2026.11.18a';
+const APP_BUILD='BFEDIT-2026.11.19a';
 /* บันทึกการแก้ไขล่าสุด (แสดงเมื่อเอาเมาส์ชี้ที่ build — ไม่เอาไปต่อท้าย APP_BUILD เพราะทำให้แถบบนล้นจอ) */
 const APP_NOTE=[
+  '✏️ รายการดำเนินการ (ทุกสินค้า) แถว ยอดยกมา แก้ไขได้ : ปุ่ม ✏️ แก้ ท้ายแถว → ใส่ยอดยกมาที่ถูกต้อง → คงเหลือปรับตามส่วนต่าง (ยอดยกมาใหม่ − เดิม) บันทึกความเคลื่อนไหว ADJ เลขที่ BF-EDIT พร้อมเหตุผล · ยอดยกมาคำนวณจาก คงเหลือ − ผลรวมเอกสารในตาราง จึงแก้ได้ด้วยการปรับคงเหลือเท่านั้น (ไม่แตะเอกสาร)',
+  '🔄 R680202 COLLAR (PLATING) สินค้าคงคลัง FG คงเหลือ ตั้งเป็น 990,000 ตามยอดสะสมท้ายตารางรายการดำเนินการ (TEE สั่ง · ครั้งเดียว · บันทึกความเคลื่อนไหว FIX) · เดิม 211,171 เพราะใบเบิก WD-69100096/95/94 · WD-69090022 (ลงย้อนหลัง มี.ค.–ก.ค. รวม 1,087,137) ตัดสต๊อคแต่ไม่อยู่ในบัญชีคุม',
+  '⏹ ใบสั่งซื้อวัตถุดิบ (PO) ปิดยอดค้างอัตโนมัติ เหมือนใบสั่งผลิต : รับเข้าแล้วแต่ส่งขาดไม่เกิน 10% = ปิดให้เอง · คิดตามหน่วยเดียวกับช่องผลต่าง (ชิ้น / เส้น / กก.) · ส่งเกินไม่จำกัด · เปิดคืนแล้วไม่ปิดซ้ำ · ช่องผลต่างใบเหล็กเส้นที่ปิดยอดค้าง = 0 (เดิมไม่ล้าง)',
+  '⏹ ใบสั่งผลิต ปิดยอดค้างอัตโนมัติ : รับงานแล้วแต่ส่งขาดไม่เกิน 10% ของจำนวนสั่ง = ปิดยอดค้างให้เอง (ป้าย ⏹ ปิดยอดค้างอัตโนมัติ · ผลต่างเป็น 0 · ตัดออกจาก WIP/งานค้าง) · ส่งเกินไม่จำกัด = รับงานครบอยู่แล้ว · กด ↩ เปิดคืน = ใบนั้นไม่ปิดอัตโนมัติอีก · ส่งขาดเกิน 10% ยังกดปิดเองเหมือนเดิม',
+  '📏 สินค้าคงคลัง วัตถุดิบเหล็กเส้น ช่อง WIP (= สั่งซื้อแล้ว − รับเข้าแล้ว ค้างรับจากผู้ขาย) แสดงเส้นเป็นจำนวนเต็ม (เดิม 2,345.13 เส้น) · SUBTOTAL WIP นับรายการเหล็กเส้นเป็นเส้น (เดิมรวมเป็น กก.)',
+  '📏 สินค้าคงคลัง วัตถุดิบเหล็กเส้น/แผ่น (ทุกรายการที่คำนวณ กก./เส้น ได้) : ช่อง คงเหลือ กก. = น้ำหนักคงเหลือ (เดิมขึ้น - เมื่อหน่วยซื้อว่าง) · ช่อง FG คงเหลือ = จำนวนเส้น ไม่มีทศนิยม (กก. ÷ กก./เส้น · ชี้ดูน้ำหนัก) · SUBTOTAL FG นับรายการเหล่านี้เป็นเส้น / คงเหลือ กก. รวมน้ำหนัก',
+  '📏 วัตถุดิบเหล็กเส้น/แผ่น บัญชีคุม : หน่วยหลัก = เส้น เป็นจำนวนเต็ม (กก. ตัวเล็กใต้) · คงเหลือปัจจุบัน / ยอดสะสมท้ายตาราง แสดงเป็นเส้น · ช่อง ปรับยอด แสดงเส้น (ใบปรับยอดที่มีจำนวนเส้น = นับเข้ายอดเส้น · ใบเก่าที่มีแต่ กก. = ≈ เส้น ประมาณจาก กก./เส้น ไม่กระทบยอดเส้น) · เหล็กเส้นกลม 14 มม. x 6 ม. ตั้งยอดตามตรวจนับ 3,636 เส้น (ครั้งเดียว · ใบปรับยอด · กก. = เส้น × กก./เส้น)',
+  '📐 สินค้าคงคลัง แถว SUBTOTAL ตรงคอลัมน์ : เดิมขาดช่อง Unit/B · Unit/S · MAT (3 ช่อง) ทำให้ยอดเลื่อน (FG ไปอยู่ใต้ MAT ฯลฯ เมื่อเปิดคอลัมน์เหล่านี้) · เพิ่มช่องว่าง Unit/B / Unit/S และยอดรวม MAT คงเหลือ (ไม่นับรายการใช้สต๊อกร่วมซ้ำ)',
+  '🔗 Invoice INV-69080412 (26/8) บรรทัด 75051532 X29 LH 217 / 75051533 X29 RH 211 ที่ผูกรหัสสินค้าที่ถูกลบ ย้ายมาผูก X29 LH / X29 RH (ครั้งเดียว) · ไม่ตัดยอดซ้ำ : ไม่มีใบรับชิ้นงานก่อน Invoice นี้ บัญชีคุมจึงเติมรับชิ้นงานอัตโนมัติ 217/211 ยอดท้ายยังเป็น 591/401',
+  '🧲 ขยายแมทตัวแม่ไป X29 → X29 LH / X29 RH (ครั้งเดียว · ตัวช่วยกลาง matAdopt) : ชิ้นงานผูก matOf = X29 · ใบเบิก WD-69100097 (LH 550) / WD-69100098 (RH 350) ย้ายมาตัดแมท X29 · ยังไม่มีใบรับแมท X29 → เติมรับแมทอัตโนมัติ 900 คงเหลือแมท 0 · ยอด X29 LH 591 / RH 401 ไม่เปลี่ยน (ใบเบิกเดิมถูกหักล้างด้วยปรับยอด/SYNC แล้ว)',
+  '🧲 ขยายแมทตัวแม่ไป 053 → 053 LH / 053 RH (ครั้งเดียว) : ชิ้นงานผูก matOf = 053 · ใบรับแมท RMC-69080065 (1,500 · รหัสเดิมถูกลบ) / RMC-69090004 (2,000 · เดิมอยู่ที่ 053 LH) / RMC-69110021 (1,258) ลงยอดที่ 053 · ใบเบิก LH 6 ใบ 8,908 + RH 4 ใบ 2,750 ย้ายมาตัดแมท 053 · แมทไม่พอ 6,900 (ใบรับแมทที่ยังไม่ได้คีย์) = เติมรับแมทอัตโนมัติ คงเหลือแมท 0 · ยอด 053 LH 11,611 / RH 976 ไม่เปลี่ยน (ตรงบัญชีคุมอยู่แล้ว ไม่คืนยอดเบิกเดิม)',
+  '🔗 ย้ายเอกสารเดิมของ 4D0 LH ที่ผูกรหัสสินค้าที่ถูกลบ (p37b0zw2) มาผูก 4D0 LH ปัจจุบัน (ครั้งเดียว) : ใบสั่งผลิต PO6900488 / PO6900640 / PO6900836 · รายงานผลิต DP-69080041 · รับชิ้นงาน RW-69080511 (492) / RW-69100137 (600) / RW-69100147 (44) · วางบิล BN-69100011 · Invoice INV-69080402 บรรทัด 75051048 STAY 4D0 (492 = รหัสขาย LH) · ใบที่อนุมัติแล้วลงยอดตามกติกา AMPAS : รับชิ้นงาน +1,136 − Invoice 492 = คงเหลือ 644',
+  '🧲 แมทลูกค้าใช้ผลิตหลายชิ้นงาน (4D0 → 4D0 LH / 4D0 RH) : ชิ้นงานผูก p.matOf = แมท · บัญชีคุมของแมท (4D0) = รับแมท (+) − เบิกวัตถุดิบ (−) = คงเหลือแมท · ชิ้นงาน LH/RH = รับชิ้นงาน (+) − Invoice (−) ตามกติกา AMPAS เดิม · ใบสั่งผลิต LH/RH สร้างใบเบิกตัดแมทจาก 4D0 อัตโนมัติ (1 ชิ้นแมท = 1 ชิ้นงาน) · ช่อง MAT ของแมท = รับแมท − เบิก · ชิ้นงานไม่แสดง MAT · ปุ่ม 🧲 ตั้งแมทที่ใช้ ในรายการดำเนินการของสินค้าแมทลูกค้า · ปรับข้อมูลครั้งเดียว : คืน 5,019 ที่ย้ายไป 4D0 ให้ 4D0 RH · ย้ายใบรับแมท RMC-69080060/69100016 และใบเบิก WD-69080182/183 · WD-69100078/79 มาเป็นของ 4D0 (คืนยอดที่เคยตัดจาก 4D0 RH 625)',
+  '📤 เครื่องที่ตั้งค่าคลาวด์ (ผู้ผลิตภายนอก) ส่งงานให้ผู้ผลิตเมื่อข้อมูลบนแม่ข่ายเปลี่ยนจากเครื่องไหนก็ได้ (ตรวจทุก 5 นาที · หน่วง 3 นาทีรวบครั้งเดียว · ส่งเฉพาะผู้ผลิตที่ชุดงานเปลี่ยน) — เดิมส่งเฉพาะตอนเครื่องนี้บันทึกเอง งานที่ออฟฟิศเครื่องอื่นออกจึงไม่ถึงผู้ผลิต · ข้อความส่งงานอัตโนมัติจดในปุ่ม 🔔 (ส่งล่าสุด/จำนวนราย)',
   '🖨️ รายงานผลิต (FM-PD-02) ใบพิมพ์ : หัวใบเพิ่ม ผู้ผลิต · จำนวนสั่ง = ค่าเดียวกับตาราง (สั่งผลิตจำนวน) · เพิ่มบรรทัด วันที่จัดส่ง + จำนวน (จากช่อง วันที่ผลิตเสร็จ / ผลิตได้) · เบิกวัตถุดิบ แสดงเป็นชิ้น (dpWdPcs · เบิกเป็นเส้น = เส้น × ชิ้นต่อเส้น) · ยอดตั้งต้นสายการผลิต (OK ขั้นแรก) = ยอดเบิกวัตถุดิบเป็นชิ้น (ไม่มีใบเบิก = รับชิ้นงาน/จำนวนสั่งเหมือนเดิม) · แถวรายงานผลิตประจำวันมีปุ่มลิงก์ FM-PD-02 ข้างปุ่มพิมพ์ (ช่องเดียวกับคอลัมน์เสริม)',
   '🧮 คัดแยก OK/NG เพิ่มคอลัมน์ผลต่าง 2 ช่อง สำหรับทวนสอบยอดขาด/เกิน : ผลต่าง (รับชิ้นงาน − รับชุบ · ต่อจาก รับชุบ · ไม่มีรับชุบ = -) และ ผลต่าง (OK + NG − รับเข้าสต๊อค · ต่อจาก รับเข้าสต๊อค · OK+NG รวมทุกใบคัดแยกของเลขที่ใบสั่งเดียวกัน) · SUBTOTAL แสดงยอด รับชิ้นงาน / รับชุบ / ผลต่าง ตามตัวกรอง (นับต่อเลขที่ใบสั่งครั้งเดียว) · ไม่ใช่ 0 = ตัวส้ม · ซ่อน/แสดงได้ที่ 👁 คอลัมน์',
   '📦 คัดแยก OK/NG เพิ่มคอลัมน์ รับเข้าสต๊อค (ต่อจาก NG TAG) — ยอดรับเข้าสต๊อคอัตโนมัติของเลขที่ใบสั่งเดียวกัน (ใบรับเข้าสต๊อค/รับเข้าต่างประเทศ/พิเศษ ไม่นับใบยกเลิก · ค่าเดียวกับแถบการไหล) · SUBTOTAL นับต่อเลขที่ใบสั่งครั้งเดียว · แก้แถว SUBTOTAL ให้ตรงคอลัมน์ (เดิม NG อยู่ใต้ TAG และขาด 2 ช่อง) · ซ่อน/แสดงได้ที่ 👁 คอลัมน์',
@@ -2991,6 +3005,12 @@ function isMatCust(p,re){
 /* ★ CNN : รับชิ้นงาน = เข้าคงเหลือ · ใบเบิกจ่ายสำเร็จรูป = ตัดยอดออก */
 function isCnnRMC(p){ return isMatCust(p,/CNN/i); }
 /* สินค้ารับแมทลูกค้าที่ใช้ "รับชิ้นงาน" เป็นยอดรับเข้า (AMPAS · CNN) */
+/* ★ 18/11c แมทลูกค้าตัวแม่ (เช่น 4D0) ↔ ชิ้นงานที่ใช้แมทนี้ (4D0 LH/RH) : ชิ้นงานเก็บ p.matOf = id แมท */
+var __mmC=null;
+function matMasterSet(){ var n=(DB.products||[]).length, t=Date.now(); if(__mmC&&__mmC.n===n&&t-__mmC.t<2000)return __mmC.m; var m={}; (DB.products||[]).forEach(function(x){ if(x&&x.matOf&&x.matOf!==x.id)(m[x.matOf]||(m[x.matOf]=[])).push(x); }); __mmC={n:n,t:t,m:m}; return m; }
+function isMatMaster(p){ try{ return !!(p&&matMasterSet()[p.id]); }catch(e){ return false; } }
+function matKidsOf(p){ try{ return (p&&matMasterSet()[p.id])||[]; }catch(e){ return []; } }
+function matOfProd(p){ try{ var m=(p&&p.matOf)?P(p.matOf):null; return (m&&m.id!==p.id)?m:null; }catch(e){ return null; } }
 function isRwInRMC(p){ try{ return isAmpasRMC(p)||isCnnRMC(p); }catch(e){ return false; } }
 function isAmpasRMC(p){
   if(!p)return false;
@@ -4226,6 +4246,8 @@ async function mkInboxPull(silent){
 }
 function mkStartOffice(){
   if(!supaX||MK_MODE||_mkPoll)return;
+  /* ★ 18/11b ข้อมูลแม่ข่ายเปลี่ยน (เครื่องไหนก็ได้) → ทยอยส่งงานให้ผู้ผลิต (เดิมส่งเฉพาะตอนเครื่องนี้บันทึกเอง) */
+  try{ var _pubSig=''; setInterval(function(){ try{ if(!mkSt().auto||!lanMode)return; var sg=String(lanSeenAt||'')+'|'+(((DB&&DB.docs)||[]).length); if(!_pubSig){ _pubSig=sg; mkPublishLater(); return; } if(sg===_pubSig)return; _pubSig=sg; mkPublishLater(); }catch(e){} },300000); }catch(e){}
   _mkPoll=setInterval(function(){
     try{ if(!mkSt().auto)return; if(uiBusy())return; mkInboxPull(true); }catch(e){}
   },90000);
@@ -4239,7 +4261,7 @@ function mkPublishLater(){
   if(_mkPubT)return;
   _mkPubT=setTimeout(function(){ _mkPubT=null; try{ mkPublishQuiet(); }catch(e){} },180000);
 }
-async function mkPublishQuiet(){ var ns=mkNames(); for(var i=0;i<ns.length;i++){ await mkPublish(ns[i],false,true); } }
+async function mkPublishQuiet(){ var ns=mkNames(), ok=0; for(var i=0;i<ns.length;i++){ if(await mkPublish(ns[i],false,true))ok++; } try{ window.__mkPubLast={at:Date.now(),ok:ok,n:ns.length}; toast('📤 อัปเดตงานให้ผู้ผลิต (อัตโนมัติ) '+ok+'/'+ns.length+' ราย','ok'); }catch(e){} }
 /* ---------- ฝั่งผู้ผลิต : โหลดชุดงาน + ส่งผลงานกลับ ---------- */
 function mkLocalKey(){ return 'rtk_mk_'+MK_MODE; }
 /* ★ ทะเบียน "ใบที่ผู้ผลิตคีย์เอง" — กันหายเมื่อชุดงานจากออฟฟิศทับของเดิม */
@@ -5075,7 +5097,7 @@ function applyDoc(d){
     else if(t==='WS'){ d.lines.forEach(l=>{const p=P(l.productId);if(p){p.onHand-=l.qty;move(p.id,'onHand',-l.qty,'WS',d.no,'เบิกวัสดุสิ้นเปลือง '+(d.issuer||''));}}); }
     else if(t==='SUP'){ d.lines.forEach(l=>{const p=P(l.productId);if(p){p.onHand+=l.qty;move(p.id,'onHand',+l.qty,'SUP',d.no,'รับวัสดุสิ้นเปลือง '+(d.supplier||''));}}); }
     else if(t==='RMC'){ const p=P(d.productId);
-      if(p&&isRwInRMC(p)){ move(p.id,'onHand',0,'RMC',d.no,'รับแมทลูกค้า (วัตถุดิบ — ไม่เข้าคงเหลือ)'); }   /* ★ AMPAS/CNN : ยอดเข้ามาจากใบรับชิ้นงาน */
+      if(p&&isRwInRMC(p)&&!isMatMaster(p)){ move(p.id,'onHand',0,'RMC',d.no,'รับแมทลูกค้า (วัตถุดิบ — ไม่เข้าคงเหลือ)'); }   /* ★ AMPAS/CNN : ยอดเข้ามาจากใบรับชิ้นงาน */
       else if(p){p.onHand+=d.qty;move(p.id,'onHand',+d.qty,'RMC',d.no,'รับแมทลูกค้า '+(d.customer||''));} }
     else if(t==='INV'){ /* ★ กติกาเดียวทุกใบ (ย้อนหลังด้วย) : ตัดยอดเฉพาะสินค้าที่ไม่มีใบเบิกวัตถุดิบ/ใบเบิกจ่ายสำเร็จรูป · แมทลูกค้าตัดเสมอ */
       d.lines.forEach(l=>{const p=stockSrc(P(l.productId));if(p&&invCutsStock(l.productId)){p.onHand-=l.qty;move(p.id,'onHand',-l.qty,'INV',d.no,'จ่ายออก-Invoice '+(d.customer||''));}}); }
@@ -5524,7 +5546,15 @@ function render(){
   try{ if(typeof lanOK!=='undefined'&&lanOK&&lanLastUpdated)mkRestore1012(); }catch(e){}
   try{ if(typeof lanOK!=='undefined'&&lanOK&&lanLastUpdated)ibFix1016(); }catch(e){}
   try{ if(typeof lanOK!=='undefined'&&lanOK&&lanLastUpdated)mvFix1031(); }catch(e){}
-  try{ if(typeof lanOK!=='undefined'&&lanOK&&lanLastUpdated)invSumZero(); }catch(e){}   /* ★ 11/11f */   /* ★ 31/10 ล้างแถว SYNC ซ้ำ 94063-10000 (ครั้งเดียว) */
+  try{ if(typeof lanOK!=='undefined'&&lanOK&&lanLastUpdated)invSumZero(); }catch(e){}
+  try{ if(typeof lanOK!=='undefined'&&lanOK&&lanLastUpdated)mat4d0Fix1118(); }catch(e){}   /* ★ 18/11c */
+  try{ if(typeof lanOK!=='undefined'&&lanOK&&lanLastUpdated)lhRelink1118(); }catch(e){}   /* ★ 18/11d */
+  try{ if(typeof lanOK!=='undefined'&&lanOK&&lanLastUpdated)mat053Fix1118(); }catch(e){}   /* ★ 18/11e */
+  try{ if(typeof lanMode==='undefined'||!lanMode||(lanOK&&lanLastUpdated))prdAutoClose(); }catch(e){}   /* ★ 18/11l */
+  try{ if(typeof lanOK!=='undefined'&&lanOK&&lanLastUpdated){ ensureSettings(); var _S=DB.settings; if(!_S.__r680202_1118){ _S.__r680202_1118=Date.now(); var _p=P('mv4yczitf6kae'); if(_p&&Math.abs((Number(_p.onHand)||0)-990000)>0.001){ stkSetTo(_p,990000,'FIX','ตั้งยอดตามบัญชีคุม (TEE 18/11)'); try{ tdbBust(); }catch(e){} saveDB(); } } } }catch(e){}   /* ★ 18/11n */
+  try{ if(typeof lanOK!=='undefined'&&lanOK&&lanLastUpdated)barCountSet('__bar14_1118','p44ae219',3636,'ตรวจนับตั้งยอด (TEE 18/11)'); }catch(e){}   /* ★ 18/11i */
+  try{ if(typeof lanOK!=='undefined'&&lanOK&&lanLastUpdated)matAdopt('__matX29_1118','mwlrgw3fny96l',['msibrh720rr1s','msibr06mnswwv']); }catch(e){}   /* ★ 18/11f X29 */
+  try{ if(typeof lanOK!=='undefined'&&lanOK&&lanLastUpdated)invRelink('__x29Inv_1118','INV-69080412',{'p38ff75t':'msibrh720rr1s','p390f9xq':'msibr06mnswwv'}); }catch(e){}   /* ★ 18/11g */   /* ★ 11/11f */   /* ★ 31/10 ล้างแถว SYNC ซ้ำ 94063-10000 (ครั้งเดียว) */
   try{ if(typeof lanOK!=='undefined'&&lanOK&&lanLastUpdated)supRestore1012(); }catch(e){}   /* ★ กู้หมวดระบบคุณภาพที่หาย 12/10 (ครั้งเดียว · ถามก่อน) */   /* ★ หลังดึงข้อมูลแม่ข่ายแล้วเท่านั้น */
   try{ if(typeof migrateDpWorkers==='function')migrateDpWorkers(); }catch(e){}
   try{ if(typeof migrateSncNC==='function')migrateSncNC(); }catch(e){}
@@ -6713,8 +6743,17 @@ var WIP_STALE_DAYS=45;   /* กันงานผลิตค้างเก่�
 var ORDER_STALE_DAYS=30; /* ใบสั่งซื้อ(PO)/ต่างประเทศ(IP)/พิเศษ(SP)/สั่งผลิต(PRD) ค้างเกิน 1 เดือน → เข้าเกณฑ์แสดงปุ่ม "ปิดยอดค้าง" (กดเอง) */
 /* เข้าเกณฑ์ให้แสดงปุ่มปิดยอดค้างไหม (ค้างส่งเกิน 1 เดือน + ยังรับไม่ครบ + ยังไม่ปิด) */
 function orderStaleClosed(d){ try{ if(!d||d.status==='cancelled'||d.backlogClosed)return false; if(['PO','SP','PRD','IP'].indexOf(d.type)<0)return false; var ordered=(d.lines||[]).reduce(function(s,l){return s+(Number(l.qty)||0);},0); var recv=orderRecvQty(d.type,d.no); if(ordered<=0||recv>=ordered)return false; var dt=Date.parse(d.date||''); if(!dt)return false; return ((Date.now()-dt)/86400000)>ORDER_STALE_DAYS; }catch(e){return false;} }
-function closeBacklog(id){ var d=DB.docs.find(function(x){return x.id===id;}); if(!d)return; confirmBox('ปิดยอดคงค้าง?','ปิดยอดคงค้างของ '+esc(d.no||'')+' — ยกเลิกเฉพาะ<b>ยอดผลต่างที่ยังค้างส่ง</b> (จำนวนที่รับมาแล้วยังอยู่ครบ · ไม่ลบเอกสาร · เปิดคืนได้)?',function(){ d.backlogClosed=true; d.backlogClosedAt=todayISO(); saveDB(); render(); toast('ปิดยอดคงค้างแล้ว','ok'); }); }
-function reopenBacklog(id){ var d=DB.docs.find(function(x){return x.id===id;}); if(!d)return; d.backlogClosed=false; try{delete d.backlogClosedAt;}catch(e){} saveDB(); render(); toast('เปิดยอดค้างคืนแล้ว','ok'); }
+function closeBacklog(id){ var d=DB.docs.find(function(x){return x.id===id;}); if(!d)return; confirmBox('ปิดยอดคงค้าง?','ปิดยอดคงค้างของ '+esc(d.no||'')+' — ยกเลิกเฉพาะ<b>ยอดผลต่างที่ยังค้างส่ง</b> (จำนวนที่รับมาแล้วยังอยู่ครบ · ไม่ลบเอกสาร · เปิดคืนได้)?',function(){ d.backlogClosed=true; d.backlogClosedAt=todayISO(); d.ts=Date.now(); saveDB(); render(); toast('ปิดยอดคงค้างแล้ว','ok'); }); }
+/* ★ 18/11l ใบสั่งผลิต : ส่งขาดไม่เกิน PRD_AUTO_CLOSE_PCT% (settings.prdAutoClosePct) = ปิดยอดค้างอัตโนมัติ · ส่งเกิน = ครบอยู่แล้ว · เปิดคืนเอง (backlogNoAuto) = ไม่ปิดซ้ำ */
+var PRD_AUTO_CLOSE_PCT=10, _prdAcT=0;
+function prdAutoClose(force){ try{ var now=Date.now(); if(!force&&now-_prdAcT<60000)return 0; _prdAcT=now; var pct=Number((DB.settings||{}).prdAutoClosePct); if(!(pct>=0))pct=PRD_AUTO_CLOSE_PCT; var n=0;
+  (DB.docs||[]).forEach(function(d){ if(!d||(d.type!=='PRD'&&d.type!=='PO')||d.backlogClosed||d.backlogNoAuto)return; if(d.status==='cancelled'||d.status==='rejected'||d.imported)return;
+    var ord,rc,u='ชิ้น'; if(d.type==='PO'){ var B=null; d.__poBasis=1; try{ B=poRecvCells(d); }finally{ delete d.__poBasis; } if(!B||typeof B!=='object')return; ord=Number(B.ord)||0; rc=Number(B.recv)||0; u=B.u; } else { ord=(d.lines||[]).reduce(function(s,l){return s+(Number(l.qty)||0);},0); rc=Number(orderRecvQty('PRD',d.no))||0; }
+    if(!(ord>0))return; if(rc<=0||rc>=ord-1e-6)return;
+    var sh=ord-rc; if(sh>ord*pct/100+1e-9)return;
+    d.backlogClosed=true; d.backlogClosedAt=todayISO(); d.backlogAuto={pct:Math.round(sh/ord*1000)/10,ord:Math.round(ord*1000)/1000,recv:Math.round(rc*1000)/1000,u:u}; d.ts=now; n++; });
+  if(n){ try{ tdbBust(); }catch(e){} saveDB(); } return n; }catch(e){ console.warn('prdAutoClose',e); return 0; } }
+function reopenBacklog(id){ var d=DB.docs.find(function(x){return x.id===id;}); if(!d)return; if(d.backlogAuto||d.type==='PRD'||d.type==='PO')d.backlogNoAuto=1; try{delete d.backlogAuto;}catch(e){} d.ts=Date.now(); d.backlogClosed=false; try{delete d.backlogClosedAt;}catch(e){} saveDB(); render(); toast('เปิดยอดค้างคืนแล้ว','ok'); }
 /* คอลัมน์ จำนวนรับ + ผลต่าง (อัตโนมัติ) — ใช้ใน PO/IP/SP/PRD (+SUP วัสดุสิ้นเปลือง รับเข้าทันทีเมื่ออนุมัติ) */
 function orderRecvDiffCells(d){ var ordered=(d.lines||[]).reduce(function(s,l){return s+(Number(l.qty)||0);},0); var recv; if(d.type==='SUP'){ recv=(d.status==='approved')?ordered:0; } else { recv=orderRecvQty(d.type,d.no); } var diff=d.backlogClosed?0:(ordered-recv);   /* ปิดยอดค้าง = ตัดเฉพาะผลต่าง */ var st=(recv<=0)?'ยังไม่ส่ง':(diff===0?'ส่งครบ':(diff>0?'ส่งขาด':'ส่งเกิน')); var dc=(diff<0)?'#dc2626':(diff>0?'#b45309':'#16a34a'); return '<td class="num '+(recv?'':'muted')+'">'+fmt(recv)+'</td><td class="num" style="color:'+dc+';font-weight:700" title="จำนวนสั่ง − จำนวนรับ · '+st+'">'+fmt(diff)+'<br><span style="font-size:9px;font-weight:600">'+st+'</span>'+(d.backlogClosed?' <span style="font-size:9px;color:#64748b">(ปิด)</span>':'')+'</td>'; }
 /* ยอดรวมท้ายตาราง (SUBTOTAL) — ใช้ร่วมกันทุกเมนูสั่งซื้อ/รับเข้า */
@@ -6728,9 +6767,10 @@ function poRecvCells(d){
   var isBar=(_s.bars>0); var isKg=/kg|กก|กิโล|kilo/.test(unit)||isBar;
   var orderKg=_s.qty; var calcQty=isBar?_s.bars:((isKg&&ppk>0)?_s.qty*ppk:_s.qty);
   var recvQty,recvKg,uRecv,diff,uDiff; var _pi=poPcsInfo(d), pcsM=(!isBar&&_pi.kgp);
+  if(d&&d.__poBasis){ if(pcsM)return {ord:_pi.pcs,recv:grRecvPcsForPO(d.no),u:'ชิ้น'}; if(isBar)return {ord:_s.bars,recv:(typeof grRecvBarsForPO==='function')?grRecvBarsForPO(d.no):0,u:'เส้น'}; var _rq=Number(orderRecvQty('PO',d.no))||0; if(isKg){ var _rk=(ppk>0)?_rq/ppk:_rq; return {ord:orderKg,recv:_rk,u:'กก.'}; } return {ord:calcQty,recv:_rq,u:'ชิ้น'}; }   /* ★ 18/11m ฐานผลต่างสำหรับปิดยอดค้างอัตโนมัติ */
   if(pcsM){ recvQty=grRecvPcsForPO(d.no); uRecv='ชิ้น'; recvKg=Number(orderRecvQty('PO',d.no))||0; diff=d.backlogClosed?0:(_pi.pcs-recvQty); uDiff='ชิ้น'; }   /* ★ คิดเงินเป็น กก. แต่สั่งเป็นชิ้น → ผลต่างเป็นชิ้น */
-  else if(isBar){ recvQty=(typeof grRecvBarsForPO==='function')?grRecvBarsForPO(d.no):0; uRecv='เส้น'; var kpb=(_s.bars>0&&_s.qty>0)?(_s.qty/_s.bars):0; recvKg=(kpb>0)?recvQty*kpb:null; diff=calcQty-recvQty; uDiff='เส้น'; }
-  else { recvQty=(Number(orderRecvQty('PO',d.no))||0);        /* ★ ปิดยอดค้างไม่ล้างจำนวนรับ */ uRecv=(isKg?'กก.':'ชิ้น'); recvKg=(ppk>0)?recvQty/ppk:(isKg?recvQty:null); diff=isKg?(orderKg-(recvKg!=null?recvKg:0)):(calcQty-recvQty); uDiff=isKg?'กก.':'ชิ้น'; }
+  else if(isBar){ recvQty=(typeof grRecvBarsForPO==='function')?grRecvBarsForPO(d.no):0; uRecv='เส้น'; var kpb=(_s.bars>0&&_s.qty>0)?(_s.qty/_s.bars):0; recvKg=(kpb>0)?recvQty*kpb:null; diff=d.backlogClosed?0:(calcQty-recvQty); uDiff='เส้น'; }
+  else { recvQty=(Number(orderRecvQty('PO',d.no))||0);        /* ★ ปิดยอดค้างไม่ล้างจำนวนรับ */ uRecv=(isKg?'กก.':'ชิ้น'); recvKg=(ppk>0)?recvQty/ppk:(isKg?recvQty:null); diff=d.backlogClosed?0:(isKg?(orderKg-(recvKg!=null?recvKg:0)):(calcQty-recvQty)); uDiff=isKg?'กก.':'ชิ้น'; }
   var fF=(!pcsM&&(isBar||isKg))?fmt2:fmt;
   var dc=(Math.abs(diff)<0.005)?'#16a34a':(diff>0?'#b45309':'#dc2626');
   var recvKgCell=poC('recvkg')?('<td class="num'+(recvKg?'':' muted')+'" title="จำนวนรับ (กก.)">'+((recvKg!=null)?fmt2(recvKg)+' <span style="font-size:9px;color:#64748b">กก.</span>':'-')+'</td>'):'';
@@ -6951,6 +6991,8 @@ function rmKgPerBar(p){
 function rmPcsBuy(p){ try{ if(!p||(p.type!=='RM'&&p.type!=='SUP'))return false; var u=String(p.unitBuy||'').toLowerCase(); if(u)return /pcs|ชิ้น|pc.?$|ea|ตัว|อัน/.test(u)&&!/kg|กก|กิโล/.test(u);
   var m=memo('rmPcsBuy','',function(){ var o={}; (DB.docs||[]).forEach(function(d){ if(!d||['PO','IP','SP'].indexOf(d.type)<0||d.status==='cancelled')return; (d.lines||[]).forEach(function(l){ var id=l&&l.productId; if(!id)return; var x=o[id]||(o[id]={p:0,k:0}); if(Number(l.kgs)>0||Number(l.bars)>0||Number(l.mtr)>0)x.k++; else if(l.umode==='pcs'||/pcs|ชิ้น/i.test(String(l.unit||'')))x.p++; }); }); return o; });
   var x=m[p.id]; return !!(x&&x.p>0&&!x.k); }catch(e){ return false; } }
+/* ★ 18/11j วัตถุดิบเหล็กเส้น/แผ่นที่แสดงเป็นเส้นในสินค้าคงคลัง : คืน กก./เส้น (0 = ไม่ใช่) */
+function invBarKpb(p){ try{ if(!p||p.type!=='RM')return 0; if(forgeIs(p)||rmPcsBuy(p)||!rmUnitIsKg(p))return 0; var w=rmKgPerBar(p)||0; return w>0?w:0; }catch(e){ return 0; } }
 function rmUnitIsKg(p){
   try{ if(p&&!p.unitBuy&&rmPcsBuy(p))return false; }catch(e){}
   var u=''; try{ u=String(unitBuyOf(p)||'').toLowerCase(); }catch(e){ u=String((p&&p.unitBuy)||'').toLowerCase(); }
@@ -6999,7 +7041,7 @@ function renderInvTable(){
      ใบคัดแยกแบบหลายบรรทัด (ที่ใช้อยู่ตอนนี้) จะไม่ลงยอดในถัง passedQC เลย เพื่อกันนับซ้ำกับใบรับเข้าสต๊อค
      ถังจึงเป็น 0 ตลอด — ช่องนี้เคยแสดง 0 ทั้งที่เอกสารบอกว่ายังค้างอยู่
      จึงเปลี่ยนมาคิดจากเอกสาร (คัดแยก OK − รับเข้าสต๊อค) ให้ตรงกับบัญชีคุม */
-  const stkOf=p=>{ if(dirOf(p))return 0; var R=procPend(p); return R.na?_p0(pendAdjApply(p,'stk',Number(p.passedQC)||0)):R.stk; };const tMoq=sum(p=>p.moq||p.reorder||0),tPrice=sum(p=>p.salePrice||0),tOn=sum(onHandDispOf),tWip=list.reduce((s,p)=>s+wipOf(p),0),tPl=sum(platDispOf),tSort=sum(sortOf),tStk=sum(stkOf);
+  const stkOf=p=>{ if(dirOf(p))return 0; var R=procPend(p); return R.na?_p0(pendAdjApply(p,'stk',Number(p.passedQC)||0)):R.stk; };const tMoq=sum(p=>p.moq||p.reorder||0),tPrice=sum(p=>p.salePrice||0),tOn=sum(p=>{ const v=onHandDispOf(p); const kb=invBarKpb(p); return kb>0?Math.round((Number(v)||0)/kb):v; }),tWip=list.reduce((s,p)=>{ const w=wipOf(p); const kb=invBarKpb(p); return s+(kb>0?Math.round((Number(w)||0)/kb):w); },0),tPl=sum(platDispOf),tSort=sum(sortOf),tStk=sum(stkOf);
   const prMap=pendRecvMap();
   /* ⏳ Q-TIME ค้าง = รับชิ้นงานแล้ว แต่ยังไม่ไหลไปขั้นถัดไป (ตามเงื่อนไขการไหล) */
   const qtOf=p=>{ var R=procPend(p); if(!R.na)return R.qt; var v=qtimePendOf(p,wpMap,plMap); return (v==null)?null:_p0(v); };
@@ -7063,7 +7105,7 @@ function renderInvTable(){
       ${(()=>{if(p.stockOf){return `${invCols.adj!==false?'<td class="num muted">—</td>':''}${invCols.tin!==false?'<td class="num muted">—</td>':''}${invCols.tout!==false?'<td class="num muted">—</td>':''}${invCols.ng!==false?'<td class="num muted">—</td>':''}`;}const g=mg(p);return `${invCols.adj!==false?`<td class="num ${g.adj?'':'muted'}" title="รวมปรับยอด/ตรวจนับ">${g.adj?((g.adj>0?'+':'')+fmt(g.adj)):'0'}</td>`:''}${invCols.tin!==false?`<td class="num ${g.tin?'':'muted'}" ${g.tin?'style="color:var(--teal)"':''} title="รวมรับเข้าคงเหลือ">${fmt(g.tin||0)}</td>`:''}${invCols.tout!==false?`<td class="num ${g.tout?'':'muted'}" ${g.tout?'style="color:var(--red)"':''} title="รวมจ่ายออกจากคงเหลือ">${fmt(g.tout||0)}</td>`:''}${invCols.ng!==false?`<td class="num ${g.ng?'':'muted'}" ${g.ng?'style="color:var(--red)"':''} title="รวมของเสีย NG">${fmt(g.ng||0)}</td>`:''}`;})()}
       ${invCols.unitBuy!==false?`<td><input value="${esc(p.unitBuy||'Kgs.')}" onchange="setProdF('${p.id}','unitBuy',this.value)" style="width:58px;padding:2px 4px;font-size:11px" title="หน่วยซื้อ (ใช้กับสั่งซื้ออัตโนมัติ · แก้ไขได้)"></td>`:''}${invCols.unitSale!==false?`<td><input value="${esc(p.unitSale||'ชิ้น')}" onchange="setProdF('${p.id}','unitSale',this.value)" style="width:58px;padding:2px 4px;font-size:11px" title="หน่วยขาย (ใช้กับขายอัตโนมัติ · แก้ไขได้)"></td>`:''}
       ${invCols.pcskg!==false?`<td class="num"><input type="number" step="any" value="${(p.pcsPerKg!=null&&p.pcsPerKg!=='')?p.pcsPerKg:''}" onchange="setProdF('${p.id}','pcsPerKg',this.value)" placeholder="—" style="width:66px;text-align:right;padding:2px 4px;font-size:11px" title="จำนวนชิ้นต่อ 1 กก. (กรอกเอง)"></td>`:''}
-      ${invCols.kgbal!==false?(()=>{const _pp=invRoot(p);const bal=roll(onHandDispOf,_pp);const ppk=Number(_pp.pcsPerKg||p.pcsPerKg)||0;const u=String(_pp.unitBuy||p.unitBuy||'').toLowerCase();const isKg=/kg|กก|กิโล|kilo/.test(u);let kg=null;if(ppk>0)kg=bal/ppk;else if(isKg)kg=bal;return (kg!=null)?`<td class="num" title="${ppk>0?('คงเหลือ '+fmt(bal)+' ชิ้น ÷ '+fmt(ppk)+' ชิ้น/กก. = '+fmt2(kg)+' กก.'):('คงเหลือ '+fmt2(bal)+' กก.')}">${fmt2(kg)}</td>`:'<td class="num muted" title="กรอก 1กก.=ชิ้น หรือหน่วยเป็นน้ำหนัก">-</td>';})():''}
+      ${invCols.kgbal!==false?(()=>{const _pp=invRoot(p);const bal=roll(onHandDispOf,_pp);const ppk=Number(_pp.pcsPerKg||p.pcsPerKg)||0;const u=String(_pp.unitBuy||p.unitBuy||'').toLowerCase();const isKg=/kg|กก|กิโล|kilo/.test(u)||invBarKpb(_pp)>0;let kg=null;if(ppk>0)kg=bal/ppk;else if(isKg)kg=bal;return (kg!=null)?`<td class="num" title="${ppk>0?('คงเหลือ '+fmt(bal)+' ชิ้น ÷ '+fmt(ppk)+' ชิ้น/กก. = '+fmt2(kg)+' กก.'):('คงเหลือ '+fmt2(bal)+' กก.')}">${fmt2(kg)}</td>`:'<td class="num muted" title="กรอก 1กก.=ชิ้น หรือหน่วยเป็นน้ำหนัก">-</td>';})():''}
       ${invCols.matbal!==false?(()=>{const _pp=invRoot(p);const _i=matLeftInfo(_pp);
         if(_i==null)return '<td class="num muted" title="ช่องนี้ใช้เฉพาะสินค้าหมวดรับแมทลูกค้า">—</td>';
         const v=_i.val;
@@ -7071,7 +7113,7 @@ function renderInvTable(){
           ? ('รับแมทลูกค้า '+fmt(_i.rmc)+' − รับเข้าชิ้นงาน '+fmt(_i.rw)+' = '+fmt(_i.raw)+'\nใบรับแมทลูกค้ายังบันทึกไม่ครบ ขาดอยู่ '+fmt(_i.miss)+' — ระบบตั้งยอดให้เป็น 0')
           : ('รับแมทลูกค้า '+fmt(_i.rmc)+' − รับเข้าชิ้นงาน '+fmt(_i.rw));
         return `<td class="num ${v?'':'muted'}" title="${tip}">${v?('<b style="color:#0f766e">'+fmt(v)+'</b>'):'0'}${_i.miss?(' <span title="'+tip+'" style="color:#b45309;font-size:10px">⚠</span>'):''}</td>`;})():''}
-      <td class="num">${p.stockOf?`<b style="color:var(--ink2);opacity:.85" title="ยอดเดียวกับรายการหลัก ${esc(invRoot(p).pn)} (ใช้สต๊อกร่วม)">${fmtQ(roll(onHandDispOf,invRoot(p)),invRoot(p))}</b>${invShareTag(p)}`:(()=>{const _v=roll(onHandDispOf,p);const _lt=low?((Number(p.onHand)||0)===0?'🔴 ของหมด : คงเหลือ = 0':'🔴 สต๊อคต่ำ : คงเหลือ '+fmt(Number(p.onHand)||0)+' ≤ MOQ/จุดสั่งซ้ำ '+fmt(Number(p.reorder)||0)+' → ควรสั่งผลิต/สั่งซื้อเพิ่ม'):'';const _t=[_lt,qTip(_v,p)].filter(Boolean).join(' · ');return `<b style="color:${low?'var(--red)':'var(--ink)'};${low?'cursor:help':''}"${_t?` title="${esc(_t)}"`:''}>${fmtQ(_v,p)}</b>${_kids(p).length?' <span class="tag teal" style="font-size:8px" title="รวมยอดจากรายการย่อย: '+esc(_kids(p).map(k=>k.pn).join(', '))+'">รวมย่อย</span>':''}`;})()}</td>
+      <td class="num">${p.stockOf?`<b style="color:var(--ink2);opacity:.85" title="ยอดเดียวกับรายการหลัก ${esc(invRoot(p).pn)} (ใช้สต๊อกร่วม)">${fmtQ(roll(onHandDispOf,invRoot(p)),invRoot(p))}</b>${invShareTag(p)}`:(()=>{const _v=roll(onHandDispOf,p);const _lt=low?((Number(p.onHand)||0)===0?'🔴 ของหมด : คงเหลือ = 0':'🔴 สต๊อคต่ำ : คงเหลือ '+fmt(Number(p.onHand)||0)+' ≤ MOQ/จุดสั่งซ้ำ '+fmt(Number(p.reorder)||0)+' → ควรสั่งผลิต/สั่งซื้อเพิ่ม'):'';const _t=[_lt,qTip(_v,p)].filter(Boolean).join(' · ');const _kb=invBarKpb(p);if(_kb>0)return `<b style="color:${low?'var(--red)':'var(--ink)'}" title="${esc((_lt?_lt+' · ':'')+'คงเหลือ '+fmt2(_v)+' กก. ÷ '+_kb.toFixed(3)+' กก./เส้น')}">${fmt(Math.round(_v/_kb))}</b> <span style="font-size:9.5px;color:#64748b">เส้น</span>`;return `<b style="color:${low?'var(--red)':'var(--ink)'};${low?'cursor:help':''}"${_t?` title="${esc(_t)}"`:''}>${fmtQ(_v,p)}</b>${_kids(p).length?' <span class="tag teal" style="font-size:8px" title="รวมยอดจากรายการย่อย: '+esc(_kids(p).map(k=>k.pn).join(', '))+'">รวมย่อย</span>':''}`;})()}</td>
       ${invCols.bar3!==false?(()=>{const _pp=invRoot(p);const b3=bars3mOf(_pp);const tm=(Array.isArray(_pp.barLots)&&_pp.barLots.length)?barLotsTotalM(_pp):0;
         const _cut=(p.type==='RM'||p.type==='SUP');            /* ★ คลิกที่ช่องนี้ = เปิดหน้าตัดแบ่งเส้น/บัญชีเส้น */
         const _at=_cut?(' style="cursor:pointer" onclick="splitBarsDialog(\''+_pp.id+'\')"'):'';
@@ -7082,8 +7124,8 @@ function renderInvTable(){
         /* ★ วัตถุดิบเหล็กเส้นที่ซื้อเป็น กก. → แสดงยอดค้างเป็น "เส้น" ให้อัตโนมัติ */
         let _bw=0,_bar=null; try{ _bar=rmBarsFromKg(_pp,w); if(_bar!=null)_bw=rmKgPerBar(_pp); }catch(e){}
         const _tt='WIP = สั่งผลิต/สั่งซื้อ − รับเข้าแล้ว (ยังส่งไม่ครบ)'+(_kids(p).length?' · รวมรายการย่อย':'')
-          +(_bar!=null?(' · ค้างรับ '+fmt(w)+' กก. ÷ '+fmt2(_bw)+' กก./เส้น = '+fmt2(_bar)+' เส้น'):'');
-        const _in=(_bar!=null)?(fmt2(_bar)+' <span style="font-size:9px;color:#64748b">เส้น</span>'):(w?fmtQ(w,_pp):'-');
+          +(_bar!=null?(' · ค้างรับ '+fmt(w)+' กก. ÷ '+fmt2(_bw)+' กก./เส้น = '+fmt(Math.round(_bar))+' เส้น'):'');
+        const _in=(_bar!=null)?(fmt(Math.round(_bar))+' <span style="font-size:9px;color:#64748b">เส้น</span>'):(w?fmtQ(w,_pp):'-');
         return '<td class="num '+(w?'':'muted')+'" title="'+_tt+(qTip(w,_pp)?(' · '+qTip(w,_pp)):'')+'">'+_in+'</td>';})()}
       ${invCols.qtime!==false?(()=>{const _pp=invRoot(p);
         /* ★ ช่องนี้เป็น null เมื่อการไหลไม่ผ่านการชุบ — ยอดไปแสดงที่ "รอคัด" ช่องเดียว */
@@ -7099,7 +7141,7 @@ function renderInvTable(){
   </tbody>${platePlantDatalist()}<tfoot><tr style="font-weight:700;background:var(--panel2);border-top:2px solid var(--line)">
     <td colspan="${3/*ประเภท+Part Number+ชื่อ*/+(invCols.date!==false?1:0)+PROD_DOCS.filter(d=>invCols[d[0]]!==false).length+['issue','sale','shape','docno','grade','dim','steel','perbar','pckg','kgprice','pcprice','harden','color','plant','wfg','w100','wfgtot','wpk','plateTPI','platePrice','cust','loc'].filter(k=>invCols[k]!==false).length}">SUBTOTAL — ${list.length} รายการ</td>
     ${invCols.moq!==false?`<td class="num">${fmt(tMoq)}</td>`:''}${invCols.salePrice?`<td class="num">${fmt2(tPrice)}</td>`:''}${invCols.vendor!==false?`<td></td>`:''}${invCols.prodPrice?`<td></td>`:''}${invCols.plating?`<td></td>`:''}${invCols.cond?`<td></td>`:''}${invCols.flow!==false?`<td></td>`:''}${invCols.adj!==false?`<td class="num">${(tAdj>0?'+':'')+fmt(tAdj)}</td>`:''}${invCols.tin!==false?`<td class="num">${fmt(tTin)}</td>`:''}${invCols.tout!==false?`<td class="num">${fmt(tTout)}</td>`:''}${invCols.ng!==false?`<td class="num">${fmt(tNg)}</td>`:''}
-    ${invCols.pcskg!==false?`<td></td>`:''}${invCols.kgbal!==false?`<td class="num">${fmt2(list.reduce((s,p)=>{if(p.stockOf)return s;const ppk=Number(p.pcsPerKg)||0;const u=String(p.unitBuy||'').toLowerCase();if(ppk>0)return s+onHandDispOf(p)/ppk;return s+((/kg|กก|กิโล|kilo/.test(u))?onHandDispOf(p):0);},0))}</td>`:''}<td class="num">${fmt(tOn)}</td>${invCols.bar3!==false?`<td class="num">${fmt(list.reduce((s,p)=>s+(p.stockOf?0:bars3mOf(p)),0))}</td>`:''}<td class="num">${fmt(tWip)}</td>${invCols.qtime!==false?`<td class="num">${fmt(tQt)}</td>`:''}${invCols.atp!==false?`<td class="num">${fmt(tPl)}</td>`:''}${invCols.rcv!==false?`<td class="num">${fmt(tSort)}</td>`:''}${invCols.stk!==false?`<td class="num">${fmt(tStk)}</td>`:''}${(()=>{ /* ★ 11/11g ยอดรวมทั้งหมด */ const g=(Number(tOn)||0)+(Number(tWip)||0)+(Number(tQt)||0)+(Number(tPl)||0)+(Number(tSort)||0)+(Number(tStk)||0);
+    ${invCols.unitBuy!==false?`<td></td>`:''}${invCols.unitSale!==false?`<td></td>`:''}${invCols.pcskg!==false?`<td></td>`:''}${invCols.kgbal!==false?`<td class="num">${fmt2(list.reduce((s,p)=>{if(p.stockOf)return s;const ppk=Number(p.pcsPerKg)||0;const u=String(p.unitBuy||'').toLowerCase();if(ppk>0)return s+onHandDispOf(p)/ppk;return s+((/kg|กก|กิโล|kilo/.test(u)||invBarKpb(p)>0)?onHandDispOf(p):0);},0))}</td>`:''}${invCols.matbal!==false?`<td class="num" title="MAT คงเหลือรวม (ตามตัวกรอง)">${fmt(list.reduce((s,p)=>{if(p.stockOf)return s;let v=null;try{v=matLeftOf(p);}catch(e){}return s+(Number(v)||0);},0))}</td>`:''}<td class="num">${fmt(tOn)}</td>${invCols.bar3!==false?`<td class="num">${fmt(list.reduce((s,p)=>s+(p.stockOf?0:bars3mOf(p)),0))}</td>`:''}<td class="num">${fmt(tWip)}</td>${invCols.qtime!==false?`<td class="num">${fmt(tQt)}</td>`:''}${invCols.atp!==false?`<td class="num">${fmt(tPl)}</td>`:''}${invCols.rcv!==false?`<td class="num">${fmt(tSort)}</td>`:''}${invCols.stk!==false?`<td class="num">${fmt(tStk)}</td>`:''}${(()=>{ /* ★ 11/11g ยอดรวมทั้งหมด */ const g=(Number(tOn)||0)+(Number(tWip)||0)+(Number(tQt)||0)+(Number(tPl)||0)+(Number(tSort)||0)+(Number(tStk)||0);
       const gc=`<td class="num" style="white-space:nowrap"><span title="ยอดรวมทั้งหมด = FG ${fmt(tOn)} + WIP ${fmt(tWip)} + Q-TIME ${fmt(tQt)} + รอชุบ ${fmt(tPl)} + รอคัด ${fmt(tSort)} + รอชั่ง ${fmt(tStk)}" style="display:inline-block;padding:3px 10px;border:2px solid #1d4ed8;border-radius:8px;color:#1d4ed8;background:#eff6ff;font-size:14px"><span style="font-size:9.5px;font-weight:600;display:block;line-height:1.1">รวมทั้งหมด</span>${fmt(g)}</span></td>`;
       const n=(invCols.cntDate!==false?1:0)+(invCols.cntAct!==false?1:0)+1; return gc+'<td></td>'.repeat(n-1); })()}
   </tr></tfoot></table></div>`;
@@ -7297,6 +7339,7 @@ var IB_LABEL={PO:'สั่งซื้อวัตถุดิบ',SUP:'วั�
 /* กติกาคิดยอดคงเหลือของสินค้าแต่ละตัว */
 function ibRule(p){
   var _fl=''; try{ _fl=prodFlow(p); }catch(e){}
+  try{ if(isMatMaster(p)) return {inn:['RMC'],out:['WD'],adj:['ADJ']}; }catch(e){}   /* ★ 18/11c แมทตัวแม่ : รับแมท = เข้า · เบิกไปผลิตชิ้นงาน = ออก */
   try{ if(isCnnRMC(p)){ var _o=['FGI','CRX']; try{ if(invCutsStock(p.id))_o.push('INV'); }catch(e){} return {inn:['RW'],out:_o,adj:['ADJ']}; } }catch(e){}   /* ★ CNN : รับชิ้นงาน = เข้า · เบิกจ่ายสำเร็จรูป = ออก */
   try{ if(isAmpasRMC(p)) return {inn:['RW'],out:['INV','CRX'],adj:['ADJ']}; }catch(e){}   /* ★ AMPAS : รับชิ้นงาน = เข้า · ส่งลูกค้า = ออก */
   if((p&&p.type==='RMC')||_fl==='รับแมทลูกค้า') return {inn:['RMC'],out:['INV','CRX'],adj:['ADJ']};
@@ -8836,9 +8879,12 @@ function ibMatRows(id){
   }catch(e){}
   /* ★ ช่อง "แมทเหลือ" และการเติมรับแมทอัตโนมัติ ใช้เฉพาะสินค้าหมวด "รับแมทลูกค้า"
      สินค้าสำเร็จรูป / วัตถุดิบ ไม่ต้องมีช่องนี้ */
-  var _isMat=false; try{ _isMat=isMatProd(pr); }catch(e){}
+  var _isMat=false; try{ _isMat=isMatProd(pr)&&!matOfProd(pr); }catch(e){}   /* ★ 18/11g ชิ้นงานที่เบิกแมทจากตัวแม่ ไม่คิดช่องแมทเหลือ (ไม่มีแถวเติมรับแมทอัตโนมัติ) */
   var _pass=_isMat?ibMatBalPass(out):{rows:out,matFinal:null,matUse:0,matAuto:0,wipUse:0,wRecv:0,wPlate:0,wSort:0};
   out=_pass.rows;
+  /* ★ 18/11e แมทตัวแม่ : แถวเติมรับแมทอัตโนมัติ = ยอดเข้าในช่องคงเหลือด้วย (แทนก้อนยอดยกมาที่เท่ากับยอดเติม) */
+  try{ if(isMatMaster(pr)){ var _aT=out.reduce(function(a,x){ return a+(x.matAuto?(Number((x.cells||{}).rmc)||0):0); },0), _bi=out.findIndex(function(x){ return x.type==='BF'; });
+    if(_aT>0&&_bi>=0&&Math.abs((Number((out[_bi].cells||{}).bf)||0)-_aT)<0.001){ out.splice(_bi,1); var _acc=0; out.forEach(function(x){ if(x.matAuto)_acc+=Number((x.cells||{}).rmc)||0; x.bal=Math.round(((Number(x.bal)||0)-_aT+_acc)*1000)/1000; }); } } }catch(e){}
   try{ ibBarCalc(pr,out,_G); }catch(e){}   /* ★ เหล็กเส้น : จำนวนเส้นต่อแถว + คงเหลือเส้น (แสดงผล) */
   return {rows:out,final:(out.length?(Number(out[out.length-1].bal)||0):0),
     matFinal:_pass.matFinal,matUse:_pass.matUse,matAuto:_pass.matAuto,
@@ -8913,19 +8959,21 @@ function ibVendToggle(){ try{ localStorage.setItem('rtk_ibvendor',ibVendOn()?'0'
 function ibColAllToggle(){ try{ localStorage.setItem('rtk_ibcolall',(localStorage.getItem('rtk_ibcolall')==='1')?'0':'1'); }catch(e){} try{ ibMatDraw(false); }catch(e){} }
 /* ★ เหล็กเส้น/ท่อ/แผ่น : จำนวนเส้นของแต่ละแถว (ใบสั่งซื้อ/รับ/เบิก) + คงเหลือเส้นสะสม — แสดงผลเท่านั้น (ยอด กก. เดิมไม่เปลี่ยน) */
 function ibBarCalc(p,rows,G){ rows.barMode=false; if(!p||p.type!=='RM'||forgeIs(p)||rmPcsBuy(p))return;   /* ★ ซื้อเป็นชิ้น = ไม่แสดงเส้น/กก. */
-  var GK=ibGroupKeys(p.id), K=pnExact, T={PO:1,IP:1,SP:1,GR:1,GI:1,GS:1,WD:1,WS:1}, any=false;
+  var GK=ibGroupKeys(p.id), K=pnExact, T={PO:1,IP:1,SP:1,GR:1,GI:1,GS:1,WD:1,WS:1,ADJ:1}, any=false;
   rows.forEach(function(r){ r.barQ=null; r.barEff=0; if(!r.id||!T[r.type])return; var d=null; try{ d=rxDocById(r.id); }catch(e){} if(!d)d=(DB.docs||[]).find(function(x){ return x.id===r.id; }); if(!d)return;
+    if(r.type==='ADJ'){ var _kb=0; try{ _kb=rmKgPerBar(p)||0; }catch(e){} if(d.bars!=null&&d.bars!==''){ r.barQ=Number(d.bars)||0; r.barEff=r.posted?r.barQ:0; any=true; } else if(_kb>0){ r.barQ=Math.round((Number(r.setTo!=null?r.setTo:r.qty)||0)/_kb); r.barApx=1; } return; }   /* ★ 18/11i ปรับยอดเป็นเส้น */
     var b=0, hit=false; (d.lines||[]).forEach(function(l){ var id=l.productId||l.fgId, ok=id?!!G[id]:false; if(!ok&&!id){ var cs=lineKeys(l); for(var i=0;i<cs.length&&!ok;i++){ if(GK[K(cs[i])]||GK[K(String(cs[i]).split(' ')[0])])ok=true; } } if(!ok)return; hit=true; b+=Number(l.bars)||0; });
     if(!hit)return; r.barQ=Math.round(b*100)/100; if(b>0)any=true; r.barEff=(r.posted&&r.eff)?(r.eff>0?r.barQ:-r.barQ):0; });
   if(!any)return; rows.barMode=true;
   var root=p; try{ root=stockSrc(p)||p; }catch(e){} var sum=rows.reduce(function(a,r){ return a+(Number(r.barEff)||0); },0), bf=Math.round(((Number(root.barsOnHand)||0)-sum)*100)/100;
   var bfr=rows.find(function(r){ return r.bf; }), bal=0; if(bf>0.005){ if(bfr){ bfr.barQ=bf; bfr.barEff=bf; } else bal=bf; } rows.barBF=bf;
   rows.forEach(function(r){ bal+=Number(r.barEff)||0; r.barBal=Math.round(bal*100)/100; }); }
-function ibBarTxt(n){ return fmt(Math.round((Number(n)||0)*100)/100); }
+function ibBarTxt(n){ return fmt(Math.round(Number(n)||0)); }   /* ★ 18/11i เส้น = จำนวนเต็ม */
 function ibBarCell(r,k,v,p,rows){ if(v===undefined||v===null||v==='')return ''; if(!rows||!rows.barMode)return '<b>'+fmtQ(v,p)+'</b>';
+  if(r.barQ!=null&&k==='adj')return '<b>'+(r.barApx?'≈ ':'')+ibBarTxt(r.barQ)+'</b> <span style="font-size:9.5px;color:#64748b">เส้น</span><div class="muted" style="font-size:10px"'+(r.barApx?' title="ใบปรับยอดเดิมมีแต่ กก. — จำนวนเส้นประมาณจาก กก./เส้น (ไม่กระทบยอดเส้น)"':'')+'>'+fmtQ(v,p)+' กก.</div>';
   if(r.barQ!=null&&(k==='po'||k==='gr'||k==='wd'||k==='bf'))return '<b>'+ibBarTxt(r.barQ)+'</b> <span style="font-size:9.5px;color:#64748b">เส้น</span><div class="muted" style="font-size:10px">'+fmtQ(v,p)+' กก.</div>';
   return '<b>'+fmtQ(v,p)+'</b> <span style="font-size:9.5px;color:#64748b">กก.</span>'; }
-function ibBarSum(vis,k,v,p,rows){ if(!rows||!rows.barMode)return v?fmtQ(v,p):''; if(!v)return ''; if(k==='po'||k==='gr'||k==='wd'||k==='bf'){ var b=vis.reduce(function(a,r){ return a+((r.cells&&Number(r.cells[k]))?(Number(r.barQ)||0):0); },0); if(!b&&k==='bf')return fmtQ(v,p)+' <span style="font-size:9.5px">กก.</span>'; return ibBarTxt(b)+' <span style="font-size:9.5px">เส้น</span><div style="font-size:10px;font-weight:600;opacity:.75">'+fmtQ(v,p)+' กก.</div>'; } return fmtQ(v,p)+' <span style="font-size:9.5px">กก.</span>'; }
+function ibBarSum(vis,k,v,p,rows){ if(!rows||!rows.barMode)return v?fmtQ(v,p):''; if(!v)return ''; if(k==='adj'){ var ba=vis.reduce(function(a,r){ return a+((r.cells&&Number(r.cells.adj)&&r.barQ!=null)?(Number(r.barQ)||0):0); },0), ax=vis.some(function(r){ return r.barApx&&r.cells&&Number(r.cells.adj); }); return (ax?'≈ ':'')+ibBarTxt(ba)+' <span style="font-size:9.5px">เส้น</span><div style="font-size:10px;font-weight:600;opacity:.75">'+fmtQ(v,p)+' กก.</div>'; } if(k==='po'||k==='gr'||k==='wd'||k==='bf'){ var b=vis.reduce(function(a,r){ return a+((r.cells&&Number(r.cells[k]))?(Number(r.barQ)||0):0); },0); if(!b&&k==='bf')return fmtQ(v,p)+' <span style="font-size:9.5px">กก.</span>'; return ibBarTxt(b)+' <span style="font-size:9.5px">เส้น</span><div style="font-size:10px;font-weight:600;opacity:.75">'+fmtQ(v,p)+' กก.</div>'; } return fmtQ(v,p)+' <span style="font-size:9.5px">กก.</span>'; }
 function ibBarBal(r,v,p,rows){ if(!rows||!rows.barMode)return fmtQ(v,p); return ibBarTxt(r?r.barBal:0)+' <span style="font-size:9.5px;color:#64748b">เส้น</span><div class="muted" style="font-size:10px;font-weight:600">'+fmtQ(v,p)+' กก.</div>'; }
 function ibMatTable(p,rows){
   var bd='1px solid var(--line)';
@@ -8996,7 +9044,7 @@ function ibMatTable(p,rows){
        +'<td class="num" style="padding:5px 7px;border-bottom:'+bd+';background:#f5faff;border-left:2px solid var(--line);font-weight:800;color:'+((r.bal||0)<0?'var(--red)':'var(--ink)')+'"'+(qTip(r.bal||0,p)?(' title="'+esc(qTip(r.bal||0,p))+'"'):'')+'>'+ibBarBal(r,r.bal||0,p,rows)+'</td>'
        +'<td style="padding:4px 6px;border-bottom:'+bd+';text-align:right">'
          +(_fl?('<button class="btn sm danger" style="padding:2px 7px" title="ยกเลิกการเติมยอดตั้งต้นของใบนี้ (ยอดค้างจะกลับไปติดลบตามเอกสารจริง)" onclick="fillCancel(\''+esc(r.fillPid)+'\',\''+esc(r.fillPO)+'\',\''+esc(r.fillStage)+'\')">✕ ยกเลิก</button>')
-           :(auto?'':ibActBtn(r,p.id)))+'</td>'
+           :(_bfr?('<button class="btn sm" style="padding:2px 7px" title="แก้ยอดยกมา — คงเหลือจะปรับตามส่วนต่าง" onclick="ibBfEdit(\''+p.id+'\','+(Number(r.qty)||0)+')">✏️ แก้</button>'):(auto?'':ibActBtn(r,p.id))))+'</td>'
        +'</tr>';
      }).join('')
     :'<tr><td colspan="'+((_vOn?9:8)+IB_USE_COLS.length+(_mbShow?1:0))+'" class="muted" style="padding:20px;text-align:center">ไม่มีรายการตามตัวกรอง</td></tr>')
@@ -9259,6 +9307,24 @@ function ibMatDraw(rebuildBar){
   var c=document.getElementById('ibMatCnt'); if(c)c.textContent='แสดง '+n+' / '+S.rows.length+' รายการ';
   try{ var w=box.querySelector('.tbl-wrap'); if(w)w.scrollTop=w.scrollHeight; }catch(e){}
 }
+/* ★ 19/11a แก้ยอดยกมา : ยอดยกมา = คงเหลือ − ผลรวมเอกสาร → ตั้งคงเหลือ = คงเหลือ + (ใหม่ − เดิม) ด้วย stkSetTo (ADJ BF-EDIT) */
+function ibBfEdit(pid,old){ var p=P(pid); if(!p)return; var root=p; try{ root=stockSrc(p)||p; }catch(e){}
+  old=Number(old)||0; var cur=Number(root.onHand)||0;
+  modal({title:'✏️ แก้ยอดยกมา — '+esc(p.pn||''),body:'<div class="hint"><span class="i">ℹ️</span><div>ยอดยกมา = คงเหลือ − ผลรวมเอกสารในตาราง · แก้แล้ว <b>คงเหลือ</b> ปรับตามส่วนต่าง (บันทึกความเคลื่อนไหว ADJ BF-EDIT) · เอกสารไม่ถูกแตะ</div></div>'
+   +'<div style="display:grid;grid-template-columns:150px 1fr;gap:8px 10px;align-items:center;margin-top:10px">'
+   +'<div class="muted">ยอดยกมาเดิม</div><div><b>'+fmt(old)+'</b></div>'
+   +'<div class="muted">คงเหลือปัจจุบัน</div><div><b>'+fmt(cur)+'</b></div>'
+   +'<div>ยอดยกมาใหม่</div><div><input id="bfe_v" type="number" step="any" min="0" value="'+old+'" style="width:180px" oninput="var v=Number(this.value)||0;document.getElementById(&quot;bfe_n&quot;).textContent=fmt(Math.round(('+cur+'+v-'+old+')*1000)/1000)"></div>'
+   +'<div class="muted">คงเหลือใหม่</div><div><b id="bfe_n">'+fmt(cur)+'</b></div>'
+   +'<div>เหตุผล</div><div><input id="bfe_w" type="text" style="width:100%" placeholder="เช่น รับเข้าวัตถุดิบคีย์ข้อมูลผิด"></div></div>',
+   footer:'<button class="btn" onclick="closeModal();openItemLedgerMat(\''+pid+'\')">ยกเลิก</button> <button class="btn pri" onclick="ibBfEditGo(\''+pid+'\','+old+')">บันทึก</button>'});
+  setTimeout(function(){ var e=document.getElementById('bfe_v'); if(e){ e.focus(); e.select(); } },50); }
+function ibBfEditGo(pid,old){ var p=P(pid); if(!p)return; var root=p; try{ root=stockSrc(p)||p; }catch(e){}
+  var e=document.getElementById('bfe_v'); var v=Number(e&&e.value); if(!(v>=0)||e.value===''){ toastRaw('ใส่ยอดยกมาเป็นตัวเลข ≥ 0','err'); return; }
+  var w=String((document.getElementById('bfe_w')||{}).value||'').trim(); var d=Math.round((v-old)*1000)/1000; if(!d){ closeModal(); openItemLedgerMat(pid); return; }
+  var cur=Number(root.onHand)||0, to=Math.round((cur+d)*1000)/1000;
+  stkSetTo(root,to,'BF-EDIT','แก้ยอดยกมา '+fmt(old)+' → '+fmt(v)+(w?' · '+w:'')+(window.__actorName?' ('+window.__actorName+')':''));
+  root.ts=Date.now(); try{ tdbBust(); }catch(x){} saveDB(); toastRaw('✏️ ยอดยกมา '+fmt(old)+' → '+fmt(v)+' · คงเหลือ '+fmt(cur)+' → '+fmt(to),'ok'); closeModal(); openItemLedgerMat(pid); try{ render(); }catch(x){} }
 function openItemLedgerMat(id){
   var p=P(id); if(!p)return; window.__ibLedger='mat';
   try{ stkAutoSync(id); }catch(e){}                 /* ★ อัปเดตยอดให้ตรงตารางอัตโนมัติ */
@@ -9284,7 +9350,8 @@ function openItemLedgerMat(id){
         :(p.type==='SUP'?'<span class="tag amber">🧰 วัสดุสิ้นเปลือง</span>'
         :'<span class="tag '+(p.type==='ASM'?'cyan':'fg')+'">'+(p.type==='ASM'?'🧩 ชุดประกอบ':'📦 สำเร็จรูป')+'</span>')))
    +  (isCnnRMC(p)?'<span class="tag cyan">กติกา CNN : รับชิ้นงาน (+) · เบิกจ่าย (−)</span><button class="btn sm" onclick="matReplayAll()" title="คำนวณยอดคงเหลือใหม่ทุกรายการรับแมทลูกค้า AMPAS/CNN">♻️ คำนวณใหม่ทั้งหมด</button>'
-      :(isAmpasRMC(p)?'<span class="tag cyan">กติกา AMPAS : รับชิ้นงาน (+) · ส่งลูกค้า (−)</span><button class="btn sm" onclick="matReplayAll()" title="คำนวณยอดคงเหลือใหม่ทุกรายการรับแมทลูกค้า AMPAS/CNN">♻️ คำนวณใหม่ทั้งหมด</button>':''))
+      :((isAmpasRMC(p)&&!isMatMaster(p))?'<span class="tag cyan">กติกา AMPAS : รับชิ้นงาน (+) · ส่งลูกค้า (−)</span><button class="btn sm" onclick="matReplayAll()" title="คำนวณยอดคงเหลือใหม่ทุกรายการรับแมทลูกค้า AMPAS/CNN">♻️ คำนวณใหม่ทั้งหมด</button>':''))
+   +  matOfTags(p)
    +  '<span class="tag gray">ลูกค้า: '+esc(p.customer||'-')+'</span>'
    +  '<span class="tag gray">ชื่อ: '+esc(p.name||'-')+'</span>'
    +  ibFlowPick(p)
@@ -9293,8 +9360,8 @@ function openItemLedgerMat(id){
    +  (_shared?('<span class="tag" style="background:#eef2ff;color:#3730a3;border:1px solid #c7d2fe" title="รายการนี้ไม่มียอดสต๊อกของตัวเอง — ใช้ยอดร่วมกับสต๊อคหลัก ตัวเลขทั้งหน้านี้จึงเป็นของสต๊อคหลัก">⇄ ใช้สต๊อคร่วมกับ <b>'+esc(_rootP.pn)+'</b> (สต๊อคหลัก)</span>'
         +'<button class="btn sm" onclick="closeModal();openItemLedger(\''+_rootP.id+'\')" title="เปิดรายการดำเนินการของสต๊อคหลัก">↩ ไปที่สต๊อคหลัก</button>'):'')
    +  ((!_shared&&_kidsP.length)?('<span class="tag" style="background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0" title="รายการเหล่านี้ใช้ยอดสต๊อกร่วมกับตัวนี้ เอกสารของทุกตัวจึงรวมอยู่ในตารางนี้">🔗 สต๊อคหลัก — ใช้ร่วมกับ '+esc(_kidsP.map(function(k){return k.pn;}).join(', '))+'</span>'):'')
-   +  '<span class="tag teal"'+(qTip(cur,p)?(' title="'+esc(qTip(cur,p))+'"'):'')+'>คงเหลือปัจจุบัน '+fmtQ(cur,p)+(_shared?' <span style="font-weight:400;opacity:.8">(ของสต๊อคหลัก)</span>':'')+'</span>'
-   +  '<span class="tag '+(diff?'red':'green')+'">ยอดสะสมท้ายตาราง '+fmtQ(fin,p)+(diff?(' · ต่างจากสต๊อก '+fmtQ(diff,p)):' · ตรงกัน ✓')+'</span>'
+   +  '<span class="tag teal"'+(qTip(cur,p)?(' title="'+esc(qTip(cur,p))+'"'):'')+'>คงเหลือปัจจุบัน '+(rows.barMode?('<b>'+ibBarTxt(rows.length?rows[rows.length-1].barBal:0)+'</b> เส้น <span style="font-weight:400;opacity:.8">('+fmtQ(cur,p)+' กก.)</span>'):fmtQ(cur,p))+(_shared?' <span style="font-weight:400;opacity:.8">(ของสต๊อคหลัก)</span>':'')+'</span>'
+   +  '<span class="tag '+(diff?'red':'green')+'">ยอดสะสมท้ายตาราง '+(rows.barMode?(ibBarTxt(rows.length?rows[rows.length-1].barBal:0)+' เส้น · '+fmtQ(fin,p)+' กก.'):fmtQ(fin,p))+(diff?(' · ต่างจากสต๊อก '+fmtQ(diff,p)):' · ตรงกัน ✓')+'</span>'
    +  (diff?'<button class="btn sm" onclick="ibMatSync(\''+p.id+'\')" title="ตั้งยอดคงเหลือในสต๊อกให้เท่ากับยอดสะสมท้ายตาราง">🔄 อัปเดตยอดให้ตรง</button>':'')
    +  (diff?'<button class="btn sm" style="background:#0e7490;color:#fff;font-weight:700" onclick="ibDiffOpen(\''+p.id+'\')" title="ดูว่าเอกสารใบไหนทำให้ยอดไม่ตรง">🔍 ตรวจส่วนต่าง</button>':'')
    +  '<button class="btn sm" onclick="stkSyncAllOpen()" title="อัปเดตยอดคงเหลือ/คัดแยก/ชุบ/รอเข้าสต๊อค ให้ตรงกับเอกสารทั้งระบบ">🔄 อัปเดตยอดทั้งระบบ</button>'
@@ -9989,6 +10056,98 @@ function invSumKids(p){ try{ if(!p||p.stockOf)return []; var out=[], seen={}; se
     (invSumIdx()[normPN(p.pn)]||[]).forEach(function(x){ if(!/^\s*รวม/.test(String(x.name||'')))add(x); }); return out; }catch(e){ return []; } }
 function invIsSum(p){ return invSumKids(p).length>0; }
 /* ★ 11/11f รายการรวมไม่ใช่ที่เก็บสต๊อค : ล้างยอดค้างเป็น 0 ครั้งเดียว (มีความเคลื่อนไหว ADJ SUM0) */
+/* ★ 18/11c ป้าย/ปุ่ม แมทตัวแม่ ในรายการดำเนินการ */
+function matOfTags(p){ try{ if(!p||!isMatProd(p))return ''; var m=matOfProd(p), ks=matKidsOf(p), h='';
+  if(m)h+='<span class="tag" style="background:#faf5ff;color:#6b21a8;border:1px solid #d8b4fe" title="ใบสั่งผลิตชิ้นงานนี้ เบิกแมทจาก '+esc(m.pn)+' (1 ชิ้นแมท = 1 ชิ้นงาน) · ยอดรับแมท/เบิกแมท ดูที่รายการ '+esc(m.pn)+'">🧲 เบิกแมทจาก <b>'+esc(m.pn)+'</b></span><button class="btn sm" onclick="closeModal();openItemLedger(\''+m.id+'\')">↗ เปิด '+esc(m.pn)+'</button>';
+  if(ks.length)h+='<span class="tag" style="background:#faf5ff;color:#6b21a8;border:1px solid #d8b4fe" title="รับแมทลูกค้า (+) − เบิกวัตถุดิบไปผลิต (−) = คงเหลือแมท">🧲 แมทลูกค้า : รับแมท (+) · เบิกผลิต (−) → '+ks.map(function(k){ return '<b class="linkish" onclick="closeModal();openItemLedger(\''+k.id+'\')">'+esc(k.pn)+'</b>'; }).join(', ')+'</span>';
+  if(!ks.length)h+='<button class="btn sm" onclick="matOfPick(\''+p.id+'\')" title="ชิ้นงานนี้ผลิตจากแมทลูกค้าตัวอื่น (เช่น 4D0 LH ใช้แมท 4D0) — ใบสั่งผลิตจะเบิกตัดแมทตัวนั้น">🧲 '+(m?'เปลี่ยนแมทที่ใช้':'ตั้งแมทที่ใช้')+'</button>';
+  return h; }catch(e){ return ''; } }
+function matOfPick(id){ var p=P(id); if(!p)return; var cur=matOfProd(p);
+  var v=prompt('ชิ้นงาน '+p.pn+' ผลิตจากแมทลูกค้า PART NUMBER ใด?\n(เว้นว่าง = ไม่ผูก ใช้แมทของตัวเอง)',cur?cur.pn:''); if(v===null)return; v=String(v).trim();
+  if(!v){ delete p.matOf; } else { var K=pnExact(v); var c=(DB.products||[]).filter(function(x){ return x&&x.id!==p.id&&!x.matOf&&isMatProd(x)&&pnExact(x.pn)===K; });
+    if(c.length!==1){ toastRaw(c.length?('พบ '+c.length+' รายการชื่อ '+v+' — ระบุให้ตรงตัวเดียว'):('ไม่พบสินค้าแมทลูกค้า '+v),'err'); return; }
+    if(matKidsOf(p).length){ toastRaw(p.pn+' เป็นแมทตัวแม่ของรายการอื่นอยู่','err'); return; }
+    p.matOf=c[0].id; }
+  p.ts=Date.now(); __mmC=null; try{ tdbBust(); }catch(e){} saveDB(); toastRaw(p.matOf?('🧲 '+p.pn+' เบิกแมทจาก '+P(p.matOf).pn):('🧲 '+p.pn+' ไม่ผูกแมทแล้ว'),'ok'); try{ closeModal(); openItemLedger(id); }catch(e){} }
+/* ★ 18/11c ครั้งเดียว : 4D0 = แมทตัวแม่ของ 4D0 LH / RH · คืน 5,019 ให้ RH · ย้ายใบรับแมท/ใบเบิกมาที่ 4D0 */
+function mat4d0Fix1118(){ try{ ensureSettings(); var S=DB.settings; if(S.__mat4d0_1118)return 0;
+  var M=P('mwln5h3bs6c8e'), RH=P('p37c789q'), LH=P('mv0fswy2fxktb'); if(!M||!RH){ S.__mat4d0_1118=Date.now(); return 0; }
+  var olds={'p37c789q':1,'mv0fswy2fxktb':1,'p37b0zw2':1}, n=0, now=Date.now(), _o=window.__mvDocId;
+  RH.matOf=M.id; RH.ts=now; if(LH){ LH.matOf=M.id; LH.ts=now; } __mmC=null;
+  /* 1) คืนยอดที่ย้ายจาก RH มา 4D0 (ใช้สต๊อกร่วม) */
+  var ret=(DB.movements||[]).filter(function(m){ return m&&m.productId===M.id&&m.bucket==='onHand'&&m.docType==='ADJ'&&/4D0 RH/.test(m.note||''); }).reduce(function(a,m){ return a+(Number(m.qty)||0); },0);
+  if(ret>0){ M.onHand=(Number(M.onHand)||0)-ret; move(M.id,'onHand',-ret,'ADJ','ใช้สต๊อกร่วม','คืนยอดให้ 4D0 RH (4D0 = แมทลูกค้า)'); RH.onHand=(Number(RH.onHand)||0)+ret; move(RH.id,'onHand',+ret,'ADJ','ใช้สต๊อกร่วม','รับยอดคืนจาก 4D0 (4D0 = แมทลูกค้า)'); n++; }
+  /* 2) ใบรับแมท */
+  ['RMC-69080060','RMC-69100016'].forEach(function(no){ (DB.docs||[]).filter(function(d){ return d&&d.type==='RMC'&&d.no===no&&olds[d.productId]; }).forEach(function(d){
+    d.productId=M.id; d.__pid=M.id; d.partNo=M.pn; d.ts=now; n++;
+    if(d.status==='approved'){ var q=Number(d.qty)||0; if(q){ window.__mvDocId=d.id; try{ M.onHand=(Number(M.onHand)||0)+q; move(M.id,'onHand',+q,'RMC',d.no,'รับแมทลูกค้า '+(d.customer||'')); } finally{ window.__mvDocId=_o; } } } }); });
+  /* 3) ใบเบิก : คืนยอดที่เคยตัดจากชิ้นงาน แล้วตัดที่ 4D0 */
+  ['WD-69080182','WD-69080183','WD-69100078','WD-69100079'].forEach(function(no){ (DB.docs||[]).filter(function(d){ return d&&d.type==='WD'&&d.no===no; }).forEach(function(d){
+    (d.lines||[]).forEach(function(l){ if(!l||!olds[l.productId])return; var old=l.productId, q=Number(l.qty)||0;
+      l.productId=M.id; l.matName='4D0 แมทลูกค้า'; d.ts=now; n++;
+      if(d.status!=='approved'||!q)return;
+      window.__mvDocId=d.id; try{
+        var op=P(old); if(op){ var got=(DB.movements||[]).filter(function(m){ return m&&m.productId===old&&m.docNo===d.no&&m.docType==='WD'&&m.bucket==='onHand'; }).reduce(function(a,m){ return a+(Number(m.qty)||0); },0);
+          if(got<0){ op.onHand=(Number(op.onHand)||0)-got; op.ts=now; move(old,'onHand',-got,'WD',d.no,'คืนยอด — ใบเบิกย้ายไปตัดแมท 4D0'); } }
+        M.onHand=(Number(M.onHand)||0)-q; move(M.id,'onHand',-q,'WD',d.no,'เบิกผลิต '+(l.poNo||'')+' ('+(l.fgPn||'')+')');
+      } finally{ window.__mvDocId=_o; } }); }); });
+  M.ts=now; S.__mat4d0_1118=now; try{ tdbBust(); }catch(e){} saveDB(); try{ toastRaw('🧲 ปรับ 4D0 เป็นแมทตัวแม่ของ 4D0 LH/RH แล้ว ('+n+' รายการ)','ok'); }catch(e){} return n; }catch(e){ console.warn('mat4d0Fix1118',e); return 0; } }
+/* ★ 18/11d ครั้งเดียว : เอกสาร 4D0 LH เดิม (รหัสที่ถูกลบ p37b0zw2 · Invoice 75051048 = mt2uso5kxunwb) → 4D0 LH ปัจจุบัน */
+function lhRelink1118(){ try{ ensureSettings(); var S=DB.settings; if(S.__lhRelink1118)return 0;
+  var LH=P('mv0fswy2fxktb'); if(!LH){ S.__lhRelink1118=Date.now(); return 0; }
+  var OLD='p37b0zw2', now=Date.now(), n=0, add=0, _o=window.__mvDocId;
+  var post=function(d,q,note){ if(d.status!=='approved'||!q)return; window.__mvDocId=d.id; try{ LH.onHand=(Number(LH.onHand)||0)+q; move(LH.id,'onHand',q,d.type,d.no,note); add+=q; } finally{ window.__mvDocId=_o; } };
+  (DB.docs||[]).forEach(function(d){ if(!d)return; var hit=false;
+    if(d.__pid===OLD){ d.__pid=LH.id; hit=true; }
+    if(d.type==='PRD'&&['PO6900488','PO6900640','PO6900836'].indexOf(d.no)>=0){ (d.lines||[]).forEach(function(l){ if(l&&(l.fgId===OLD||(!l.fgId&&/4D0 LH/i.test(l.name||'')))){ l.fgId=LH.id; hit=true; } }); }
+    if(d.type==='DP'||d.type==='BILL'){ (d.lines||[]).forEach(function(l){ if(l&&l.productId===OLD){ l.productId=LH.id; hit=true; } }); }
+    if(d.type==='RW'&&['RW-69080511','RW-69100137','RW-69100147'].indexOf(d.no)>=0){ (d.lines||[]).forEach(function(l){ if(l&&l.productId===OLD){ l.productId=LH.id; hit=true; post(d,Number(l.qty)||0,'รับชิ้นงาน-แมทลูกค้า '+(l.maker||'')+' (ย้ายจากรหัสเดิม)'); } }); }
+    if(d.type==='INV'&&d.no==='INV-69080402'){ (d.lines||[]).forEach(function(l){ if(l&&l.productId==='mt2uso5kxunwb'&&!P('mt2uso5kxunwb')&&/75051048/.test(l.name||'')){ l.productId=LH.id; hit=true; post(d,-(Number(l.qty)||0),'จ่ายออก-Invoice '+(d.customer||'')+' (ย้ายจากรหัสเดิม)'); } }); }
+    if(hit){ d.ts=now; n++; } });
+  LH.ts=now; S.__lhRelink1118=now; try{ tdbBust(); }catch(e){} saveDB(); try{ toastRaw('🔗 ย้ายเอกสาร 4D0 LH เดิม '+n+' ใบ · ยอด '+(add>=0?'+':'')+fmt(add),'ok'); }catch(e){} return n; }catch(e){ console.warn('lhRelink1118',e); return 0; } }
+/* ★ 18/11e ครั้งเดียว : 053 = แมทตัวแม่ของ 053 LH / RH · ยอดชิ้นงานไม่เปลี่ยน (WD เดิมถูกหักล้างด้วย FIX/SYNC แล้ว) · แมทติดลบ = เติมรับแมทอัตโนมัติ */
+function mat053Fix1118(){ try{ ensureSettings(); var S=DB.settings; if(S.__mat053_1118)return 0;
+  var M=P('mvyrik15wl749'), LH=P('p36f8083'), RH=P('p370aqg7'); if(!M||!LH||!RH){ S.__mat053_1118=Date.now(); return 0; }
+  var olds={'p36f8083':1,'p370aqg7':1,'msrblb0xwqzk1':1}, now=Date.now(), n=0, _o=window.__mvDocId;
+  LH.matOf=M.id; RH.matOf=M.id; LH.ts=now; RH.ts=now; __mmC=null;
+  var post=function(d,q,dt,note){ window.__mvDocId=d.id; try{ M.onHand=(Number(M.onHand)||0)+q; move(M.id,'onHand',q,dt,d.no,note); } finally{ window.__mvDocId=_o; } };
+  ['RMC-69080065','RMC-69090004','RMC-69110021'].forEach(function(no){ (DB.docs||[]).filter(function(d){ return d&&d.type==='RMC'&&d.no===no&&(olds[d.productId]||d.productId===M.id); }).forEach(function(d){
+    var had=(DB.movements||[]).some(function(m){ return m&&m.productId===M.id&&m.docNo===d.no&&m.docType==='RMC'&&Number(m.qty); });
+    if(d.productId!==M.id){ d.productId=M.id; d.__pid=M.id; d.partNo=M.pn; d.ts=now; n++; }
+    if(d.status==='approved'&&!had&&Number(d.qty))post(d,Number(d.qty)||0,'RMC','รับแมทลูกค้า '+(d.customer||'')); }); });
+  ['WD-69080207','WD-69090046','WD-69100075','WD-69100093','WD-69100106','WD-69110122','WD-69080208','WD-69100081','WD-69100094','WD-69110123'].forEach(function(no){ (DB.docs||[]).filter(function(d){ return d&&d.type==='WD'&&d.no===no; }).forEach(function(d){
+    (d.lines||[]).forEach(function(l){ if(!l||!(l.productId===LH.id||l.productId===RH.id))return; var q=Number(l.qty)||0;
+      l.productId=M.id; l.matName='053 แมทลูกค้า'; d.ts=now; n++;
+      if(d.status==='approved'&&q)post(d,-q,'WD','เบิกผลิต '+(l.poNo||'')+' ('+(l.fgPn||'')+')'); }); }); });
+  var neg=-(Number(M.onHand)||0); if(neg>0){ M.onHand=0; move(M.id,'onHand',neg,'ADJ','MATAUTO','เติมรับแมทลูกค้าอัตโนมัติ (ใบรับแมทยังไม่ได้คีย์) — แมทคงเหลือไม่ติดลบ'); }
+  M.ts=now; S.__mat053_1118=now; try{ tdbBust(); }catch(e){} saveDB(); try{ toastRaw('🧲 ปรับ 053 เป็นแมทตัวแม่ของ 053 LH/RH แล้ว ('+n+' รายการ · เติมแมท '+fmt(Math.max(0,neg))+')','ok'); }catch(e){} return n; }catch(e){ console.warn('mat053Fix1118',e); return 0; } }
+/* ★ 18/11f ตัวช่วยกลาง (ครั้งเดียวต่อ flag) : แมทตัวแม่ M ← ชิ้นงาน kids · ใบรับแมท (RMC) / ใบเบิก (WD) ของชิ้นงาน ย้ายมาที่ M แล้วลงยอดที่ M · ไม่คืนยอดเบิกเดิมให้ชิ้นงาน (ยอดชิ้นงานเท่าบัญชีคุมอยู่แล้ว) · ติดลบ = เติมรับแมทอัตโนมัติ */
+function matAdopt(flag,mid,kidIds){ try{ ensureSettings(); var S=DB.settings; if(S[flag])return 0;
+  var M=P(mid), ks=(kidIds||[]).map(function(id){ return P(id); }).filter(Boolean); if(!M||!ks.length){ S[flag]=Date.now(); return 0; }
+  var K={}; ks.forEach(function(k){ K[k.id]=1; }); var now=Date.now(), n=0, _o=window.__mvDocId, mk=String(M.pn||'')+' แมทลูกค้า';
+  ks.forEach(function(k){ k.matOf=M.id; k.ts=now; }); __mmC=null;
+  var post=function(d,q,dt,note){ window.__mvDocId=d.id; try{ M.onHand=(Number(M.onHand)||0)+q; move(M.id,'onHand',q,dt,d.no,note); } finally{ window.__mvDocId=_o; } };
+  (DB.docs||[]).forEach(function(d){ if(!d||d.status==='cancelled')return;
+    if(d.type==='RMC'&&K[d.productId]){ d.productId=M.id; d.__pid=M.id; d.partNo=M.pn; d.ts=now; n++; if(d.status==='approved'&&Number(d.qty))post(d,Number(d.qty)||0,'RMC','รับแมทลูกค้า '+(d.customer||'')); }
+    else if(d.type==='WD'){ (d.lines||[]).forEach(function(l){ if(!l||!K[l.productId]||!l.custMat)return; var q=Number(l.qty)||0; l.productId=M.id; l.matName=mk; d.ts=now; n++;
+      if(d.status==='approved'&&q)post(d,-q,'WD','เบิกผลิต '+(l.poNo||'')+' ('+(l.fgPn||'')+')'); }); } });
+  var neg=-(Number(M.onHand)||0); if(neg>0){ M.onHand=0; move(M.id,'onHand',neg,'ADJ','MATAUTO','เติมรับแมทลูกค้าอัตโนมัติ (ใบรับแมทยังไม่ได้คีย์) — แมทคงเหลือไม่ติดลบ'); }
+  M.ts=now; S[flag]=now; try{ tdbBust(); }catch(e){} saveDB(); try{ toastRaw('🧲 ปรับ '+M.pn+' เป็นแมทตัวแม่ของ '+ks.map(function(k){ return k.pn; }).join(', ')+' แล้ว ('+n+' รายการ'+(neg>0?(' · เติมแมท '+fmt(neg)):'')+')','ok'); }catch(e){} return n; }catch(e){ console.warn('matAdopt',flag,e); return 0; } }
+/* ★ 18/11g ครั้งเดียวต่อ flag : บรรทัด Invoice ที่ผูกรหัสสินค้าที่ถูกลบ → รหัสใหม่ (map เดิม→ใหม่) + ตัดยอดคงเหลือ (ใบอนุมัติแล้ว) */
+function invRelink(flag,no,map,cut){ try{ ensureSettings(); var S=DB.settings; if(S[flag])return 0; var now=Date.now(), n=0, _o=window.__mvDocId;
+  (DB.docs||[]).forEach(function(d){ if(!d||d.type!=='INV'||d.no!==no||d.status==='cancelled')return;
+    (d.lines||[]).forEach(function(l){ var to=l&&map[l.productId]; if(!to||P(l.productId))return; var p=P(to); if(!p)return; var q=Number(l.qty)||0;
+      l.productId=p.id; d.ts=now; n++;
+      if(cut&&d.status==='approved'&&q){ window.__mvDocId=d.id; try{ p.onHand=(Number(p.onHand)||0)-q; p.ts=now; move(p.id,'onHand',-q,'INV',d.no,'จ่ายออก-Invoice '+(d.customer||'')+' (ย้ายจากรหัสเดิม)'); } finally{ window.__mvDocId=_o; } } }); });
+  S[flag]=now; if(n){ try{ tdbBust(); }catch(e){} saveDB(); try{ toastRaw('🔗 ย้ายบรรทัด '+no+' '+n+' บรรทัด','ok'); }catch(e){} } return n; }catch(e){ console.warn('invRelink',flag,e); return 0; } }
+/* ★ 18/11i ครั้งเดียว : ตั้งยอดวัตถุดิบเหล็กเส้นตามตรวจนับ (เส้น) · กก. = เส้น × กก./เส้น · ใบปรับยอด ADJ (delta กก. + bars = ส่วนต่างเส้นจากบัญชีคุม) */
+function barCountSet(flag,pid,bars,why){ try{ ensureSettings(); var S=DB.settings; if(S[flag])return 0; var p=P(pid); if(!p){ S[flag]=Date.now(); return 0; }
+  var kb=rmKgPerBar(p)||0; if(!(kb>0))return 0; var led=0; try{ var R=ibMatRows(p.id); led=(R.rows&&R.rows.barMode&&R.rows.length)?(Number(R.rows[R.rows.length-1].barBal)||0):(Number(p.barsOnHand)||0); }catch(e){ led=Number(p.barsOnHand)||0; }
+  var now=Date.now(), kg=Math.round(bars*kb*1000)/1000, dk=Math.round((kg-(Number(p.onHand)||0))*1000)/1000, db=Math.round((bars-led)*100)/100, dbo=Math.round((bars-(Number(p.barsOnHand)||0))*100)/100;
+  var d={id:uid(),type:'ADJ',no:nextNo('ADJ'),date:todayISO(),ts:now,status:'approved',productId:p.id,__pid:p.id,mode:'delta',qty:dk,delta:dk,bars:db,barsSet:bars,actor:(window.__actorName||'ระบบ'),note:(why||'ตรวจนับตั้งยอด')+' '+fmt(bars)+' เส้น × '+kb.toFixed(3)+' กก./เส้น = '+fmt(kg)+' กก.',approvedAt:new Date().toLocaleString('th-TH')};
+  DB.docs.push(d); var _o=window.__mvDocId; window.__mvDocId=d.id;
+  try{ p.onHand=kg; if(dk)move(p.id,'onHand',dk,'ADJ',d.no,d.note); p.barsOnHand=bars; if(dbo)move(p.id,'barsOnHand',dbo,'ADJ',d.no,'ตั้งยอด(เส้น) '+fmt(bars)); } finally{ window.__mvDocId=_o; }
+  p.ts=now; S[flag]=now; try{ tdbBust(); }catch(e){} saveDB(); try{ toastRaw('📏 '+String(p.pn||'').slice(0,40)+' ตั้งยอด '+fmt(bars)+' เส้น ('+fmt(kg)+' กก.) · '+d.no,'ok'); }catch(e){} return 1; }catch(e){ console.warn('barCountSet',flag,e); return 0; } }
 function invSumZero(){ try{ ensureSettings(); var S=DB.settings; if(S.__sumZero1111)return 0; var n=0;
   (DB.products||[]).forEach(function(p){ if(!p||p.stockOf||!invIsSum(p))return; ['onHand','wip','atPlating','passedQC','ng'].forEach(function(b){ var v=Number(p[b])||0; if(!v)return;
     p[b]=0; try{ move(p.id,b,-v,'ADJ','SUM0','รายการรวม (Σ) ไม่เก็บสต๊อค — ล้างยอดค้าง '+v+' (ยอดจริงอยู่ที่รายการย่อย)'); }catch(e){} n++; }); if(n)p.ts=Date.now(); });
@@ -10346,7 +10505,7 @@ function qcFlowBadge(d){
   return '<span class="tag" style="background:'+bg+';color:#fff" title="คัดผ่าน OK '+fmt(ok)+' · เข้าสต๊อค '+fmt(si)+'">'+t+'</span>';
 }
 function orderFlowBadge(d){if(d.status==='cancelled')return '<span class="tag" style="background:#94a3b8;color:#fff">— ยกเลิก</span>';
-  if(d.backlogClosed)return '<span class="tag" style="background:#64748b;color:#fff" title="ปิดยอดคงค้างแล้ว'+(d.backlogClosedAt?' ('+esc(d.backlogClosedAt)+')':'')+'">⏹ ปิดยอดค้างแล้ว</span> <button class="btn sm" style="padding:0 6px;font-size:10.5px" onclick="reopenBacklog(\''+d.id+'\')" title="เปิดยอดค้างคืน">↩ เปิดคืน</button>';
+  if(d.backlogClosed)return '<span class="tag" style="background:#64748b;color:#fff" title="ปิดยอดคงค้างแล้ว'+(d.backlogClosedAt?' ('+esc(d.backlogClosedAt)+')':'')+(d.backlogAuto?' · อัตโนมัติ ส่งขาด '+d.backlogAuto.pct+'% (สั่ง '+fmt(d.backlogAuto.ord)+' · รับ '+fmt(d.backlogAuto.recv)+(d.backlogAuto.u?' '+d.backlogAuto.u:'')+')':'')+'">⏹ ปิดยอดค้าง'+(d.backlogAuto?'อัตโนมัติ':'แล้ว')+'</span> <button class="btn sm" style="padding:0 6px;font-size:10.5px" onclick="reopenBacklog(\''+d.id+'\')" title="เปิดยอดค้างคืน">↩ เปิดคืน</button>';
   const ordered=(d.lines||[]).reduce((s,l)=>s+(Number(l.qty)||0),0);const recv=orderRecvQty(d.type,d.no);const lbl=(d.type==='PRD')?'รับงาน':'รับเข้า';let bg,t;if(recv<=0){bg='#64748b';t='⏳ รอ'+(d.type==='PRD'?'ผลิต/รับงาน':'รับเข้า');}else if(recv<ordered){bg='#b45309';t='◑ '+lbl+'บางส่วน '+(ordered?Math.round(recv/ordered*100):0)+'%';}else{bg='#16a34a';t='✓ '+lbl+'ครบ';}
   var _b='<span class="tag" style="background:'+bg+';color:#fff" title="สั่ง '+fmt(ordered)+' · '+lbl+' '+fmt(recv)+'">'+t+'</span>';
   if(recv<ordered)_b+=' <button class="btn sm" style="padding:0 6px;font-size:10.5px;color:#b45309;border-color:#b45309" onclick="closeBacklog(\''+d.id+'\')" title="ยังรับไม่ครบ — กดปิดยอดคงค้าง (ตัดออกจากงานค้าง)">⏹ ปิดยอดค้าง</button>';
@@ -21319,7 +21478,7 @@ function genWDfromPRD(prd){
     const custMat=!!fg.custSupplyMat||fg.type==='RMC';
     let matId='',matName='',bars=0,qty=0,unit='Pcs.',price=0;
     if(custMat){
-      const rmc=DB.products.find(x=>x.type==='RMC'&&pnNorm(x.pn)===pnNorm(fg.pn))||(fg.type==='RMC'?fg:null);
+      const rmc=matOfProd(fg)||DB.products.find(x=>x.type==='RMC'&&pnNorm(x.pn)===pnNorm(fg.pn))||(fg.type==='RMC'?fg:null);   /* ★ 18/11c เบิกจากแมทตัวแม่ (p.matOf) */
       matId=rmc?rmc.id:'';matName=rmc?(rmc.pn+(rmc.name&&rmc.name!=='-'?' '+rmc.name:'')):(fg.pn+' (แมทลูกค้า)');
       qty=ordered;unit='Pcs.'; // แมทลูกค้า: จ่ายตามใบสั่งผลิต ไม่เผื่อ
     } else {
@@ -46133,12 +46292,14 @@ function pendCell(pid,k,v,extraTitle){
 function matLeftMap(){
   return memo('matLeft','',function(){
     var M={};
-    var add=function(pid,k,v){ if(!pid||!v)return; var o=M[pid]||(M[pid]={rmc:0,rw:0}); o[k]+=v; };
+    var add=function(pid,k,v){ if(!pid||!v)return; var o=M[pid]||(M[pid]={rmc:0,rw:0,wd:0}); o[k]=(o[k]||0)+v; };
     (DB.docs||[]).forEach(function(d){
       if(!d||d.status==='cancelled'||d.statOnly)return;
       if(d.type==='RMC'){
         (d.lines||[]).forEach(function(l){ add(l.productId||l.fgId,'rmc',Number(l.qty!=null?l.qty:l.receivedQty)||0); });
         if(!(d.lines||[]).length&&d.productId)add(d.productId,'rmc',Number(d.qty)||0);
+      }else if(d.type==='WD'){
+        (d.lines||[]).forEach(function(l){ add(l.productId,'wd',Number(l.qty)||0); });   /* ★ 18/11c ใช้กับแมทตัวแม่ */
       }else if(d.type==='RW'){
         (d.lines||[]).forEach(function(l){ add(l.productId||l.fgId,'rw',Number(l.receivedQty!=null?l.receivedQty:l.qty)||0); });
       }
@@ -46149,8 +46310,9 @@ function matLeftMap(){
 function matLeftInfo(p){
   try{
     if(!p||!isMatProd(p))return null;                 /* แสดงเฉพาะหมวดรับแมทลูกค้า */
+    if(matOfProd(p))return null;                      /* ★ 18/11c ชิ้นงานที่เบิกแมทจากตัวแม่ — แมทอยู่ที่ตัวแม่ */
     var m=matLeftMap()[p.id]||{rmc:0,rw:0};
-    var rmc=Number(m.rmc)||0, rw=Number(m.rw)||0;
+    var rmc=Number(m.rmc)||0, rw=isMatMaster(p)?(Number(m.wd)||0):(Number(m.rw)||0);
     var raw=Math.round((rmc-rw)*1000)/1000;
     /* ★ ไม่ให้ติดลบ : ถ้ารับชิ้นงานมากกว่าที่บันทึกรับแมทไว้ แปลว่าใบรับแมทยังคีย์ไม่ครบ
        ระบบถือว่ารับแมทเพิ่มให้พอดี (เหมือนการเติมรับแมทอัตโนมัติในรายการดำเนินการ) */
